@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; img-src 'self' data:; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self'; connect-src 'self'; form-action 'self'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Sucha™ Wellness — Mental Health, Reimagined</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -195,6 +197,11 @@
   }
 
   .btn-outline:hover { background: var(--teal-dark); color: white; }
+
+  .btn-primary-light {
+    background: white;
+    color: var(--teal-dark);
+  }
 
   .hero-image {
     display: flex;
@@ -743,7 +750,7 @@
       <span class="contact-card-value">suchawellness.com</span>
     </a>
   </div>
-  <a href="mailto:sucha1@proton.me" class="btn-primary" style="background:white;color:var(--teal-dark);">Send a Message</a>
+  <a href="mailto:sucha1@proton.me" class="btn-primary btn-primary-light">Send a Message</a>
 </section>
 
 <!-- FOOTER -->
@@ -753,23 +760,6 @@
   <a href="mailto:sucha1@proton.me">sucha1@proton.me</a>
 </footer>
 
-<script>
-  // Scroll reveal
-  const reveals = document.querySelectorAll('.reveal');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
-        observer.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.12 });
-  reveals.forEach(el => observer.observe(el));
-
-  // Stagger step cards
-  document.querySelectorAll('.step-card, .why-card').forEach((el, i) => {
-    el.style.transitionDelay = (i % 3) * 0.12 + 's';
-  });
-</script>
+<script src="/site.js" defer></script>
 </body>
 </html>
