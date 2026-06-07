@@ -22,7 +22,10 @@ export default {
       return Response.redirect(url.toString(), 301);
     }
 
-    const response = await fetch(request);
+    const upstreamRequest = url.pathname === '/legal-disclaimer'
+      ? new Request(new URL('/legal-disclaimer.html', url), request)
+      : request;
+    const response = await fetch(upstreamRequest);
     const headers = new Headers(response.headers);
 
     Object.entries(SECURITY_HEADERS).forEach(([name, value]) => {
