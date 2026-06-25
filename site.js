@@ -660,7 +660,7 @@ function ensureJournalMarkup() {
           <div class="journal-premium-title">$5/month with a 30-day money-back guarantee</div>
           <p class="journal-note">Your journal is currently stored locally only. If you want more security and privacy, premium adds a password-protected encrypted vault.</p>
           <p class="journal-note">For privacy, email verification can help with premium access and support, but it cannot unlock encrypted journal contents. Keep your journal password somewhere safe.</p>
-          <p class="journal-note">Cancel anytime. For cancellation, refund, or support help, email <a href="mailto:support@suchawellness.com">support@suchawellness.com</a>.</p>
+          <p class="journal-note">Cancel anytime. For cancellation, refund, or support help, <a href="mailto:support@suchawellness.com?subject=Sucha%20Journal%20Premium%20Support">contact support</a>.</p>
           <div class="journal-premium-grid">
             <input id="journal-billing-email" type="email" placeholder="Email for premium and support">
             <input id="journal-premium-password" type="password" placeholder="Journal password">
@@ -740,7 +740,7 @@ function ensureJournalPremiumMarkup() {
       <div class="journal-premium-title">$5/month with a 30-day money-back guarantee</div>
       <p class="journal-note">Your journal is currently stored locally only. If you want more security and privacy, premium adds a password-protected encrypted vault.</p>
       <p class="journal-note">For privacy, email verification can help with premium access and support, but it cannot unlock encrypted journal contents. Keep your journal password somewhere safe.</p>
-      <p class="journal-note">Cancel anytime. For cancellation, refund, or support help, email <a href="mailto:support@suchawellness.com">support@suchawellness.com</a>.</p>
+      <p class="journal-note">Cancel anytime. For cancellation, refund, or support help, <a href="mailto:support@suchawellness.com?subject=Sucha%20Journal%20Premium%20Support">contact support</a>.</p>
       <div class="journal-premium-grid">
         <input id="journal-billing-email" type="email" placeholder="Email for premium and support">
         <input id="journal-premium-password" type="password" placeholder="Journal password">
