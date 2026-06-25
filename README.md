@@ -21,24 +21,20 @@ Cross-Origin-Resource-Policy, and the same-host HTTPS redirect needed for HSTS s
 
 ## Sucha Journal premium
 
-The premium journal UI uses Razorpay Checkout and encrypts journal entries in the browser
-before saving them to local storage. Deploy `cloudflare-worker.js` with these Worker
-environment variables/secrets:
+The premium journal UI uses the existing Verilogical payment Worker, currently called from
+`https://praivasipdf-api.verilogical.com` with `https://payment-worker.verilogical.com` as
+a fallback custom domain. That Worker owns Razorpay Checkout, payment verification, Sucha
+one-time coupons, coarse aggregate analytics, and the admin API.
 
-- `RAZORPAY_KEY_ID`
-- `RAZORPAY_KEY_SECRET`
-- `RAZORPAY_SUCHA_JOURNAL_PLAN_ID` for the recurring `$5/month` Journal subscription, recommended
-- `SUCHA_JOURNAL_CURRENCY` and `SUCHA_JOURNAL_AMOUNT_MINOR` only if using the fallback order flow
-- `SUCHA_ADMIN_TOKEN` for `/admin.html` dashboard API access
-- `SUCHA_ADMIN_KV` bound to a Cloudflare KV namespace for coupons and analytics
+The payment Worker uses its existing Razorpay settings and `ADMIN_TOKEN`. Sucha coupon and
+analytics data is stored under `sucha:*` keys in the payment Worker KV store, using
+`SUCHA_ADMIN_KV` if it is bound or falling back to `FEEDBACK_KV`.
 
-The subscription plan should represent the Sucha Journal price of `$5/month`. If the plan
-ID is missing, the Worker falls back to a standard Razorpay order endpoint. The UI presents
-a 30-day money-back guarantee and directs cancellation/refund/support questions to
-`support@suchawellness.com`.
+The journal remains free without a password. Premium offers an optional password-protected
+encrypted local vault at `$5/month` with a 30-day money-back guarantee, and directs
+cancellation/refund/support questions to `support@suchawellness.com`.
 
-The Worker also supports five one-time premium coupons. Coupon status is stored in KV,
-so coupons can be redeemed once and revoked anytime from `/admin.html`. The admin page
-also shows coarse usage analytics: page views, screening tool usage, journal events, and
-Cloudflare-provided country/region summaries. Journal text and screening answers are not
-sent to analytics.
+The admin page is available at `/admin` or `/admin.html`. It supports five one-time premium
+coupons, coupon revocation, and coarse usage analytics: page views, screening tool usage,
+journal events, and Cloudflare-provided country/region summaries. Journal text and
+screening answers are not sent to analytics.

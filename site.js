@@ -106,6 +106,10 @@ function addReadabilityStyles() {
 
 addReadabilityStyles();
 
+const suchaApiBase = 'https://praivasipdf-api.verilogical.com';
+const suchaApiFallbackBase = 'https://payment-worker.verilogical.com';
+const suchaApiBases = [suchaApiBase, suchaApiFallbackBase];
+
 function trackSuchaEvent(event, detail = {}) {
   const payload = JSON.stringify({
     event,
@@ -117,10 +121,10 @@ function trackSuchaEvent(event, detail = {}) {
 
   try {
     if (navigator.sendBeacon) {
-      navigator.sendBeacon('/api/analytics/track', new Blob([payload], { type: 'application/json' }));
+      navigator.sendBeacon(`${suchaApiBase}/api/analytics/track`, new Blob([payload], { type: 'application/json' }));
       return;
     }
-    fetch('/api/analytics/track', {
+    fetch(`${suchaApiBase}/api/analytics/track`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: payload,
@@ -1641,7 +1645,7 @@ async function createJournalCheckout(email) {
     amountUsd: 5,
   };
 
-  const endpoints = ['/api/sucha-journal/create-checkout', '/api/create-order'];
+  const endpoints = suchaApiBases.map((base) => `${base}/api/create-order`);
   let lastError = null;
   for (const endpoint of endpoints) {
     try {
@@ -1673,7 +1677,7 @@ async function verifyJournalCheckout(email, checkout, response) {
     razorpay_signature: response.razorpay_signature,
   };
 
-  const endpoints = ['/api/sucha-journal/verify-checkout', '/api/verify-payment'];
+  const endpoints = suchaApiBases.map((base) => `${base}/api/verify-payment`);
   let lastError = null;
   for (const endpoint of endpoints) {
     try {
@@ -1721,7 +1725,7 @@ async function startJournalPremiumTrial() {
           const now = Date.now();
           const expiresAt = Number(verified.expiresAt || (now + 31 * 24 * 60 * 60 * 1000));
           saveJournalAccess({
-            source: verified.source || 'razorpay_trial',
+            source: verified.source || 'razorpay',
             planId: verified.planId || journalPlanId,
             email: verified.email || email,
             paymentId: verified.razorpayPaymentId || response.razorpay_payment_id,
@@ -1780,13 +1784,26 @@ async function redeemJournalCoupon() {
   setJournalPremiumStatus('Checking coupon...');
   trackSuchaEvent('coupon_attempt');
   try {
-    const response = await fetch('/api/sucha-journal/redeem-coupon', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, email }),
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || data.ok === false) throw new Error(data.error || 'Coupon could not be redeemed.');
+    let data = {};
+    let lastError = null;
+    for (const base of suchaApiBases) {
+      try {
+        const response = await fetch(`${base}/api/sucha-journal/redeem-coupon`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, email }),
+        });
+        data = await response.json().catch(() => ({}));
+        if (response.ok && data.ok !== false) {
+          lastError = null;
+          break;
+        }
+        lastError = new Error(data.error || 'Coupon could not be redeemed.');
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    if (lastError) throw lastError;
     saveJournalAccess({
       source: data.source || 'admin_coupon',
       planId: data.planId || journalPlanId,
