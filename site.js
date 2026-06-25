@@ -466,6 +466,59 @@ function addJournalStyles() {
       min-height: 130px;
       resize: vertical;
     }
+    .journal-premium,
+    .journal-lock {
+      border: 1px solid rgba(45,122,107,0.26);
+      background: rgba(255,255,255,0.76);
+      display: grid;
+      gap: 0.9rem;
+      margin-top: 0.4rem;
+      padding: 1rem;
+    }
+    .journal-premium-badge {
+      color: var(--teal-dark);
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .journal-premium-title {
+      color: var(--teal-dark);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem;
+      font-weight: 500;
+      line-height: 1.2;
+    }
+    .journal-premium-grid,
+    .journal-lock-row {
+      display: grid;
+      gap: 0.7rem;
+    }
+    .journal-lock-row {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+    .journal-premium input,
+    .journal-lock-row input {
+      border: 1px solid var(--border);
+      color: var(--text);
+      font: inherit;
+      min-height: 42px;
+      padding: 0.72rem 0.8rem;
+      width: 100%;
+    }
+    .journal-premium-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+    }
+    .journal-lock {
+      background: rgba(245,242,235,0.82);
+      margin: 0 0 1rem;
+    }
+    .journal-lock[hidden],
+    .journal-private[hidden] {
+      display: none;
+    }
     .journal-actions {
       display: flex;
       align-items: center;
@@ -494,6 +547,26 @@ function addJournalStyles() {
       letter-spacing: 0.14em;
       padding: 0.8rem 1.25rem;
       text-transform: uppercase;
+    }
+    .journal-premium-button {
+      background: var(--teal-dark);
+      border: 1px solid var(--teal-dark);
+      color: white;
+      cursor: pointer;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      padding: 0.72rem 0.9rem;
+      text-transform: uppercase;
+    }
+    .journal-premium-button.secondary {
+      background: transparent;
+      color: var(--teal-dark);
+    }
+    .journal-premium-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.62;
     }
     .journal-list {
       display: grid;
@@ -582,7 +655,20 @@ function ensureJournalMarkup() {
           <div class="journal-stat"><span>Latest mood</span><strong id="journal-latest">-</strong></div>
           <div class="journal-stat"><span>This week</span><strong id="journal-week">0</strong></div>
         </div>
-        <p class="journal-note">This journal is stored locally in your browser. It is not a medical record and is not shared with Sucha.</p>
+        <div class="journal-premium">
+          <div class="journal-premium-badge">Premium encrypted vault</div>
+          <div class="journal-premium-title">$5/month after a 30-day free trial</div>
+          <p class="journal-note">Set a journal password and entries are encrypted before storage. Trial starts after Razorpay verifies UPI or card details.</p>
+          <div class="journal-premium-grid">
+            <input id="journal-billing-email" type="email" placeholder="Email for trial and billing">
+            <input id="journal-premium-password" type="password" placeholder="Journal password">
+          </div>
+          <div class="journal-premium-actions">
+            <button class="journal-premium-button" type="button" id="journal-trial-button">Start 30-day trial</button>
+            <button class="journal-premium-button secondary" type="button" id="journal-unlock-button">Unlock</button>
+          </div>
+          <p class="journal-note" id="journal-premium-status">Premium locks entries with AES-GCM encryption in this browser.</p>
+        </div>
       </aside>
       <div class="journal-panel">
         <div class="journal-topline">
@@ -592,29 +678,38 @@ function ensureJournalMarkup() {
           </div>
           <input class="journal-search" id="journal-search" type="search" placeholder="Search entries">
         </div>
-        <form class="journal-composer" id="journal-form">
-          <div class="journal-row">
-            <input id="journal-title" type="text" placeholder="Title or moment" required>
-            <select id="journal-mood" aria-label="Mood">
-              <option value="Steady">Steady</option>
-              <option value="Anxious">Anxious</option>
-              <option value="Low">Low</option>
-              <option value="Hopeful">Hopeful</option>
-              <option value="Tired">Tired</option>
-              <option value="Triggered">Triggered</option>
-            </select>
+        <div class="journal-lock" id="journal-lock">
+          <p class="journal-note">Premium encrypted journal is locked. Start the trial, then set or enter your journal password.</p>
+          <div class="journal-lock-row">
+            <input id="journal-unlock-password" type="password" placeholder="Journal password">
+            <button class="journal-premium-button secondary" type="button" id="journal-lock-unlock-button">Unlock</button>
           </div>
-          <textarea id="journal-body" placeholder="What do you want to remember from today?" required></textarea>
-          <div class="journal-actions">
-            <span class="journal-note" id="journal-status">Ready when you are.</span>
-            <div>
-              <button class="journal-clear" type="reset">Clear</button>
-              <button class="journal-save" type="submit">Save entry</button>
+        </div>
+        <div class="journal-private" id="journal-private" hidden>
+          <form class="journal-composer" id="journal-form">
+            <div class="journal-row">
+              <input id="journal-title" type="text" placeholder="Title or moment" required>
+              <select id="journal-mood" aria-label="Mood">
+                <option value="Steady">Steady</option>
+                <option value="Anxious">Anxious</option>
+                <option value="Low">Low</option>
+                <option value="Hopeful">Hopeful</option>
+                <option value="Tired">Tired</option>
+                <option value="Triggered">Triggered</option>
+              </select>
             </div>
+            <textarea id="journal-body" placeholder="What do you want to remember from today?" required></textarea>
+            <div class="journal-actions">
+              <span class="journal-note" id="journal-status">Ready when you are.</span>
+              <div>
+                <button class="journal-clear" type="reset">Clear</button>
+                <button class="journal-save" type="submit">Save encrypted entry</button>
+              </div>
+            </div>
+          </form>
+          <div class="journal-list" id="journal-list" aria-live="polite">
+            <p class="journal-empty">No entries yet. Start with one sentence about what felt true today.</p>
           </div>
-        </form>
-        <div class="journal-list" id="journal-list" aria-live="polite">
-          <p class="journal-empty">No entries yet. Start with one sentence about what felt true today.</p>
         </div>
       </div>
     </div>
@@ -629,6 +724,58 @@ function ensureJournalMarkup() {
 }
 
 ensureJournalMarkup();
+
+function ensureJournalPremiumMarkup() {
+  const journal = document.querySelector('#journal');
+  if (!journal) return;
+
+  const sidebar = journal.querySelector('.journal-sidebar');
+  if (sidebar && !journal.querySelector('#journal-trial-button')) {
+    const premium = document.createElement('div');
+    premium.className = 'journal-premium';
+    premium.innerHTML = `
+      <div class="journal-premium-badge">Premium encrypted vault</div>
+      <div class="journal-premium-title">$5/month after a 30-day free trial</div>
+      <p class="journal-note">Set a journal password and entries are encrypted before storage. Trial starts after Razorpay verifies UPI or card details.</p>
+      <div class="journal-premium-grid">
+        <input id="journal-billing-email" type="email" placeholder="Email for trial and billing">
+        <input id="journal-premium-password" type="password" placeholder="Journal password">
+      </div>
+      <div class="journal-premium-actions">
+        <button class="journal-premium-button" type="button" id="journal-trial-button">Start 30-day trial</button>
+        <button class="journal-premium-button secondary" type="button" id="journal-unlock-button">Unlock</button>
+      </div>
+      <p class="journal-note" id="journal-premium-status">Premium locks entries with AES-GCM encryption in this browser.</p>
+    `;
+    sidebar.append(premium);
+  }
+
+  const panel = journal.querySelector('.journal-panel');
+  const form = journal.querySelector('#journal-form');
+  const list = journal.querySelector('#journal-list');
+  if (panel && form && list && !journal.querySelector('#journal-private')) {
+    const lock = document.createElement('div');
+    lock.className = 'journal-lock';
+    lock.id = 'journal-lock';
+    lock.innerHTML = `
+      <p class="journal-note">Premium encrypted journal is locked. Start the trial, then set or enter your journal password.</p>
+      <div class="journal-lock-row">
+        <input id="journal-unlock-password" type="password" placeholder="Journal password">
+        <button class="journal-premium-button secondary" type="button" id="journal-lock-unlock-button">Unlock</button>
+      </div>
+    `;
+    const privateArea = document.createElement('div');
+    privateArea.className = 'journal-private';
+    privateArea.id = 'journal-private';
+    privateArea.hidden = true;
+    form.before(lock);
+    lock.after(privateArea);
+    privateArea.append(form, list);
+    form.querySelector('.journal-save')?.replaceChildren(document.createTextNode('Save encrypted entry'));
+  }
+}
+
+ensureJournalPremiumMarkup();
 addReadabilityStyles();
 
 const screeningTests = {
@@ -1114,7 +1261,13 @@ if (hamaForm) {
   });
 }
 
-const journalStorageKey = 'sucha-journal-entries';
+const journalLegacyStorageKey = 'sucha-journal-entries';
+const journalVaultStorageKey = 'sucha-journal-vault:v1';
+const journalAccessStorageKey = 'sucha-journal-premium-access:v1';
+const journalPlanId = 'journal_monthly_5';
+const journalProduct = 'SuchaJournal';
+const journalTrialDays = 30;
+const journalMonthlyPrice = '$5/month';
 const journalForm = document.querySelector('#journal-form');
 const journalTitle = document.querySelector('#journal-title');
 const journalMood = document.querySelector('#journal-mood');
@@ -1125,18 +1278,139 @@ const journalCount = document.querySelector('#journal-count');
 const journalLatest = document.querySelector('#journal-latest');
 const journalWeek = document.querySelector('#journal-week');
 const journalStatus = document.querySelector('#journal-status');
+const journalPrivate = document.querySelector('#journal-private');
+const journalLock = document.querySelector('#journal-lock');
+const journalBillingEmail = document.querySelector('#journal-billing-email');
+const journalPremiumPassword = document.querySelector('#journal-premium-password');
+const journalUnlockPassword = document.querySelector('#journal-unlock-password');
+const journalTrialButton = document.querySelector('#journal-trial-button');
+const journalUnlockButton = document.querySelector('#journal-unlock-button');
+const journalLockUnlockButton = document.querySelector('#journal-lock-unlock-button');
+const journalPremiumStatus = document.querySelector('#journal-premium-status');
 
-function readJournalEntries() {
+const journalVaultState = {
+  entries: [],
+  unlocked: false,
+  key: null,
+  access: null,
+};
+
+function setJournalStatus(message) {
+  if (journalStatus) journalStatus.textContent = message;
+}
+
+function setJournalPremiumStatus(message) {
+  if (journalPremiumStatus) journalPremiumStatus.textContent = message;
+}
+
+function readLegacyJournalEntries() {
   try {
-    const parsed = JSON.parse(localStorage.getItem(journalStorageKey) || '[]');
+    const parsed = JSON.parse(localStorage.getItem(journalLegacyStorageKey) || '[]');
     return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }
 }
 
-function writeJournalEntries(entries) {
-  localStorage.setItem(journalStorageKey, JSON.stringify(entries));
+function readJournalAccess() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(journalAccessStorageKey) || 'null');
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveJournalAccess(access) {
+  localStorage.setItem(journalAccessStorageKey, JSON.stringify(access));
+  journalVaultState.access = access;
+}
+
+function hasActiveJournalAccess(access = readJournalAccess()) {
+  return !!access?.expiresAt && Number(access.expiresAt) > Date.now();
+}
+
+function getJournalVaultPayload() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(journalVaultStorageKey) || 'null');
+    return parsed && parsed.version === 1 ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function bytesToBase64(bytes) {
+  let binary = '';
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary);
+}
+
+function base64ToBytes(value) {
+  return Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
+}
+
+async function deriveJournalKey(password, salt) {
+  const material = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveKey']
+  );
+
+  return crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt,
+      iterations: 250000,
+      hash: 'SHA-256',
+    },
+    material,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  );
+}
+
+async function encryptJournalEntries(entries, key, salt) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const data = new TextEncoder().encode(JSON.stringify(entries));
+  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data);
+  return {
+    version: 1,
+    algorithm: 'AES-GCM',
+    kdf: 'PBKDF2-SHA256',
+    iterations: 250000,
+    salt: bytesToBase64(salt),
+    iv: bytesToBase64(iv),
+    data: bytesToBase64(new Uint8Array(encrypted)),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+async function decryptJournalEntries(payload, password) {
+  const salt = base64ToBytes(payload.salt);
+  const iv = base64ToBytes(payload.iv);
+  const data = base64ToBytes(payload.data);
+  const key = await deriveJournalKey(password, salt);
+  const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
+  const entries = JSON.parse(new TextDecoder().decode(decrypted));
+  if (!Array.isArray(entries)) throw new Error('Journal vault is not readable.');
+  return { entries, key, salt };
+}
+
+async function writeEncryptedJournalEntries(entries) {
+  const payload = getJournalVaultPayload();
+  if (!payload || !journalVaultState.key) throw new Error('Unlock the encrypted journal first.');
+  const encrypted = await encryptJournalEntries(entries, journalVaultState.key, base64ToBytes(payload.salt));
+  localStorage.setItem(journalVaultStorageKey, JSON.stringify(encrypted));
+  journalVaultState.entries = entries;
+}
+
+function readJournalEntries() {
+  return journalVaultState.unlocked ? journalVaultState.entries : [];
 }
 
 function formatJournalDate(value) {
@@ -1159,7 +1433,7 @@ function getJournalWeekCount(entries) {
 function renderJournalEntries() {
   if (!journalList) return;
 
-  const entries = readJournalEntries().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const entries = readJournalEntries().slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   const query = journalSearch?.value.trim().toLowerCase() || '';
   const filtered = query
     ? entries.filter((entry) => `${entry.title} ${entry.mood} ${entry.body}`.toLowerCase().includes(query))
@@ -1204,11 +1478,15 @@ function renderJournalEntries() {
     preview.textContent = entry.body;
     remove.type = 'button';
     remove.textContent = 'Delete entry';
-    remove.addEventListener('click', () => {
+    remove.addEventListener('click', async () => {
       const nextEntries = readJournalEntries().filter((item) => item.id !== entry.id);
-      writeJournalEntries(nextEntries);
-      journalStatus.textContent = 'Entry deleted.';
-      renderJournalEntries();
+      try {
+        await writeEncryptedJournalEntries(nextEntries);
+        setJournalStatus('Encrypted entry deleted.');
+        renderJournalEntries();
+      } catch (error) {
+        setJournalStatus(error.message || 'Could not delete entry.');
+      }
     });
 
     head.append(title, mood);
@@ -1217,8 +1495,236 @@ function renderJournalEntries() {
   });
 }
 
+function updateJournalGate() {
+  const active = hasActiveJournalAccess();
+  const vault = getJournalVaultPayload();
+
+  if (journalPrivate) journalPrivate.hidden = !journalVaultState.unlocked;
+  if (journalLock) journalLock.hidden = journalVaultState.unlocked;
+
+  if (journalTrialButton) {
+    journalTrialButton.textContent = active ? 'Premium active' : 'Start 30-day trial';
+    journalTrialButton.disabled = active && !!vault;
+  }
+
+  if (active && vault && !journalVaultState.unlocked) {
+    setJournalPremiumStatus('Premium is active. Enter your journal password to decrypt this browser vault.');
+  } else if (active && !vault) {
+    setJournalPremiumStatus('Premium is active. Set a journal password to create the encrypted vault.');
+  } else if (journalVaultState.unlocked) {
+    const access = readJournalAccess();
+    const date = access?.expiresAt ? formatJournalDate(access.expiresAt) : 'your renewal date';
+    setJournalPremiumStatus(`Encrypted journal unlocked. Premium active until ${date}.`);
+  } else {
+    setJournalPremiumStatus(`Start a 30-day premium trial with Razorpay UPI/card verification. Then ${journalMonthlyPrice}.`);
+  }
+
+  if (!journalVaultState.unlocked) renderJournalEntries();
+}
+
+async function openJournalVault(password, { createIfMissing = false } = {}) {
+  if (!crypto?.subtle || !window.isSecureContext) {
+    throw new Error('Encrypted journal needs HTTPS or localhost with Web Crypto support.');
+  }
+  if (!hasActiveJournalAccess()) {
+    throw new Error('Start the 30-day premium trial or restore premium access first.');
+  }
+  if (!password || password.length < 8) {
+    throw new Error('Use a journal password of at least 8 characters.');
+  }
+
+  const payload = getJournalVaultPayload();
+  if (!payload) {
+    if (!createIfMissing) throw new Error('No encrypted vault exists yet. Enter an email and password, then start the trial.');
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const key = await deriveJournalKey(password, salt);
+    const migratedEntries = readLegacyJournalEntries();
+    const encrypted = await encryptJournalEntries(migratedEntries, key, salt);
+    localStorage.setItem(journalVaultStorageKey, JSON.stringify(encrypted));
+    localStorage.removeItem(journalLegacyStorageKey);
+    journalVaultState.entries = migratedEntries;
+    journalVaultState.key = key;
+    journalVaultState.unlocked = true;
+    setJournalStatus(migratedEntries.length ? 'Existing local entries migrated into the encrypted vault.' : 'Encrypted journal ready.');
+    return;
+  }
+
+  const unlocked = await decryptJournalEntries(payload, password);
+  journalVaultState.entries = unlocked.entries;
+  journalVaultState.key = unlocked.key;
+  journalVaultState.unlocked = true;
+  setJournalStatus('Encrypted journal unlocked.');
+}
+
+function normalizeJournalEmail(value) {
+  return value.trim().toLowerCase();
+}
+
+async function ensureRazorpayLoaded() {
+  if (typeof Razorpay !== 'undefined') return true;
+  return new Promise((resolve) => {
+    const existing = document.querySelector('script[src*="checkout.razorpay.com"]');
+    if (existing) {
+      existing.addEventListener('load', () => resolve(typeof Razorpay !== 'undefined'), { once: true });
+      existing.addEventListener('error', () => resolve(false), { once: true });
+      setTimeout(() => resolve(typeof Razorpay !== 'undefined'), 7000);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(typeof Razorpay !== 'undefined');
+    script.onerror = () => resolve(false);
+    document.head.append(script);
+    setTimeout(() => resolve(typeof Razorpay !== 'undefined'), 7000);
+  });
+}
+
+async function createJournalCheckout(email) {
+  const payload = {
+    planId: journalPlanId,
+    product: journalProduct,
+    email,
+    trialDays: journalTrialDays,
+    amountUsd: 5,
+  };
+
+  const endpoints = ['/api/sucha-journal/create-checkout', '/api/create-order'];
+  let lastError = null;
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) return data;
+      lastError = new Error(data.error || `Checkout endpoint ${endpoint} failed.`);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error('Could not create Razorpay checkout.');
+}
+
+async function verifyJournalCheckout(email, checkout, response) {
+  const payload = {
+    planId: journalPlanId,
+    product: journalProduct,
+    email,
+    trialDays: journalTrialDays,
+    checkoutMode: checkout.mode || (checkout.subscriptionId ? 'subscription' : 'order'),
+    razorpay_order_id: response.razorpay_order_id,
+    razorpay_payment_id: response.razorpay_payment_id,
+    razorpay_subscription_id: response.razorpay_subscription_id,
+    razorpay_signature: response.razorpay_signature,
+  };
+
+  const endpoints = ['/api/sucha-journal/verify-checkout', '/api/verify-payment'];
+  let lastError = null;
+  for (const endpoint of endpoints) {
+    try {
+      const verifyResponse = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await verifyResponse.json().catch(() => ({}));
+      if (verifyResponse.ok && data.ok !== false) return data;
+      lastError = new Error(data.error || `Verification endpoint ${endpoint} failed.`);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error('Could not verify Razorpay checkout.');
+}
+
+async function startJournalPremiumTrial() {
+  if (location.protocol === 'file:') throw new Error('Open the live site to use Razorpay Checkout.');
+
+  const email = normalizeJournalEmail(journalBillingEmail?.value || '');
+  const password = journalPremiumPassword?.value || '';
+  if (!email) throw new Error('Enter an email for trial and billing.');
+  if (!password || password.length < 8) throw new Error('Choose a journal password of at least 8 characters.');
+
+  const ready = await ensureRazorpayLoaded();
+  if (!ready) throw new Error('Razorpay Checkout could not load. Check the connection and try again.');
+
+  journalTrialButton.disabled = true;
+  setJournalPremiumStatus('Opening secure Razorpay checkout...');
+
+  try {
+    const checkout = await createJournalCheckout(email);
+    const options = {
+      key: checkout.keyId,
+      name: 'Sucha Wellness',
+      description: `Encrypted Journal - 30-day trial, then ${journalMonthlyPrice}`,
+      prefill: { email },
+      theme: { color: '#2D7A6B' },
+      handler: async (response) => {
+        try {
+          setJournalPremiumStatus('Verifying Razorpay checkout...');
+          const verified = await verifyJournalCheckout(email, checkout, response);
+          const now = Date.now();
+          const expiresAt = Number(verified.expiresAt || verified.trialEndsAt || (now + journalTrialDays * 24 * 60 * 60 * 1000));
+          saveJournalAccess({
+            source: verified.source || 'razorpay_trial',
+            planId: verified.planId || journalPlanId,
+            email: verified.email || email,
+            paymentId: verified.razorpayPaymentId || response.razorpay_payment_id,
+            subscriptionId: verified.razorpaySubscriptionId || response.razorpay_subscription_id || checkout.subscriptionId,
+            trialStartedAt: now,
+            expiresAt,
+            billingStartsAt: verified.billingStartsAt || expiresAt,
+            price: journalMonthlyPrice,
+          });
+          await openJournalVault(password, { createIfMissing: true });
+          updateJournalGate();
+          renderJournalEntries();
+        } catch (error) {
+          setJournalPremiumStatus(error.message || 'Payment verification failed.');
+        } finally {
+          journalTrialButton.disabled = false;
+        }
+      },
+      modal: {
+        ondismiss: () => {
+          journalTrialButton.disabled = false;
+          updateJournalGate();
+        },
+      },
+    };
+
+    if (checkout.subscriptionId) {
+      options.subscription_id = checkout.subscriptionId;
+    } else {
+      options.amount = checkout.amount;
+      options.currency = checkout.currency || 'USD';
+      options.order_id = checkout.orderId;
+    }
+
+    const rz = new Razorpay(options);
+    rz.on('payment.failed', (event) => {
+      journalTrialButton.disabled = false;
+      setJournalPremiumStatus(`Razorpay payment failed: ${event.error?.description || 'Try again.'}`);
+    });
+    rz.open();
+  } catch (error) {
+    journalTrialButton.disabled = false;
+    throw error;
+  }
+}
+
+async function unlockJournalFromInput(input) {
+  const password = input?.value || '';
+  await openJournalVault(password, { createIfMissing: false });
+  updateJournalGate();
+  renderJournalEntries();
+}
+
 if (journalForm && journalTitle && journalMood && journalBody) {
-  journalForm.addEventListener('submit', (event) => {
+  journalForm.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const entry = {
@@ -1231,16 +1737,41 @@ if (journalForm && journalTitle && journalMood && journalBody) {
 
     if (!entry.title || !entry.body) return;
 
-    writeJournalEntries([entry, ...readJournalEntries()]);
-    journalForm.reset();
-    journalStatus.textContent = 'Entry saved privately in this browser.';
-    renderJournalEntries();
+    try {
+      await writeEncryptedJournalEntries([entry, ...readJournalEntries()]);
+      journalForm.reset();
+      setJournalStatus('Encrypted entry saved in this browser.');
+      renderJournalEntries();
+    } catch (error) {
+      setJournalStatus(error.message || 'Could not save encrypted entry.');
+    }
   });
 
   journalForm.addEventListener('reset', () => {
-    journalStatus.textContent = 'Draft cleared.';
+    setJournalStatus('Draft cleared.');
   });
 
   journalSearch?.addEventListener('input', renderJournalEntries);
-  renderJournalEntries();
 }
+
+journalTrialButton?.addEventListener('click', () => {
+  startJournalPremiumTrial().catch((error) => setJournalPremiumStatus(error.message || 'Could not start premium trial.'));
+});
+
+journalUnlockButton?.addEventListener('click', () => {
+  unlockJournalFromInput(journalPremiumPassword).catch((error) => setJournalPremiumStatus(error.message || 'Could not unlock journal.'));
+});
+
+journalLockUnlockButton?.addEventListener('click', () => {
+  unlockJournalFromInput(journalUnlockPassword).catch((error) => setJournalPremiumStatus(error.message || 'Could not unlock journal.'));
+});
+
+journalUnlockPassword?.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    journalLockUnlockButton?.click();
+  }
+});
+
+journalVaultState.access = readJournalAccess();
+updateJournalGate();

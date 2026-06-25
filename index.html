@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; img-src 'self' data:; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self'; connect-src 'self'; form-action 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; img-src 'self' data: https://*.razorpay.com; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' https://checkout.razorpay.com; connect-src 'self' https://api.razorpay.com https://checkout.razorpay.com; frame-src https://api.razorpay.com https://checkout.razorpay.com; form-action 'self'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Sucha™ Wellness — Mental Health, Reimagined</title>
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
@@ -968,6 +968,80 @@
     resize: vertical;
   }
 
+  .journal-premium {
+    border: 1px solid rgba(45,122,107,0.26);
+    background: rgba(255,255,255,0.76);
+    display: grid;
+    gap: 0.9rem;
+    margin-top: 0.4rem;
+    padding: 1rem;
+  }
+
+  .journal-premium-badge {
+    color: var(--teal-dark);
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .journal-premium-title {
+    color: var(--teal-dark);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .journal-premium-grid {
+    display: grid;
+    gap: 0.7rem;
+  }
+
+  .journal-premium input {
+    border: 1px solid var(--border);
+    color: var(--text);
+    font: inherit;
+    min-height: 42px;
+    padding: 0.72rem 0.8rem;
+    width: 100%;
+  }
+
+  .journal-premium-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+  }
+
+  .journal-lock {
+    border: 1px solid var(--border);
+    background: rgba(245,242,235,0.82);
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+  }
+
+  .journal-lock[hidden],
+  .journal-private[hidden] {
+    display: none;
+  }
+
+  .journal-lock-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.65rem;
+  }
+
+  .journal-lock-row input {
+    border: 1px solid var(--border);
+    color: var(--text);
+    font: inherit;
+    min-height: 42px;
+    padding: 0.72rem 0.8rem;
+    width: 100%;
+  }
+
   .journal-actions {
     display: flex;
     align-items: center;
@@ -998,6 +1072,29 @@
     letter-spacing: 0.14em;
     padding: 0.8rem 1.25rem;
     text-transform: uppercase;
+  }
+
+  .journal-premium-button {
+    background: var(--teal-dark);
+    border: 1px solid var(--teal-dark);
+    color: white;
+    cursor: pointer;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    padding: 0.72rem 0.9rem;
+    text-transform: uppercase;
+  }
+
+  .journal-premium-button.secondary {
+    background: transparent;
+    color: var(--teal-dark);
+  }
+
+  .journal-premium-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.62;
   }
 
   .journal-list {
@@ -1527,7 +1624,20 @@
           <strong id="journal-week">0</strong>
         </div>
       </div>
-      <p class="journal-note">This journal is stored locally in your browser. It is not a medical record and is not shared with Sucha.</p>
+      <div class="journal-premium">
+        <div class="journal-premium-badge">Premium encrypted vault</div>
+        <div class="journal-premium-title">$5/month after a 30-day free trial</div>
+        <p class="journal-note">Set a journal password and entries are encrypted before storage. Trial starts after Razorpay verifies UPI or card details.</p>
+        <div class="journal-premium-grid">
+          <input id="journal-billing-email" type="email" placeholder="Email for trial and billing">
+          <input id="journal-premium-password" type="password" placeholder="Journal password">
+        </div>
+        <div class="journal-premium-actions">
+          <button class="journal-premium-button" type="button" id="journal-trial-button">Start 30-day trial</button>
+          <button class="journal-premium-button secondary" type="button" id="journal-unlock-button">Unlock</button>
+        </div>
+        <p class="journal-note" id="journal-premium-status">Premium locks entries with AES-GCM encryption in this browser.</p>
+      </div>
     </aside>
     <div class="journal-panel">
       <div class="journal-topline">
@@ -1537,29 +1647,38 @@
         </div>
         <input class="journal-search" id="journal-search" type="search" placeholder="Search entries">
       </div>
-      <form class="journal-composer" id="journal-form">
-        <div class="journal-row">
-          <input id="journal-title" type="text" placeholder="Title or moment" required>
-          <select id="journal-mood" aria-label="Mood">
-            <option value="Steady">Steady</option>
-            <option value="Anxious">Anxious</option>
-            <option value="Low">Low</option>
-            <option value="Hopeful">Hopeful</option>
-            <option value="Tired">Tired</option>
-            <option value="Triggered">Triggered</option>
-          </select>
+      <div class="journal-lock" id="journal-lock">
+        <p class="journal-note">Premium encrypted journal is locked. Start the trial, then set or enter your journal password.</p>
+        <div class="journal-lock-row">
+          <input id="journal-unlock-password" type="password" placeholder="Journal password">
+          <button class="journal-premium-button secondary" type="button" id="journal-lock-unlock-button">Unlock</button>
         </div>
-        <textarea id="journal-body" placeholder="What do you want to remember from today?" required></textarea>
-        <div class="journal-actions">
-          <span class="journal-note" id="journal-status">Ready when you are.</span>
-          <div>
-            <button class="journal-clear" type="reset">Clear</button>
-            <button class="journal-save" type="submit">Save entry</button>
+      </div>
+      <div class="journal-private" id="journal-private" hidden>
+        <form class="journal-composer" id="journal-form">
+          <div class="journal-row">
+            <input id="journal-title" type="text" placeholder="Title or moment" required>
+            <select id="journal-mood" aria-label="Mood">
+              <option value="Steady">Steady</option>
+              <option value="Anxious">Anxious</option>
+              <option value="Low">Low</option>
+              <option value="Hopeful">Hopeful</option>
+              <option value="Tired">Tired</option>
+              <option value="Triggered">Triggered</option>
+            </select>
           </div>
+          <textarea id="journal-body" placeholder="What do you want to remember from today?" required></textarea>
+          <div class="journal-actions">
+            <span class="journal-note" id="journal-status">Ready when you are.</span>
+            <div>
+              <button class="journal-clear" type="reset">Clear</button>
+              <button class="journal-save" type="submit">Save encrypted entry</button>
+            </div>
+          </div>
+        </form>
+        <div class="journal-list" id="journal-list" aria-live="polite">
+          <p class="journal-empty">No entries yet. Start with one sentence about what felt true today.</p>
         </div>
-      </form>
-      <div class="journal-list" id="journal-list" aria-live="polite">
-        <p class="journal-empty">No entries yet. Start with one sentence about what felt true today.</p>
       </div>
     </div>
   </div>
@@ -1711,6 +1830,6 @@
   <a href="mailto:support@suchawellness.com">support@suchawellness.com</a>
 </footer>
 
-<script src="/site.js?v=readability-1" defer></script>
+<script src="/site.js?v=premium-journal-1" defer></script>
 </body>
 </html>
