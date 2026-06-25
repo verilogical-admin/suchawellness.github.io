@@ -30,7 +30,7 @@ function json(data, init = {}) {
 }
 
 async function serveAdminPage() {
-  const response = await fetch('https://raw.githubusercontent.com/verilogical-admin/suchawellness.github.io/main/admin.html', {
+  const response = await fetch(`https://raw.githubusercontent.com/verilogical-admin/suchawellness.github.io/main/admin.html?v=${Date.now()}`, {
     headers: { 'User-Agent': 'suchawellness-edge-worker' },
   });
   const html = await response.text();
