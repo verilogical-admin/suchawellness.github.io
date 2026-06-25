@@ -659,6 +659,7 @@ function ensureJournalMarkup() {
           <div class="journal-premium-badge">Optional premium vault</div>
           <div class="journal-premium-title">$5/month with a 30-day money-back guarantee</div>
           <p class="journal-note">Your journal is currently stored locally only. If you want more security and privacy, premium adds a password-protected encrypted vault.</p>
+          <p class="journal-note">For privacy, email verification can help with premium access and support, but it cannot unlock encrypted journal contents. Keep your journal password somewhere safe.</p>
           <p class="journal-note">Cancel anytime. For cancellation, refund, or support help, email <a href="mailto:support@suchawellness.com">support@suchawellness.com</a>.</p>
           <div class="journal-premium-grid">
             <input id="journal-billing-email" type="email" placeholder="Email for premium and support">
@@ -680,7 +681,7 @@ function ensureJournalMarkup() {
           <input class="journal-search" id="journal-search" type="search" placeholder="Search entries">
         </div>
         <div class="journal-lock" id="journal-lock" hidden>
-          <p class="journal-note">Premium encrypted vault is locked. Enter your journal password to view encrypted entries.</p>
+          <p class="journal-note">Optional premium vault is locked. Enter your journal password to view encrypted entries. Email support can help with account access, but cannot decrypt your private notes.</p>
           <div class="journal-lock-row">
             <input id="journal-unlock-password" type="password" placeholder="Journal password">
             <button class="journal-premium-button secondary" type="button" id="journal-lock-unlock-button">Unlock</button>
@@ -738,6 +739,7 @@ function ensureJournalPremiumMarkup() {
       <div class="journal-premium-badge">Optional premium vault</div>
       <div class="journal-premium-title">$5/month with a 30-day money-back guarantee</div>
       <p class="journal-note">Your journal is currently stored locally only. If you want more security and privacy, premium adds a password-protected encrypted vault.</p>
+      <p class="journal-note">For privacy, email verification can help with premium access and support, but it cannot unlock encrypted journal contents. Keep your journal password somewhere safe.</p>
       <p class="journal-note">Cancel anytime. For cancellation, refund, or support help, email <a href="mailto:support@suchawellness.com">support@suchawellness.com</a>.</p>
       <div class="journal-premium-grid">
         <input id="journal-billing-email" type="email" placeholder="Email for premium and support">
@@ -760,7 +762,7 @@ function ensureJournalPremiumMarkup() {
     lock.className = 'journal-lock';
     lock.id = 'journal-lock';
     lock.innerHTML = `
-      <p class="journal-note">Premium encrypted vault is locked. Enter your journal password to view encrypted entries.</p>
+      <p class="journal-note">Optional premium vault is locked. Enter your journal password to view encrypted entries. Email support can help with account access, but cannot decrypt your private notes.</p>
       <div class="journal-lock-row">
         <input id="journal-unlock-password" type="password" placeholder="Journal password">
         <button class="journal-premium-button secondary" type="button" id="journal-lock-unlock-button">Unlock</button>
@@ -1522,7 +1524,7 @@ function updateJournalGate() {
   }
 
   if (active && vault && !journalVaultState.unlocked) {
-    setJournalPremiumStatus('Premium is active. Enter your journal password to decrypt this browser vault.');
+    setJournalPremiumStatus('Premium is active. Enter your journal password to decrypt this browser vault. Email verification cannot unlock encrypted notes.');
   } else if (active && !vault) {
     setJournalPremiumStatus('Premium is active. Set a journal password to create the encrypted vault.');
   } else if (journalVaultState.unlocked) {
@@ -1549,7 +1551,7 @@ async function openJournalVault(password, { createIfMissing = false } = {}) {
 
   const payload = getJournalVaultPayload();
   if (!payload) {
-    if (!createIfMissing) throw new Error('No encrypted vault exists yet. Enter an email and password, then start the trial.');
+    if (!createIfMissing) throw new Error('No encrypted vault exists yet. Enter an email and password, then upgrade to premium.');
     const salt = crypto.getRandomValues(new Uint8Array(16));
     const key = await deriveJournalKey(password, salt);
     const migratedEntries = readLegacyJournalEntries();
