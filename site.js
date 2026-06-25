@@ -236,6 +236,292 @@ function ensureScreeningMarkup() {
 
 ensureScreeningMarkup();
 
+function addJournalStyles() {
+  if (document.querySelector('#journal-runtime-styles')) return;
+
+  const style = document.createElement('style');
+  style.id = 'journal-runtime-styles';
+  style.textContent = `
+    #journal { background: var(--cream); }
+    .journal-shell {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.78);
+      display: grid;
+      grid-template-columns: minmax(250px, 0.72fr) minmax(0, 1.35fr);
+      min-height: 620px;
+    }
+    .journal-sidebar {
+      border-right: 1px solid var(--border);
+      display: grid;
+      gap: 1.2rem;
+      align-content: start;
+      padding: 2rem;
+      background: rgba(245,242,235,0.72);
+    }
+    .journal-mark {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--teal);
+      color: var(--teal-dark);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.55rem;
+    }
+    .journal-sidebar h3,
+    .journal-panel h3 {
+      color: var(--teal-dark);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 400;
+      line-height: 1.2;
+    }
+    .journal-sidebar p,
+    .journal-note,
+    .journal-empty,
+    .journal-entry-preview,
+    .journal-entry-meta {
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.7;
+    }
+    .journal-stats {
+      display: grid;
+      gap: 0.65rem;
+      margin-top: 0.6rem;
+    }
+    .journal-stat {
+      border: 1px solid var(--border);
+      background: white;
+      padding: 1rem;
+    }
+    .journal-stat span {
+      color: var(--muted);
+      display: block;
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .journal-stat strong {
+      color: var(--teal-dark);
+      display: block;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 400;
+      line-height: 1;
+      margin-top: 0.35rem;
+    }
+    .journal-panel {
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      min-width: 0;
+      padding: 2rem;
+    }
+    .journal-topline {
+      display: flex;
+      gap: 1rem;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 1rem;
+    }
+    .journal-search {
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text);
+      min-height: 42px;
+      padding: 0.7rem 0.9rem;
+      width: min(280px, 100%);
+    }
+    .journal-composer {
+      border: 1px solid var(--border);
+      background: white;
+      display: grid;
+      gap: 0.9rem;
+      margin-bottom: 1.4rem;
+      padding: 1.2rem;
+    }
+    .journal-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 160px;
+      gap: 0.75rem;
+    }
+    .journal-composer input,
+    .journal-composer textarea,
+    .journal-composer select {
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Jost', sans-serif;
+      padding: 0.8rem;
+      width: 100%;
+    }
+    .journal-composer textarea {
+      min-height: 130px;
+      resize: vertical;
+    }
+    .journal-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .journal-save {
+      background: var(--teal-dark);
+      border: 1px solid var(--teal-dark);
+      color: white;
+      cursor: pointer;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      padding: 0.8rem 1.25rem;
+      text-transform: uppercase;
+    }
+    .journal-clear {
+      background: transparent;
+      border: 1px solid var(--teal-dark);
+      color: var(--teal-dark);
+      cursor: pointer;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      padding: 0.8rem 1.25rem;
+      text-transform: uppercase;
+    }
+    .journal-list {
+      display: grid;
+      gap: 0.85rem;
+    }
+    .journal-entry {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.88);
+      display: grid;
+      gap: 0.55rem;
+      padding: 1.1rem;
+    }
+    .journal-entry-head {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: space-between;
+      align-items: start;
+    }
+    .journal-entry-title {
+      color: var(--teal-dark);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.35rem;
+      line-height: 1.2;
+    }
+    .journal-entry-mood {
+      border: 1px solid var(--border);
+      color: var(--teal-dark);
+      font-size: 0.66rem;
+      letter-spacing: 0.12em;
+      padding: 0.25rem 0.55rem;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .journal-entry-delete {
+      justify-self: start;
+      background: transparent;
+      border: 0;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      padding: 0;
+      text-transform: uppercase;
+    }
+    @media (max-width: 900px) {
+      .journal-shell { grid-template-columns: 1fr; }
+      .journal-sidebar { border-right: 0; border-bottom: 1px solid var(--border); }
+      .journal-topline { display: grid; }
+      .journal-row { grid-template-columns: 1fr; }
+    }
+  `;
+  document.head.append(style);
+}
+
+function ensureJournalMarkup() {
+  addJournalStyles();
+
+  const navLinks = document.querySelector('.nav-links');
+  if (navLinks && !navLinks.querySelector('a[href="#journal"]')) {
+    const item = document.createElement('li');
+    const link = document.createElement('a');
+    link.href = '#journal';
+    link.textContent = 'Journal';
+    item.append(link);
+    const researchItem = navLinks.querySelector('a[href="#research"]')?.closest('li');
+    navLinks.insertBefore(item, researchItem || navLinks.lastElementChild);
+  }
+
+  if (document.querySelector('#journal')) return;
+
+  const journal = document.createElement('section');
+  journal.id = 'journal';
+  journal.innerHTML = `
+    <div class="section-eyebrow">Journal</div>
+    <h2 class="section-title">Sucha Journal</h2>
+    <p class="section-subtitle">A private reflection space for mood notes, therapy takeaways, and small signals worth remembering. Entries stay in this browser.</p>
+    <div class="journal-shell reveal visible">
+      <aside class="journal-sidebar">
+        <div class="journal-mark">S</div>
+        <div>
+          <h3>Daily mental health notes, without the noise.</h3>
+          <p>Capture what happened, how it felt, and what helped. Use it between screenings, sessions, or quiet check-ins with yourself.</p>
+        </div>
+        <div class="journal-stats" aria-live="polite">
+          <div class="journal-stat"><span>Entries</span><strong id="journal-count">0</strong></div>
+          <div class="journal-stat"><span>Latest mood</span><strong id="journal-latest">-</strong></div>
+          <div class="journal-stat"><span>This week</span><strong id="journal-week">0</strong></div>
+        </div>
+        <p class="journal-note">This journal is stored locally in your browser. It is not a medical record and is not shared with Sucha.</p>
+      </aside>
+      <div class="journal-panel">
+        <div class="journal-topline">
+          <div>
+            <div class="section-eyebrow">Private workspace</div>
+            <h3>Write a note</h3>
+          </div>
+          <input class="journal-search" id="journal-search" type="search" placeholder="Search entries">
+        </div>
+        <form class="journal-composer" id="journal-form">
+          <div class="journal-row">
+            <input id="journal-title" type="text" placeholder="Title or moment" required>
+            <select id="journal-mood" aria-label="Mood">
+              <option value="Steady">Steady</option>
+              <option value="Anxious">Anxious</option>
+              <option value="Low">Low</option>
+              <option value="Hopeful">Hopeful</option>
+              <option value="Tired">Tired</option>
+              <option value="Triggered">Triggered</option>
+            </select>
+          </div>
+          <textarea id="journal-body" placeholder="What do you want to remember from today?" required></textarea>
+          <div class="journal-actions">
+            <span class="journal-note" id="journal-status">Ready when you are.</span>
+            <div>
+              <button class="journal-clear" type="reset">Clear</button>
+              <button class="journal-save" type="submit">Save entry</button>
+            </div>
+          </div>
+        </form>
+        <div class="journal-list" id="journal-list" aria-live="polite">
+          <p class="journal-empty">No entries yet. Start with one sentence about what felt true today.</p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const research = document.querySelector('#research');
+  if (research) {
+    research.before(journal);
+  } else {
+    document.querySelector('#take-test')?.after(journal);
+  }
+}
+
+ensureJournalMarkup();
+
 const screeningTests = {
   universal: {
     title: 'Universal Mental Health Screen',
@@ -717,4 +1003,135 @@ if (hamaForm) {
     hamaForm.reset();
     updateHamaScore();
   });
+}
+
+const journalStorageKey = 'sucha-journal-entries';
+const journalForm = document.querySelector('#journal-form');
+const journalTitle = document.querySelector('#journal-title');
+const journalMood = document.querySelector('#journal-mood');
+const journalBody = document.querySelector('#journal-body');
+const journalSearch = document.querySelector('#journal-search');
+const journalList = document.querySelector('#journal-list');
+const journalCount = document.querySelector('#journal-count');
+const journalLatest = document.querySelector('#journal-latest');
+const journalWeek = document.querySelector('#journal-week');
+const journalStatus = document.querySelector('#journal-status');
+
+function readJournalEntries() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(journalStorageKey) || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeJournalEntries(entries) {
+  localStorage.setItem(journalStorageKey, JSON.stringify(entries));
+}
+
+function formatJournalDate(value) {
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  }).format(new Date(value));
+}
+
+function getJournalWeekCount(entries) {
+  const now = new Date();
+  const weekAgo = new Date(now);
+  weekAgo.setDate(now.getDate() - 7);
+  return entries.filter((entry) => new Date(entry.createdAt) >= weekAgo).length;
+}
+
+function renderJournalEntries() {
+  if (!journalList) return;
+
+  const entries = readJournalEntries().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const query = journalSearch?.value.trim().toLowerCase() || '';
+  const filtered = query
+    ? entries.filter((entry) => `${entry.title} ${entry.mood} ${entry.body}`.toLowerCase().includes(query))
+    : entries;
+
+  journalCount.textContent = entries.length;
+  journalLatest.textContent = entries[0]?.mood || '-';
+  journalWeek.textContent = getJournalWeekCount(entries);
+
+  journalList.replaceChildren();
+
+  if (filtered.length === 0) {
+    const empty = document.createElement('p');
+    empty.className = 'journal-empty';
+    empty.textContent = entries.length === 0
+      ? 'No entries yet. Start with one sentence about what felt true today.'
+      : 'No entries match that search.';
+    journalList.append(empty);
+    return;
+  }
+
+  filtered.forEach((entry) => {
+    const article = document.createElement('article');
+    const head = document.createElement('div');
+    const title = document.createElement('div');
+    const mood = document.createElement('span');
+    const meta = document.createElement('div');
+    const preview = document.createElement('p');
+    const remove = document.createElement('button');
+
+    article.className = 'journal-entry';
+    head.className = 'journal-entry-head';
+    title.className = 'journal-entry-title';
+    mood.className = 'journal-entry-mood';
+    meta.className = 'journal-entry-meta';
+    preview.className = 'journal-entry-preview';
+    remove.className = 'journal-entry-delete';
+
+    title.textContent = entry.title;
+    mood.textContent = entry.mood;
+    meta.textContent = formatJournalDate(entry.createdAt);
+    preview.textContent = entry.body;
+    remove.type = 'button';
+    remove.textContent = 'Delete entry';
+    remove.addEventListener('click', () => {
+      const nextEntries = readJournalEntries().filter((item) => item.id !== entry.id);
+      writeJournalEntries(nextEntries);
+      journalStatus.textContent = 'Entry deleted.';
+      renderJournalEntries();
+    });
+
+    head.append(title, mood);
+    article.append(head, meta, preview, remove);
+    journalList.append(article);
+  });
+}
+
+if (journalForm && journalTitle && journalMood && journalBody) {
+  journalForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const entry = {
+      id: `journal-${Date.now()}`,
+      title: journalTitle.value.trim(),
+      mood: journalMood.value,
+      body: journalBody.value.trim(),
+      createdAt: new Date().toISOString()
+    };
+
+    if (!entry.title || !entry.body) return;
+
+    writeJournalEntries([entry, ...readJournalEntries()]);
+    journalForm.reset();
+    journalStatus.textContent = 'Entry saved privately in this browser.';
+    renderJournalEntries();
+  });
+
+  journalForm.addEventListener('reset', () => {
+    journalStatus.textContent = 'Draft cleared.';
+  });
+
+  journalSearch?.addEventListener('input', renderJournalEntries);
+  renderJournalEntries();
 }
