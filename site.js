@@ -15,6 +15,227 @@ document.querySelectorAll('.step-card, .why-card, .screening-card').forEach((ele
   element.style.transitionDelay = `${(index % 3) * 0.12}s`;
 });
 
+const screeningCardData = [
+  ['universal', 'Universal screen', 'Universal Mental Health Screen', 'A broader Sucha-hosted screen for common mental health signals.', 'Start test'],
+  ['depression', 'Sucha screen', 'Depression Test', 'For overwhelming sadness, despair, low energy, or negative self-image.', 'Start test'],
+  ['adhd', 'Sucha screen', 'ADHD Test', 'For trouble focusing, remembering things, completing tasks, or sitting still.', 'Start test'],
+  ['anxiety', 'Sucha screen', 'Anxiety Test', 'For worry or fear that affects day-to-day functioning.', 'Start test'],
+  ['bai', 'Sucha screen', 'Beck Anxiety Inventory (BAI) Quick Screen', 'A BAI-informed anxiety symptom check for recent physical and panic-like symptoms.', 'Start test'],
+  ['ocd', 'Sucha screen', 'OCD Test', 'For repetitive thoughts and behaviors, including checking or rituals, that interfere with life.', 'Start test'],
+  ['bipolar', 'Sucha screen', 'Bipolar Test', 'For extreme mood swings or unusual shifts in mood and energy.', 'Start test'],
+  ['psychosis', 'Sucha screen', 'Psychosis & Schizophrenia Test', 'For experiences that feel unreal, confusing, or like the brain is playing tricks.', 'Start test'],
+  ['eating', 'Sucha screen', 'Eating Disorder Test', 'For unhealthy relationships with food that affect health and well-being.', 'Start test'],
+  ['ptsd', 'Sucha screen', 'PTSD Test', 'For ongoing distress after a traumatic life event.', 'Start test'],
+  ['addiction', 'Sucha screen', 'Addiction Test', 'For concerns about alcohol, drugs, gambling, self-harm, or other hard-to-control behaviors.', 'Start test'],
+  ['gambling', 'Sucha screen', 'Gambling Addiction Test', 'For people concerned about gambling behaviors.', 'Start test'],
+  ['socialAnxiety', 'Sucha screen', 'Social Anxiety Test', 'For extreme worry or fear in social situations.', 'Start test'],
+  ['postpartum', 'Sucha screen', 'Postpartum Depression Test', 'For new and expecting parents experiencing overwhelming sadness during or after pregnancy.', 'Start test'],
+  ['parent', 'Sucha screen', "Parent Test: Your Child's Mental Health", "For parents worried about a child's emotions, attention, or behaviors.", 'Start test'],
+  ['youth', 'Sucha screen', 'Youth Mental Health Test', 'For young people ages 11-17 concerned about emotions, attention, or behaviors.', 'Start test'],
+  ['goodDay', 'Sucha survey', 'Survey: What Makes a Good Day?', 'A reflection survey about what helps people have more good days.', 'Start survey'],
+  ['psychedelics', 'Sucha survey', 'Psychedelics & Mental Health Survey', 'A reflection survey about opinions on psychedelics and mental health.', 'Start survey'],
+  ['aiMentalHealth', 'Sucha survey', 'AI & Mental Health Survey', 'A reflection survey about opinions on artificial intelligence and mental health.', 'Start survey'],
+  ['selfInjury', 'Sucha survey', 'Self-Injury Survey', 'A support-oriented survey for people who have hurt themselves on purpose without trying to die.', 'Start survey']
+];
+
+function addScreeningStyles() {
+  if (document.querySelector('#screening-runtime-styles')) return;
+
+  const style = document.createElement('style');
+  style.id = 'screening-runtime-styles';
+  style.textContent = `
+    .screening-card {
+      appearance: none;
+      cursor: pointer;
+      font: inherit;
+      text-align: left;
+      width: 100%;
+    }
+    .screening-card:focus-visible {
+      border-color: var(--teal);
+      box-shadow: 0 14px 34px rgba(45,122,107,0.09);
+      outline: none;
+      transform: translateY(-2px);
+    }
+    .inline-test-panel {
+      border: 1px solid var(--border);
+      background: var(--cream);
+      margin: 0 0 4rem;
+      padding: 2rem;
+    }
+    .inline-test-panel[hidden],
+    .inline-test-result[hidden] {
+      display: none;
+    }
+    .inline-test-head {
+      align-items: start;
+      display: flex;
+      gap: 1.5rem;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+    .inline-test-title {
+      color: var(--teal-dark);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 500;
+      line-height: 1.15;
+      margin-bottom: 0.5rem;
+    }
+    .inline-test-desc {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.7;
+      max-width: 720px;
+    }
+    .inline-test-form {
+      display: grid;
+      gap: 1rem;
+    }
+    .inline-question {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 1.2rem;
+    }
+    .inline-question-title {
+      color: var(--teal-dark);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem;
+      line-height: 1.25;
+      margin-bottom: 0.8rem;
+    }
+    .inline-options {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.5rem;
+    }
+    .inline-options label {
+      align-items: center;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      font-size: 0.72rem;
+      justify-content: center;
+      line-height: 1.25;
+      min-height: 56px;
+      padding: 0.6rem;
+      text-align: center;
+      text-transform: uppercase;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+    }
+    .inline-options input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .inline-options label:has(input:checked) {
+      background: var(--teal-dark);
+      border-color: var(--teal-dark);
+      color: white;
+    }
+    .inline-test-actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+    .test-submit {
+      background: var(--teal-dark);
+      border: 1px solid var(--teal-dark);
+      color: white;
+      cursor: pointer;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      padding: 0.7rem 1.2rem;
+      text-transform: uppercase;
+    }
+    .inline-test-result {
+      background: white;
+      border-left: 3px solid var(--teal);
+      margin-top: 1.5rem;
+      padding: 1.2rem;
+    }
+    @media (max-width: 900px) {
+      .inline-test-head { display: grid; }
+      .inline-options { grid-template-columns: 1fr; }
+    }
+  `;
+  document.head.append(style);
+}
+
+function createScreeningCard([key, tag, title, description, action]) {
+  const card = document.createElement('button');
+  card.className = 'screening-card reveal visible';
+  card.type = 'button';
+  card.dataset.test = key;
+
+  const tagElement = document.createElement('span');
+  const titleElement = document.createElement('span');
+  const descriptionElement = document.createElement('span');
+  const actionElement = document.createElement('span');
+
+  tagElement.className = 'screening-card-tag';
+  titleElement.className = 'screening-card-title';
+  descriptionElement.className = 'screening-card-desc';
+  actionElement.className = 'screening-card-action';
+
+  tagElement.textContent = tag;
+  titleElement.textContent = title;
+  descriptionElement.textContent = description;
+  actionElement.textContent = action;
+
+  card.append(tagElement, titleElement, descriptionElement, actionElement);
+  return card;
+}
+
+function ensureScreeningMarkup() {
+  const tools = document.querySelector('.screening-tools');
+  if (!tools) return;
+
+  addScreeningStyles();
+
+  const takeTest = document.querySelector('#take-test');
+  const subtitle = takeTest?.querySelector('.section-subtitle');
+  if (subtitle) {
+    subtitle.textContent = 'Choose a quick, confidential Sucha-hosted screening tool. Answers stay in your browser and results are informational only, not a diagnosis or a replacement for care from a qualified clinician.';
+  }
+
+  const needsCardRefresh = tools.querySelectorAll('.screening-card[data-test]').length !== screeningCardData.length ||
+    tools.querySelector('a[href*="screening.mhanational.org"], a[href*="trypsytest.com"]');
+
+  if (needsCardRefresh) {
+    tools.replaceChildren(...screeningCardData.map(createScreeningCard));
+  }
+
+  if (!document.querySelector('#screening-panel')) {
+    const panel = document.createElement('div');
+    panel.className = 'inline-test-panel reveal';
+    panel.id = 'screening-panel';
+    panel.hidden = true;
+    panel.innerHTML = `
+      <div class="inline-test-head">
+        <div>
+          <div class="section-eyebrow">Sucha-hosted screen</div>
+          <h3 class="inline-test-title" id="screening-title">Choose a test</h3>
+          <p class="inline-test-desc" id="screening-desc">Select a screening tool above to begin.</p>
+        </div>
+        <button class="test-reset" type="button" id="screening-close">Close</button>
+      </div>
+      <form class="inline-test-form" id="screening-form"></form>
+      <aside class="inline-test-result" id="screening-result" aria-live="polite" hidden>
+        <div class="score-label">Result</div>
+        <div class="score-band" id="screening-band"></div>
+        <p class="score-note" id="screening-note"></p>
+      </aside>
+    `;
+    tools.after(panel);
+  }
+}
+
+ensureScreeningMarkup();
+
 const screeningTests = {
   universal: {
     title: 'Universal Mental Health Screen',
