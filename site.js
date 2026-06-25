@@ -11,7 +11,7 @@ const observer = new IntersectionObserver((entries) => {
 
 reveals.forEach((element) => observer.observe(element));
 
-document.querySelectorAll('.step-card, .why-card').forEach((element, index) => {
+document.querySelectorAll('.step-card, .why-card, .screening-card').forEach((element, index) => {
   element.style.transitionDelay = `${(index % 3) * 0.12}s`;
 });
 

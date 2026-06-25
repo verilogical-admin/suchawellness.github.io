@@ -473,9 +473,73 @@
     line-height: 1.8;
   }
 
-  /* ── HAM-A TEST ── */
-  #hama-test {
+  /* ── TAKE TEST ── */
+  #take-test {
     background: var(--white);
+  }
+
+  .screening-tools {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 4rem;
+  }
+
+  .screening-card {
+    border: 1px solid var(--border);
+    background: rgba(245,242,235,0.35);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    min-height: 210px;
+    padding: 1.5rem;
+    text-decoration: none;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  }
+
+  .screening-card:hover {
+    border-color: var(--teal);
+    box-shadow: 0 14px 34px rgba(45,122,107,0.09);
+    transform: translateY(-2px);
+  }
+
+  .screening-card-tag {
+    color: var(--teal);
+    font-size: 0.62rem;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    margin-bottom: 0.8rem;
+    text-transform: uppercase;
+  }
+
+  .screening-card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.35rem;
+    line-height: 1.2;
+    color: var(--teal-dark);
+    margin-bottom: 0.75rem;
+  }
+
+  .screening-card-desc {
+    color: var(--muted);
+    font-size: 0.84rem;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+
+  .screening-card-action {
+    color: var(--teal-dark);
+    font-size: 0.68rem;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    margin-top: auto;
+    text-transform: uppercase;
+  }
+
+  .hama-heading {
+    border-top: 1px solid var(--border);
+    margin-top: 1rem;
+    padding-top: 4rem;
   }
 
   .test-layout {
@@ -752,6 +816,7 @@
     .steps-grid, .why-grid { grid-template-columns: 1fr; }
     #about { grid-template-columns: 1fr; gap: 2.5rem; padding: 4rem 1.5rem; }
     .about-accent { display: none; }
+    .screening-tools { grid-template-columns: 1fr; }
     .test-layout { grid-template-columns: 1fr; }
     .score-panel { position: static; }
     .rating-options { grid-template-columns: repeat(5, minmax(48px, 1fr)); overflow-x: auto; }
@@ -771,7 +836,7 @@
     <li><a href="#how">How It Works</a></li>
     <li><a href="#about">About</a></li>
     <li><a href="#why">Why Us</a></li>
-    <li><a href="#hama-test">HAM-A Test</a></li>
+    <li><a href="#take-test">Take Test</a></li>
     <li><a href="#contact" class="nav-cta">Contact</a></li>
   </ul>
 </nav>
@@ -887,11 +952,144 @@
   </div>
 </section>
 
-<!-- HAM-A TEST -->
-<section id="hama-test">
-  <div class="section-eyebrow">Anxiety Screening</div>
-  <h2 class="section-title">Hamilton Anxiety Rating Scale</h2>
-  <p class="section-subtitle">Rate each item from 0 to 4. This HAM-A score tool is informational and intended to support, not replace, assessment by a qualified clinician.</p>
+<!-- TAKE TEST -->
+<section id="take-test">
+  <div class="section-eyebrow">Take Test</div>
+  <h2 class="section-title">Mental health screening tools</h2>
+  <p class="section-subtitle">Choose a quick, confidential screening tool. These external MHA screens and the HAM-A scorer below are informational and do not replace care from a qualified clinician.</p>
+  <div class="screening-tools">
+    <a class="screening-card reveal" href="https://screening.mhanational.org/sage-sr/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">Universal screen</span>
+      <span class="screening-card-title">Universal Mental Health Screen</span>
+      <span class="screening-card-desc">A broader screen for 30 common mental health conditions in about 10-15 minutes.</span>
+      <span class="screening-card-action">Open test</span>
+    </a>
+    <a class="screening-card reveal" href="https://screening.mhanational.org/screening-tools/depression/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">MHA test</span>
+      <span class="screening-card-title">Depression Test</span>
+      <span class="screening-card-desc">For overwhelming sadness, despair, low energy, or negative self-image.</span>
+      <span class="screening-card-action">Open test</span>
+    </a>
+    <a class="screening-card reveal" href="https://screening.mhanational.org/screening-tools/adhd/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">MHA test</span>
+      <span class="screening-card-title">ADHD Test</span>
+      <span class="screening-card-desc">For trouble focusing, remembering things, completing tasks, or sitting still.</span>
+      <span class="screening-card-action">Open test</span>
+    </a>
+    <a class="screening-card reveal" href="https://screening.mhanational.org/screening-tools/anxiety/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">MHA test</span>
+      <span class="screening-card-title">Anxiety Test</span>
+      <span class="screening-card-desc">For worry or fear that affects day-to-day functioning.</span>
+      <span class="screening-card-action">Open test</span>
+    </a>
+    <a class="screening-card reveal" href="https://screening.mhanational.org/screening-tools/ocd/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">MHA test</span>
+      <span class="screening-card-title">OCD Test</span>
+      <span class="screening-card-desc">For repetitive thoughts and behaviors, including hoarding symptoms, that interfere with life.</span>
+      <span class="screening-card-action">Open test</span>
+    </a>
+    <a class="screening-card reveal" href="https://screening.mhanational.org/screening-tools/bipolar/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">MHA test</span>
+      <span class="screening-card-title">Bipolar Test</span>
+      <span class="screening-card-desc">For extreme mood swings or unusual shifts in mood and energy.</span>
+      <span class="screening-card-action">Open test</span>
+    </a>
+    <a class="screening-card reveal" href="https://screening.mhanational.org/screening-tools/psychosis/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">MHA test</span>
+      <span class="screening-card-title">Psychosis &amp; Schizophrenia Test</span>
+      <span class="screening-card-desc">For experiences that feel unreal, confusing, or like the brain is playing tricks.</span>
+      <span class="screening-card-action">Open test</span>
+    </a>
+    <a class="screening-card reveal" href="https://screening.mhanational.org/screening-tools/eating-disorder/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">MHA test</span>
+      <span class="screening-card-title">Eating Disorder Test</span>
+      <span class="screening-card-desc">For unhealthy relationships with food that affect health and well-being.</span>
+      <span class="screening-card-action">Open test</span>
+    </a>
+    <a class="screening-card reveal" href="https://screening.mhanational.org/screening-tools/ptsd/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">MHA test</span>
+      <span class="screening-card-title">PTSD Test</span>
+      <span class="screening-card-desc">For ongoing distress after a traumatic life event.</span>
+      <span class="screening-card-action">Open test</span>
+    </a>
+    <a class="screening-card reveal" href="https://screening.mhanational.org/screening-tools/addiction/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">MHA test</span>
+      <span class="screening-card-title">Addiction Test</span>
+      <span class="screening-card-desc">For concerns about alcohol, drugs, gambling, self-harm, or other behaviors.</span>
+      <span class="screening-card-action">Open test</span>
+    </a>
+    <a class="screening-card reveal" href="https://screening.mhanational.org/screening-tools/gambling/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">MHA test</span>
+      <span class="screening-card-title">Gambling Addiction Test</span>
+      <span class="screening-card-desc">For people concerned about gambling behaviors.</span>
+      <span class="screening-card-action">Open test</span>
+    </a>
+    <a class="screening-card reveal" href="https://screening.mhanational.org/screening-tools/social-anxiety/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">MHA test</span>
+      <span class="screening-card-title">Social Anxiety Test</span>
+      <span class="screening-card-desc">For extreme worry or fear in social situations.</span>
+      <span class="screening-card-action">Open test</span>
+    </a>
+    <a class="screening-card reveal" href="https://screening.mhanational.org/screening-tools/postpartum-depression/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">MHA test</span>
+      <span class="screening-card-title">Postpartum Depression Test</span>
+      <span class="screening-card-desc">For new and expecting parents experiencing overwhelming sadness during or after pregnancy.</span>
+      <span class="screening-card-action">Open test</span>
+    </a>
+    <a class="screening-card reveal" href="https://screening.mhanational.org/screening-tools/parent/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">MHA test</span>
+      <span class="screening-card-title">Parent Test: Your Child's Mental Health</span>
+      <span class="screening-card-desc">For parents worried about a child's emotions, attention, or behaviors.</span>
+      <span class="screening-card-action">Open test</span>
+    </a>
+    <a class="screening-card reveal" href="https://screening.mhanational.org/screening-tools/youth/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">MHA test</span>
+      <span class="screening-card-title">Youth Mental Health Test</span>
+      <span class="screening-card-desc">For young people ages 11-17 concerned about emotions, attention, or behaviors.</span>
+      <span class="screening-card-action">Open test</span>
+    </a>
+    <a class="screening-card reveal" href="https://screening.mhanational.org/screening-tools/test-de-depresion/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">MHA test</span>
+      <span class="screening-card-title">Test de depresion</span>
+      <span class="screening-card-desc">Para tristeza abrumadora, poca energia o una imagen negativa de si misma/o.</span>
+      <span class="screening-card-action">Open test</span>
+    </a>
+    <a class="screening-card reveal" href="https://screening.mhanational.org/screening-tools/test-de-ansiedad/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">MHA test</span>
+      <span class="screening-card-title">Test de ansiedad</span>
+      <span class="screening-card-desc">Para preocupacion y temor que afectan la vida cotidiana.</span>
+      <span class="screening-card-action">Open test</span>
+    </a>
+    <a class="screening-card reveal" href="https://screening.mhanational.org/screening-tools/survey-what-makes-a-good-day/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">MHA survey</span>
+      <span class="screening-card-title">Survey: What Makes a Good Day?</span>
+      <span class="screening-card-desc">A survey about what helps people have more good days.</span>
+      <span class="screening-card-action">Open survey</span>
+    </a>
+    <a class="screening-card reveal" href="https://screening.mhanational.org/screening-tools/psychedelics-mental-health-survey/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">MHA survey</span>
+      <span class="screening-card-title">Psychedelics &amp; Mental Health Survey</span>
+      <span class="screening-card-desc">A survey about opinions on psychedelics and mental health.</span>
+      <span class="screening-card-action">Open survey</span>
+    </a>
+    <a class="screening-card reveal" href="https://screening.mhanational.org/screening-tools/ai-mental-health-survey/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">MHA survey</span>
+      <span class="screening-card-title">AI &amp; Mental Health Survey</span>
+      <span class="screening-card-desc">A survey about opinions on artificial intelligence and mental health.</span>
+      <span class="screening-card-action">Open survey</span>
+    </a>
+    <a class="screening-card reveal" href="https://screening.mhanational.org/screening-tools/self-injury-survey/" target="_blank" rel="noopener">
+      <span class="screening-card-tag">MHA survey</span>
+      <span class="screening-card-title">Self-Injury Survey</span>
+      <span class="screening-card-desc">A survey for people who have hurt themselves on purpose without trying to die.</span>
+      <span class="screening-card-action">Open survey</span>
+    </a>
+  </div>
+  <div class="hama-heading">
+    <div class="section-eyebrow">On-page scorer</div>
+    <h2 class="section-title">Hamilton Anxiety Rating Scale</h2>
+    <p class="section-subtitle">Rate each item from 0 to 4. This HAM-A score tool is informational and intended to support, not replace, assessment by a qualified clinician.</p>
+  </div>
   <div class="test-layout">
     <form class="test-form" id="hama-form">
       <div class="test-item reveal">
