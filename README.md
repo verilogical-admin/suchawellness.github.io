@@ -29,8 +29,16 @@ environment variables/secrets:
 - `RAZORPAY_KEY_SECRET`
 - `RAZORPAY_SUCHA_JOURNAL_PLAN_ID` for the recurring `$5/month` Journal subscription, recommended
 - `SUCHA_JOURNAL_CURRENCY` and `SUCHA_JOURNAL_AMOUNT_MINOR` only if using the fallback order flow
+- `SUCHA_ADMIN_TOKEN` for `/admin.html` dashboard API access
+- `SUCHA_ADMIN_KV` bound to a Cloudflare KV namespace for coupons and analytics
 
 The subscription plan should represent the Sucha Journal price of `$5/month`. If the plan
 ID is missing, the Worker falls back to a standard Razorpay order endpoint. The UI presents
 a 30-day money-back guarantee and directs cancellation/refund/support questions to
 `support@suchawellness.com`.
+
+The Worker also supports five one-time premium coupons. Coupon status is stored in KV,
+so coupons can be redeemed once and revoked anytime from `/admin.html`. The admin page
+also shows coarse usage analytics: page views, screening tool usage, journal events, and
+Cloudflare-provided country/region summaries. Journal text and screening answers are not
+sent to analytics.

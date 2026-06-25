@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Sucha Admin</title>
+<style>
+  :root {
+    --cream: #F5F2EB;
+    --teal: #2D7A6B;
+    --text: #171717;
+    --muted: #4E534A;
+    --line: rgba(45,122,107,0.22);
+    --white: #fff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--cream);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.5;
+  }
+  main { max-width: 1120px; margin: 0 auto; padding: 2rem; }
+  h1, h2 { color: var(--teal); font-weight: 600; margin: 0 0 0.8rem; }
+  section {
+    background: rgba(255,255,255,0.78);
+    border: 1px solid var(--line);
+    margin: 1rem 0;
+    padding: 1rem;
+  }
+  .toolbar, .grid { display: grid; gap: 0.75rem; }
+  .toolbar { grid-template-columns: minmax(0, 1fr) auto; }
+  input, button {
+    border: 1px solid var(--line);
+    font: inherit;
+    min-height: 42px;
+    padding: 0.65rem 0.8rem;
+  }
+  button {
+    background: var(--teal);
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  button.secondary { background: transparent; color: var(--teal); }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border-bottom: 1px solid var(--line); padding: 0.7rem; text-align: left; vertical-align: top; }
+  th { color: var(--teal); font-size: 0.78rem; text-transform: uppercase; }
+  code { overflow-wrap: anywhere; }
+  .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; }
+  .card { border: 1px solid var(--line); background: var(--white); padding: 0.85rem; }
+  .label { color: var(--muted); font-size: 0.8rem; }
+  .value { color: var(--teal); font-size: 1.45rem; font-weight: 700; }
+  .status { color: var(--muted); min-height: 1.5rem; }
+  @media (max-width: 780px) {
+    main { padding: 1rem; }
+    .toolbar, .cards { grid-template-columns: 1fr; }
+    table { display: block; overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Sucha Admin</h1>
+  <p class="status" id="status">Enter the admin token configured in the Worker.</p>
+
+  <section>
+    <h2>Access</h2>
+    <div class="toolbar">
+      <input id="token" type="password" placeholder="Admin token">
+      <button id="load" type="button">Load dashboard</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Coupons</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Coupon</th>
+          <th>Status</th>
+          <th>Used by</th>
+          <th>Updated</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="coupons">
+        <tr><td colspan="5">Load dashboard to view coupons.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Usage Analytics</h2>
+    <div class="cards" id="totals"></div>
+    <div class="grid" id="analytics"></div>
+  </section>
+</main>
+
+<script>
+const tokenInput = document.querySelector('#token');
+const loadButton = document.querySelector('#load');
+const statusEl = document.querySelector('#status');
+const couponsEl = document.querySelector('#coupons');
+const totalsEl = document.querySelector('#totals');
+const analyticsEl = document.querySelector('#analytics');
+
+tokenInput.value = sessionStorage.getItem('sucha-admin-token') || '';
+
+function authHeaders() {
+  return { Authorization: `Bearer ${tokenInput.value.trim()}` };
+}
+
+function setStatus(message) {
+  statusEl.textContent = message;
+}
+
+function fmt(value) {
+  return value ? new Date(value).toLocaleString() : '-';
+}
+
+function sumObject(object = {}) {
+  return Object.values(object).reduce((total, value) => total + Number(value || 0), 0);
+}
+
+function renderCoupons(coupons) {
+  couponsEl.replaceChildren();
+  coupons.forEach((coupon) => {
+    const row = document.createElement('tr');
+    const status = coupon.revoked ? 'Revoked' : coupon.usedAt ? 'Used' : 'Available';
+    row.innerHTML = `
+      <td><strong>${coupon.id}</strong><br><code>${coupon.hash}</code></td>
+      <td>${status}</td>
+      <td>${coupon.usedBy || '-'}</td>
+      <td>${fmt(coupon.revokedAt || coupon.usedAt || coupon.updatedAt)}</td>
+      <td></td>
+    `;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = coupon.revoked ? 'Revoked' : 'Revoke';
+    button.disabled = !!coupon.revoked;
+    button.className = 'secondary';
+    button.addEventListener('click', () => revokeCoupon(coupon.hash));
+    row.lastElementChild.append(button);
+    couponsEl.append(row);
+  });
+}
+
+function topEntries(object = {}, limit = 6) {
+  return Object.entries(object)
+    .sort((a, b) => Number(b[1]) - Number(a[1]))
+    .slice(0, limit)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join('<br>') || '-';
+}
+
+function renderAnalytics(days) {
+  const totals = days.reduce((acc, day) => {
+    acc.views += day.events?.page_view || 0;
+    acc.tests += sumObject(day.tests);
+    acc.journal += sumObject(day.journal);
+    acc.events += day.total || 0;
+    return acc;
+  }, { views: 0, tests: 0, journal: 0, events: 0 });
+
+  totalsEl.innerHTML = `
+    <div class="card"><div class="label">Page views</div><div class="value">${totals.views}</div></div>
+    <div class="card"><div class="label">Test interactions</div><div class="value">${totals.tests}</div></div>
+    <div class="card"><div class="label">Journal events</div><div class="value">${totals.journal}</div></div>
+    <div class="card"><div class="label">All events</div><div class="value">${totals.events}</div></div>
+  `;
+
+  analyticsEl.replaceChildren();
+  days.forEach((day) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <strong>${day.date}</strong>
+      <p class="label">Events</p>
+      <p>${topEntries(day.events)}</p>
+      <p class="label">Countries</p>
+      <p>${topEntries(day.countries)}</p>
+      <p class="label">Tests</p>
+      <p>${topEntries(day.tests)}</p>
+      <p class="label">Journal</p>
+      <p>${topEntries(day.journal)}</p>
+    `;
+    analyticsEl.append(card);
+  });
+}
+
+async function loadDashboard() {
+  const token = tokenInput.value.trim();
+  if (!token) {
+    setStatus('Enter the admin token first.');
+    return;
+  }
+  sessionStorage.setItem('sucha-admin-token', token);
+  setStatus('Loading dashboard...');
+  const response = await fetch('/api/admin/summary', { headers: authHeaders() });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || 'Could not load admin dashboard.');
+  renderCoupons(data.coupons || []);
+  renderAnalytics(data.analytics || []);
+  setStatus('Dashboard loaded.');
+}
+
+async function revokeCoupon(hash) {
+  if (!confirm('Revoke this coupon? This cannot be undone from the page.')) return;
+  const response = await fetch('/api/admin/coupons/revoke', {
+    method: 'POST',
+    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ hash }),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || 'Could not revoke coupon.');
+  await loadDashboard();
+}
+
+loadButton.addEventListener('click', () => {
+  loadDashboard().catch((error) => setStatus(error.message));
+});
+</script>
+</body>
+</html>

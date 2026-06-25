@@ -106,6 +106,33 @@ function addReadabilityStyles() {
 
 addReadabilityStyles();
 
+function trackSuchaEvent(event, detail = {}) {
+  const payload = JSON.stringify({
+    event,
+    ...detail,
+    path: location.pathname,
+    width: window.innerWidth,
+    ts: new Date().toISOString(),
+  });
+
+  try {
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon('/api/analytics/track', new Blob([payload], { type: 'application/json' }));
+      return;
+    }
+    fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+      keepalive: true,
+    }).catch(() => {});
+  } catch {
+    // Analytics should never interrupt care tools.
+  }
+}
+
+trackSuchaEvent('page_view');
+
 const reveals = document.querySelectorAll('.reveal');
 
 const observer = new IntersectionObserver((entries) => {
@@ -664,9 +691,11 @@ function ensureJournalMarkup() {
           <div class="journal-premium-grid">
             <input id="journal-billing-email" type="email" placeholder="Email for premium and support">
             <input id="journal-premium-password" type="password" placeholder="Journal password">
+            <input id="journal-coupon-code" type="text" placeholder="One-time coupon code">
           </div>
           <div class="journal-premium-actions">
             <button class="journal-premium-button" type="button" id="journal-trial-button">Upgrade to premium</button>
+            <button class="journal-premium-button secondary" type="button" id="journal-coupon-button">Redeem coupon</button>
             <button class="journal-premium-button secondary" type="button" id="journal-unlock-button">Unlock</button>
           </div>
           <p class="journal-note" id="journal-premium-status">Free journal stays easy to use. Upgrade only if you want password protection and encryption.</p>
@@ -744,9 +773,11 @@ function ensureJournalPremiumMarkup() {
       <div class="journal-premium-grid">
         <input id="journal-billing-email" type="email" placeholder="Email for premium and support">
         <input id="journal-premium-password" type="password" placeholder="Journal password">
+        <input id="journal-coupon-code" type="text" placeholder="One-time coupon code">
       </div>
       <div class="journal-premium-actions">
         <button class="journal-premium-button" type="button" id="journal-trial-button">Upgrade to premium</button>
+        <button class="journal-premium-button secondary" type="button" id="journal-coupon-button">Redeem coupon</button>
         <button class="journal-premium-button secondary" type="button" id="journal-unlock-button">Unlock</button>
       </div>
       <p class="journal-note" id="journal-premium-status">Free journal stays easy to use. Upgrade only if you want password protection and encryption.</p>
@@ -1162,6 +1193,7 @@ function renderScreeningTest(key) {
   screeningPanel.hidden = false;
   screeningPanel.classList.add('visible');
   screeningPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  trackSuchaEvent('test_opened', { test: key });
 }
 
 screeningCards.forEach((card) => {
@@ -1172,6 +1204,7 @@ screeningForm?.addEventListener('submit', (event) => {
   event.preventDefault();
   if (!activeScreeningKey) return;
   showScreeningResult(screeningTests[activeScreeningKey]);
+  trackSuchaEvent('test_submitted', { test: activeScreeningKey });
 });
 
 screeningClose?.addEventListener('click', () => {
@@ -1286,8 +1319,10 @@ const journalPrivate = document.querySelector('#journal-private');
 const journalLock = document.querySelector('#journal-lock');
 const journalBillingEmail = document.querySelector('#journal-billing-email');
 const journalPremiumPassword = document.querySelector('#journal-premium-password');
+const journalCouponCode = document.querySelector('#journal-coupon-code');
 const journalUnlockPassword = document.querySelector('#journal-unlock-password');
 const journalTrialButton = document.querySelector('#journal-trial-button');
+const journalCouponButton = document.querySelector('#journal-coupon-button');
 const journalUnlockButton = document.querySelector('#journal-unlock-button');
 const journalLockUnlockButton = document.querySelector('#journal-lock-unlock-button');
 const journalPremiumStatus = document.querySelector('#journal-premium-status');
@@ -1499,6 +1534,7 @@ function renderJournalEntries() {
       try {
         await writeJournalEntries(nextEntries);
         setJournalStatus(journalVaultState.unlocked ? 'Encrypted entry deleted.' : 'Entry deleted.');
+        trackSuchaEvent('journal_entry_deleted', { mode: journalVaultState.unlocked ? 'premium' : 'free' });
         renderJournalEntries();
       } catch (error) {
         setJournalStatus(error.message || 'Could not delete entry.');
@@ -1732,6 +1768,45 @@ async function startJournalPremiumTrial() {
   }
 }
 
+async function redeemJournalCoupon() {
+  const email = normalizeJournalEmail(journalBillingEmail?.value || '');
+  const password = journalPremiumPassword?.value || '';
+  const code = journalCouponCode?.value.trim().toUpperCase() || '';
+  if (!email) throw new Error('Enter an email for premium and support.');
+  if (!password || password.length < 8) throw new Error('Choose a journal password of at least 8 characters.');
+  if (!code) throw new Error('Enter a coupon code.');
+
+  journalCouponButton.disabled = true;
+  setJournalPremiumStatus('Checking coupon...');
+  trackSuchaEvent('coupon_attempt');
+  try {
+    const response = await fetch('/api/sucha-journal/redeem-coupon', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, email }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.ok === false) throw new Error(data.error || 'Coupon could not be redeemed.');
+    saveJournalAccess({
+      source: data.source || 'admin_coupon',
+      planId: data.planId || journalPlanId,
+      email: data.email || email,
+      couponHash: data.couponHash,
+      redeemedAt: Date.now(),
+      expiresAt: Number(data.expiresAt || (Date.now() + 365 * 24 * 60 * 60 * 1000)),
+      price: 'Coupon',
+    });
+    await openJournalVault(password, { createIfMissing: true });
+    journalCouponCode.value = '';
+    setJournalPremiumStatus('Coupon redeemed. Encrypted vault unlocked.');
+    trackSuchaEvent('coupon_redeemed');
+    updateJournalGate();
+    renderJournalEntries();
+  } finally {
+    journalCouponButton.disabled = false;
+  }
+}
+
 async function unlockJournalFromInput(input) {
   const password = input?.value || '';
   await openJournalVault(password, { createIfMissing: false });
@@ -1757,6 +1832,7 @@ if (journalForm && journalTitle && journalMood && journalBody) {
       await writeJournalEntries([entry, ...readJournalEntries()]);
       journalForm.reset();
       setJournalStatus(journalVaultState.unlocked ? 'Encrypted entry saved in this browser.' : 'Entry saved locally in this browser.');
+      trackSuchaEvent('journal_entry_saved', { mode: journalVaultState.unlocked ? 'premium' : 'free' });
       renderJournalEntries();
     } catch (error) {
       setJournalStatus(error.message || 'Could not save encrypted entry.');
@@ -1771,14 +1847,21 @@ if (journalForm && journalTitle && journalMood && journalBody) {
 }
 
 journalTrialButton?.addEventListener('click', () => {
+  trackSuchaEvent('premium_upgrade_click');
   startJournalPremiumTrial().catch((error) => setJournalPremiumStatus(error.message || 'Could not start premium.'));
 });
 
+journalCouponButton?.addEventListener('click', () => {
+  redeemJournalCoupon().catch((error) => setJournalPremiumStatus(error.message || 'Could not redeem coupon.'));
+});
+
 journalUnlockButton?.addEventListener('click', () => {
+  trackSuchaEvent('journal_unlock_click');
   unlockJournalFromInput(journalPremiumPassword).catch((error) => setJournalPremiumStatus(error.message || 'Could not unlock journal.'));
 });
 
 journalLockUnlockButton?.addEventListener('click', () => {
+  trackSuchaEvent('journal_unlock_click');
   unlockJournalFromInput(journalUnlockPassword).catch((error) => setJournalPremiumStatus(error.message || 'Could not unlock journal.'));
 });
 
