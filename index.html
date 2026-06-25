@@ -21,8 +21,10 @@
     --teal: #4BAF9C;
     --teal-dark: #2D7A6B;
     --teal-light: #9DD4C9;
-    --text: #2A2A2A;
-    --muted: #7A7A6E;
+    --text: #171717;
+    --muted: #4E534A;
+    --body-copy: 1rem;
+    --mobile-copy: 1.03rem;
     --lavender: #EDE9F8;
     --lav-dark: #4A3F6B;
     --white: #FFFFFF;
@@ -35,8 +37,8 @@
     background: var(--cream);
     color: var(--text);
     font-family: 'Jost', sans-serif;
-    font-weight: 300;
-    line-height: 1.7;
+    font-weight: 400;
+    line-height: 1.75;
     overflow-x: hidden;
   }
 
@@ -88,7 +90,7 @@
     font-weight: 400;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: #3f463f;
     transition: color 0.3s;
   }
 
@@ -141,7 +143,7 @@
   .hero h1 {
     font-family: 'Cormorant Garamond', serif;
     font-size: clamp(2.8rem, 5vw, 4.2rem);
-    font-weight: 300;
+    font-weight: 400;
     line-height: 1.15;
     color: var(--text);
     margin-bottom: 1.5rem;
@@ -153,8 +155,9 @@
   }
 
   .hero-sub {
-    font-size: 1rem;
+    font-size: var(--body-copy);
     color: var(--muted);
+    font-weight: 400;
     max-width: 440px;
     line-height: 1.8;
     margin-bottom: 2.5rem;
@@ -262,7 +265,7 @@
   .stat-num {
     font-family: 'Cormorant Garamond', serif;
     font-size: 2.8rem;
-    font-weight: 300;
+    font-weight: 400;
     color: var(--teal-light);
     line-height: 1;
     margin-bottom: 0.4rem;
@@ -310,7 +313,8 @@
     color: var(--muted);
     max-width: 560px;
     margin-bottom: 3rem;
-    font-size: 0.95rem;
+    font-size: var(--body-copy);
+    font-weight: 400;
   }
 
   /* ── HOW IT WORKS ── */
@@ -355,8 +359,9 @@
   }
 
   .step-body {
-    font-size: 0.88rem;
+    font-size: var(--body-copy);
     color: var(--muted);
+    font-weight: 400;
     line-height: 1.8;
   }
 
@@ -533,7 +538,8 @@
 
   .screening-card-desc {
     color: var(--muted);
-    font-size: 0.84rem;
+    font-size: 0.95rem;
+    font-weight: 400;
     line-height: 1.7;
     margin-bottom: 1rem;
   }
@@ -577,7 +583,8 @@
 
   .inline-test-desc {
     color: var(--muted);
-    font-size: 0.92rem;
+    font-size: var(--body-copy);
+    font-weight: 400;
     line-height: 1.7;
     max-width: 720px;
   }
@@ -614,6 +621,7 @@
     cursor: pointer;
     display: flex;
     font-size: 0.72rem;
+    font-weight: 500;
     justify-content: center;
     line-height: 1.25;
     min-height: 56px;
@@ -711,7 +719,8 @@
 
   .test-item-desc {
     color: var(--muted);
-    font-size: 0.86rem;
+    font-size: 0.96rem;
+    font-weight: 400;
     margin-bottom: 1rem;
   }
 
@@ -749,7 +758,7 @@
 
   .rating-label {
     font-size: 0.62rem;
-    font-weight: 400;
+    font-weight: 500;
     letter-spacing: 0.08em;
     line-height: 1.2;
     text-transform: uppercase;
@@ -794,7 +803,8 @@
   .score-note,
   .test-disclaimer {
     color: var(--muted);
-    font-size: 0.85rem;
+    font-size: 0.96rem;
+    font-weight: 400;
     line-height: 1.75;
   }
 
@@ -866,7 +876,8 @@
   .journal-entry-preview,
   .journal-entry-meta {
     color: var(--muted);
-    font-size: 0.86rem;
+    font-size: 0.96rem;
+    font-weight: 400;
     line-height: 1.7;
   }
 
@@ -886,6 +897,7 @@
     color: var(--muted);
     display: block;
     font-size: 0.68rem;
+    font-weight: 500;
     letter-spacing: 0.15em;
     text-transform: uppercase;
   }
@@ -945,6 +957,8 @@
     border: 1px solid var(--border);
     color: var(--text);
     font-family: 'Jost', sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
     padding: 0.8rem;
     width: 100%;
   }
@@ -1173,6 +1187,66 @@
     .score-panel { position: static; }
     .rating-options { grid-template-columns: repeat(5, minmax(48px, 1fr)); overflow-x: auto; }
     footer { flex-direction: column; text-align: center; padding: 1.5rem; }
+  }
+
+  @media (max-width: 640px) {
+    body {
+      color: #141414;
+      font-weight: 400;
+      line-height: 1.78;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    .section-title,
+    .hero h1,
+    .inline-test-title,
+    .test-item-title,
+    .journal-sidebar h3,
+    .journal-panel h3 {
+      color: #1f423c;
+      font-weight: 500;
+    }
+
+    .hero-sub,
+    .section-subtitle,
+    .step-body,
+    .why-body,
+    .screening-card-desc,
+    .inline-test-desc,
+    .test-item-desc,
+    .score-note,
+    .test-disclaimer,
+    .journal-sidebar p,
+    .journal-note,
+    .journal-empty,
+    .journal-entry-preview,
+    .journal-entry-meta {
+      color: #373d36;
+      font-size: var(--mobile-copy);
+      font-weight: 400;
+      line-height: 1.75;
+    }
+
+    .screening-card {
+      background: rgba(255,255,255,0.74);
+      min-height: 0;
+    }
+
+    .inline-options label,
+    .rating-options label {
+      color: #2f3935;
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+
+    .screening-card-tag,
+    .screening-card-action,
+    .score-label,
+    .journal-stat span {
+      color: #245e54;
+      font-weight: 500;
+    }
   }
 </style>
 </head>
@@ -1637,6 +1711,6 @@
   <a href="mailto:support@suchawellness.com">support@suchawellness.com</a>
 </footer>
 
-<script src="/site.js?v=d729881" defer></script>
+<script src="/site.js?v=readability-1" defer></script>
 </body>
 </html>

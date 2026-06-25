@@ -1,3 +1,111 @@
+function addReadabilityStyles() {
+  document.querySelector('#sucha-readability-styles')?.remove();
+
+  const style = document.createElement('style');
+  style.id = 'sucha-readability-styles';
+  style.textContent = `
+    :root {
+      --text: #171717;
+      --muted: #4E534A;
+      --body-copy: 1rem;
+      --mobile-copy: 1.03rem;
+    }
+    body {
+      color: var(--text);
+      font-weight: 400;
+      line-height: 1.75;
+    }
+    .nav-links a { color: #3f463f; }
+    .hero h1,
+    .section-title { font-weight: 400; }
+    .hero-sub,
+    .section-subtitle,
+    .step-body,
+    .why-body,
+    .screening-card-desc,
+    .inline-test-desc,
+    .test-item-desc,
+    .score-note,
+    .test-disclaimer,
+    .journal-sidebar p,
+    .journal-note,
+    .journal-empty,
+    .journal-entry-preview,
+    .journal-entry-meta {
+      color: var(--muted);
+      font-size: var(--body-copy);
+      font-weight: 400;
+    }
+    .inline-options label,
+    .rating-options label,
+    .rating-label,
+    .journal-stat span {
+      font-weight: 500;
+    }
+    .journal-search,
+    .journal-composer input,
+    .journal-composer textarea,
+    .journal-composer select {
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 400;
+    }
+    @media (max-width: 640px) {
+      body {
+        color: #141414;
+        line-height: 1.78;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+      .section-title,
+      .hero h1,
+      .inline-test-title,
+      .test-item-title,
+      .journal-sidebar h3,
+      .journal-panel h3 {
+        color: #1f423c;
+        font-weight: 500;
+      }
+      .hero-sub,
+      .section-subtitle,
+      .step-body,
+      .why-body,
+      .screening-card-desc,
+      .inline-test-desc,
+      .test-item-desc,
+      .score-note,
+      .test-disclaimer,
+      .journal-sidebar p,
+      .journal-note,
+      .journal-empty,
+      .journal-entry-preview,
+      .journal-entry-meta {
+        color: #373d36;
+        font-size: var(--mobile-copy);
+        line-height: 1.75;
+      }
+      .screening-card {
+        background: rgba(255,255,255,0.74);
+        min-height: 0;
+      }
+      .inline-options label,
+      .rating-options label {
+        color: #2f3935;
+        font-size: 0.82rem;
+      }
+      .screening-card-tag,
+      .screening-card-action,
+      .score-label,
+      .journal-stat span {
+        color: #245e54;
+      }
+    }
+  `;
+  document.head.append(style);
+}
+
+addReadabilityStyles();
+
 const reveals = document.querySelectorAll('.reveal');
 
 const observer = new IntersectionObserver((entries) => {
@@ -521,6 +629,7 @@ function ensureJournalMarkup() {
 }
 
 ensureJournalMarkup();
+addReadabilityStyles();
 
 const screeningTests = {
   universal: {
