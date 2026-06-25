@@ -27,9 +27,10 @@ environment variables/secrets:
 
 - `RAZORPAY_KEY_ID`
 - `RAZORPAY_KEY_SECRET`
-- `RAZORPAY_SUCHA_JOURNAL_PLAN_ID` for a real 30-day subscription trial, recommended
+- `RAZORPAY_SUCHA_JOURNAL_PLAN_ID` for the recurring `$5/month` Journal subscription, recommended
 - `SUCHA_JOURNAL_CURRENCY` and `SUCHA_JOURNAL_AMOUNT_MINOR` only if using the fallback order flow
 
 The subscription plan should represent the Sucha Journal price of `$5/month`. If the plan
-ID is missing, the Worker falls back to a standard Razorpay order endpoint and grants a
-30-day local trial after signature verification.
+ID is missing, the Worker falls back to a standard Razorpay order endpoint. The UI presents
+a 30-day money-back guarantee and directs cancellation/refund/support questions to
+`support@suchawellness.com`.

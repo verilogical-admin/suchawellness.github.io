@@ -10,7 +10,7 @@ const SECURITY_HEADERS = {
 
 const JOURNAL_PLAN_ID = 'journal_monthly_5';
 const JOURNAL_PRODUCT = 'SuchaJournal';
-const TRIAL_DAYS = 30;
+const GUARANTEE_DAYS = 30;
 
 function json(data, init = {}) {
   return new Response(JSON.stringify(data), {
@@ -68,7 +68,8 @@ async function createSuchaJournalCheckout(request, env) {
   }
 
   const now = Date.now();
-  const trialEndsAt = now + TRIAL_DAYS * 24 * 60 * 60 * 1000;
+  const guaranteeEndsAt = now + GUARANTEE_DAYS * 24 * 60 * 60 * 1000;
+  const accessExpiresAt = now + 31 * 24 * 60 * 60 * 1000;
   const subscriptionPlanId = env.RAZORPAY_SUCHA_JOURNAL_PLAN_ID;
 
   if (subscriptionPlanId) {
@@ -83,12 +84,12 @@ async function createSuchaJournalCheckout(request, env) {
         total_count: Number(env.SUCHA_JOURNAL_SUBSCRIPTION_COUNT || 120),
         quantity: 1,
         customer_notify: 1,
-        start_at: Math.floor(trialEndsAt / 1000),
         notes: {
           product: JOURNAL_PRODUCT,
           planId: JOURNAL_PLAN_ID,
           email,
-          trialDays: String(TRIAL_DAYS),
+          guaranteeDays: String(GUARANTEE_DAYS),
+          supportEmail: 'support@suchawellness.com',
         },
       }),
     });
@@ -98,8 +99,8 @@ async function createSuchaJournalCheckout(request, env) {
       mode: 'subscription',
       keyId: env.RAZORPAY_KEY_ID,
       subscriptionId: data.id,
-      trialEndsAt,
-      billingStartsAt: trialEndsAt,
+      guaranteeEndsAt,
+      expiresAt: accessExpiresAt,
     });
   }
 
@@ -119,8 +120,9 @@ async function createSuchaJournalCheckout(request, env) {
         product: JOURNAL_PRODUCT,
         planId: JOURNAL_PLAN_ID,
         email,
-        trialDays: String(TRIAL_DAYS),
+        guaranteeDays: String(GUARANTEE_DAYS),
         price: '$5/month',
+        supportEmail: 'support@suchawellness.com',
       },
     }),
   });
@@ -132,8 +134,8 @@ async function createSuchaJournalCheckout(request, env) {
     orderId: data.id,
     amount: data.amount,
     currency: data.currency,
-    trialEndsAt,
-    billingStartsAt: trialEndsAt,
+    guaranteeEndsAt,
+    expiresAt: accessExpiresAt,
   });
 }
 
@@ -160,19 +162,19 @@ async function verifySuchaJournalCheckout(request, env) {
   }
 
   const now = Date.now();
-  const trialEndsAt = now + TRIAL_DAYS * 24 * 60 * 60 * 1000;
+  const guaranteeEndsAt = now + GUARANTEE_DAYS * 24 * 60 * 60 * 1000;
+  const accessExpiresAt = now + 31 * 24 * 60 * 60 * 1000;
   return json({
     ok: true,
-    source: mode === 'subscription' ? 'razorpay_subscription_trial' : 'razorpay_order_trial',
+    source: mode === 'subscription' ? 'razorpay_subscription' : 'razorpay_order',
     planId: JOURNAL_PLAN_ID,
     product: JOURNAL_PRODUCT,
     email,
     razorpayPaymentId: body.razorpay_payment_id,
     razorpaySubscriptionId: body.razorpay_subscription_id,
     razorpayOrderId: body.razorpay_order_id,
-    trialEndsAt,
-    expiresAt: trialEndsAt,
-    billingStartsAt: trialEndsAt,
+    guaranteeEndsAt,
+    expiresAt: accessExpiresAt,
   });
 }
 

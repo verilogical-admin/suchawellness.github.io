@@ -656,18 +656,19 @@ function ensureJournalMarkup() {
           <div class="journal-stat"><span>This week</span><strong id="journal-week">0</strong></div>
         </div>
         <div class="journal-premium">
-          <div class="journal-premium-badge">Premium encrypted vault</div>
-          <div class="journal-premium-title">$5/month after a 30-day free trial</div>
-          <p class="journal-note">Set a journal password and entries are encrypted before storage. Trial starts after Razorpay verifies UPI or card details.</p>
+          <div class="journal-premium-badge">Optional premium vault</div>
+          <div class="journal-premium-title">$5/month with a 30-day money-back guarantee</div>
+          <p class="journal-note">Your journal is currently stored locally only. If you want more security and privacy, premium adds a password-protected encrypted vault.</p>
+          <p class="journal-note">Cancel anytime. For cancellation, refund, or support help, email <a href="mailto:support@suchawellness.com">support@suchawellness.com</a>.</p>
           <div class="journal-premium-grid">
-            <input id="journal-billing-email" type="email" placeholder="Email for trial and billing">
+            <input id="journal-billing-email" type="email" placeholder="Email for premium and support">
             <input id="journal-premium-password" type="password" placeholder="Journal password">
           </div>
           <div class="journal-premium-actions">
-            <button class="journal-premium-button" type="button" id="journal-trial-button">Start 30-day trial</button>
+            <button class="journal-premium-button" type="button" id="journal-trial-button">Upgrade to premium</button>
             <button class="journal-premium-button secondary" type="button" id="journal-unlock-button">Unlock</button>
           </div>
-          <p class="journal-note" id="journal-premium-status">Premium locks entries with AES-GCM encryption in this browser.</p>
+          <p class="journal-note" id="journal-premium-status">Free journal stays easy to use. Upgrade only if you want password protection and encryption.</p>
         </div>
       </aside>
       <div class="journal-panel">
@@ -678,14 +679,14 @@ function ensureJournalMarkup() {
           </div>
           <input class="journal-search" id="journal-search" type="search" placeholder="Search entries">
         </div>
-        <div class="journal-lock" id="journal-lock">
-          <p class="journal-note">Premium encrypted journal is locked. Start the trial, then set or enter your journal password.</p>
+        <div class="journal-lock" id="journal-lock" hidden>
+          <p class="journal-note">Premium encrypted vault is locked. Enter your journal password to view encrypted entries.</p>
           <div class="journal-lock-row">
             <input id="journal-unlock-password" type="password" placeholder="Journal password">
             <button class="journal-premium-button secondary" type="button" id="journal-lock-unlock-button">Unlock</button>
           </div>
         </div>
-        <div class="journal-private" id="journal-private" hidden>
+        <div class="journal-private" id="journal-private">
           <form class="journal-composer" id="journal-form">
             <div class="journal-row">
               <input id="journal-title" type="text" placeholder="Title or moment" required>
@@ -703,7 +704,7 @@ function ensureJournalMarkup() {
               <span class="journal-note" id="journal-status">Ready when you are.</span>
               <div>
                 <button class="journal-clear" type="reset">Clear</button>
-                <button class="journal-save" type="submit">Save encrypted entry</button>
+                <button class="journal-save" type="submit">Save entry</button>
               </div>
             </div>
           </form>
@@ -734,18 +735,19 @@ function ensureJournalPremiumMarkup() {
     const premium = document.createElement('div');
     premium.className = 'journal-premium';
     premium.innerHTML = `
-      <div class="journal-premium-badge">Premium encrypted vault</div>
-      <div class="journal-premium-title">$5/month after a 30-day free trial</div>
-      <p class="journal-note">Set a journal password and entries are encrypted before storage. Trial starts after Razorpay verifies UPI or card details.</p>
+      <div class="journal-premium-badge">Optional premium vault</div>
+      <div class="journal-premium-title">$5/month with a 30-day money-back guarantee</div>
+      <p class="journal-note">Your journal is currently stored locally only. If you want more security and privacy, premium adds a password-protected encrypted vault.</p>
+      <p class="journal-note">Cancel anytime. For cancellation, refund, or support help, email <a href="mailto:support@suchawellness.com">support@suchawellness.com</a>.</p>
       <div class="journal-premium-grid">
-        <input id="journal-billing-email" type="email" placeholder="Email for trial and billing">
+        <input id="journal-billing-email" type="email" placeholder="Email for premium and support">
         <input id="journal-premium-password" type="password" placeholder="Journal password">
       </div>
       <div class="journal-premium-actions">
-        <button class="journal-premium-button" type="button" id="journal-trial-button">Start 30-day trial</button>
+        <button class="journal-premium-button" type="button" id="journal-trial-button">Upgrade to premium</button>
         <button class="journal-premium-button secondary" type="button" id="journal-unlock-button">Unlock</button>
       </div>
-      <p class="journal-note" id="journal-premium-status">Premium locks entries with AES-GCM encryption in this browser.</p>
+      <p class="journal-note" id="journal-premium-status">Free journal stays easy to use. Upgrade only if you want password protection and encryption.</p>
     `;
     sidebar.append(premium);
   }
@@ -758,7 +760,7 @@ function ensureJournalPremiumMarkup() {
     lock.className = 'journal-lock';
     lock.id = 'journal-lock';
     lock.innerHTML = `
-      <p class="journal-note">Premium encrypted journal is locked. Start the trial, then set or enter your journal password.</p>
+      <p class="journal-note">Premium encrypted vault is locked. Enter your journal password to view encrypted entries.</p>
       <div class="journal-lock-row">
         <input id="journal-unlock-password" type="password" placeholder="Journal password">
         <button class="journal-premium-button secondary" type="button" id="journal-lock-unlock-button">Unlock</button>
@@ -767,11 +769,11 @@ function ensureJournalPremiumMarkup() {
     const privateArea = document.createElement('div');
     privateArea.className = 'journal-private';
     privateArea.id = 'journal-private';
-    privateArea.hidden = true;
+    privateArea.hidden = false;
     form.before(lock);
     lock.after(privateArea);
     privateArea.append(form, list);
-    form.querySelector('.journal-save')?.replaceChildren(document.createTextNode('Save encrypted entry'));
+    form.querySelector('.journal-save')?.replaceChildren(document.createTextNode('Save entry'));
   }
 }
 
@@ -1266,7 +1268,7 @@ const journalVaultStorageKey = 'sucha-journal-vault:v1';
 const journalAccessStorageKey = 'sucha-journal-premium-access:v1';
 const journalPlanId = 'journal_monthly_5';
 const journalProduct = 'SuchaJournal';
-const journalTrialDays = 30;
+const journalGuaranteeDays = 30;
 const journalMonthlyPrice = '$5/month';
 const journalForm = document.querySelector('#journal-form');
 const journalTitle = document.querySelector('#journal-title');
@@ -1310,6 +1312,10 @@ function readLegacyJournalEntries() {
   } catch {
     return [];
   }
+}
+
+function writeLegacyJournalEntries(entries) {
+  localStorage.setItem(journalLegacyStorageKey, JSON.stringify(entries));
 }
 
 function readJournalAccess() {
@@ -1410,7 +1416,15 @@ async function writeEncryptedJournalEntries(entries) {
 }
 
 function readJournalEntries() {
-  return journalVaultState.unlocked ? journalVaultState.entries : [];
+  return journalVaultState.unlocked ? journalVaultState.entries : readLegacyJournalEntries();
+}
+
+async function writeJournalEntries(entries) {
+  if (journalVaultState.unlocked) {
+    await writeEncryptedJournalEntries(entries);
+    return;
+  }
+  writeLegacyJournalEntries(entries);
 }
 
 function formatJournalDate(value) {
@@ -1481,8 +1495,8 @@ function renderJournalEntries() {
     remove.addEventListener('click', async () => {
       const nextEntries = readJournalEntries().filter((item) => item.id !== entry.id);
       try {
-        await writeEncryptedJournalEntries(nextEntries);
-        setJournalStatus('Encrypted entry deleted.');
+        await writeJournalEntries(nextEntries);
+        setJournalStatus(journalVaultState.unlocked ? 'Encrypted entry deleted.' : 'Entry deleted.');
         renderJournalEntries();
       } catch (error) {
         setJournalStatus(error.message || 'Could not delete entry.');
@@ -1499,12 +1513,12 @@ function updateJournalGate() {
   const active = hasActiveJournalAccess();
   const vault = getJournalVaultPayload();
 
-  if (journalPrivate) journalPrivate.hidden = !journalVaultState.unlocked;
-  if (journalLock) journalLock.hidden = journalVaultState.unlocked;
+  if (journalPrivate) journalPrivate.hidden = false;
+  if (journalLock) journalLock.hidden = !vault || journalVaultState.unlocked;
 
   if (journalTrialButton) {
-    journalTrialButton.textContent = active ? 'Premium active' : 'Start 30-day trial';
-    journalTrialButton.disabled = active && !!vault;
+    journalTrialButton.textContent = active ? 'Premium active' : 'Upgrade to premium';
+    journalTrialButton.disabled = active && !!vault && journalVaultState.unlocked;
   }
 
   if (active && vault && !journalVaultState.unlocked) {
@@ -1516,10 +1530,10 @@ function updateJournalGate() {
     const date = access?.expiresAt ? formatJournalDate(access.expiresAt) : 'your renewal date';
     setJournalPremiumStatus(`Encrypted journal unlocked. Premium active until ${date}.`);
   } else {
-    setJournalPremiumStatus(`Start a 30-day premium trial with Razorpay UPI/card verification. Then ${journalMonthlyPrice}.`);
+    setJournalPremiumStatus('Your journal is currently stored locally only. Upgrade for a password-protected encrypted vault, with a 30-day money-back guarantee.');
   }
 
-  if (!journalVaultState.unlocked) renderJournalEntries();
+  renderJournalEntries();
 }
 
 async function openJournalVault(password, { createIfMissing = false } = {}) {
@@ -1527,7 +1541,7 @@ async function openJournalVault(password, { createIfMissing = false } = {}) {
     throw new Error('Encrypted journal needs HTTPS or localhost with Web Crypto support.');
   }
   if (!hasActiveJournalAccess()) {
-    throw new Error('Start the 30-day premium trial or restore premium access first.');
+    throw new Error('Upgrade to premium or restore premium access first.');
   }
   if (!password || password.length < 8) {
     throw new Error('Use a journal password of at least 8 characters.');
@@ -1545,7 +1559,7 @@ async function openJournalVault(password, { createIfMissing = false } = {}) {
     journalVaultState.entries = migratedEntries;
     journalVaultState.key = key;
     journalVaultState.unlocked = true;
-    setJournalStatus(migratedEntries.length ? 'Existing local entries migrated into the encrypted vault.' : 'Encrypted journal ready.');
+    setJournalStatus(migratedEntries.length ? 'Free journal entries migrated into the encrypted vault.' : 'Encrypted journal ready.');
     return;
   }
 
@@ -1585,7 +1599,7 @@ async function createJournalCheckout(email) {
     planId: journalPlanId,
     product: journalProduct,
     email,
-    trialDays: journalTrialDays,
+    guaranteeDays: journalGuaranteeDays,
     amountUsd: 5,
   };
 
@@ -1613,7 +1627,7 @@ async function verifyJournalCheckout(email, checkout, response) {
     planId: journalPlanId,
     product: journalProduct,
     email,
-    trialDays: journalTrialDays,
+    guaranteeDays: journalGuaranteeDays,
     checkoutMode: checkout.mode || (checkout.subscriptionId ? 'subscription' : 'order'),
     razorpay_order_id: response.razorpay_order_id,
     razorpay_payment_id: response.razorpay_payment_id,
@@ -1645,7 +1659,7 @@ async function startJournalPremiumTrial() {
 
   const email = normalizeJournalEmail(journalBillingEmail?.value || '');
   const password = journalPremiumPassword?.value || '';
-  if (!email) throw new Error('Enter an email for trial and billing.');
+  if (!email) throw new Error('Enter an email for premium and support.');
   if (!password || password.length < 8) throw new Error('Choose a journal password of at least 8 characters.');
 
   const ready = await ensureRazorpayLoaded();
@@ -1659,7 +1673,7 @@ async function startJournalPremiumTrial() {
     const options = {
       key: checkout.keyId,
       name: 'Sucha Wellness',
-      description: `Encrypted Journal - 30-day trial, then ${journalMonthlyPrice}`,
+      description: `Encrypted Journal - ${journalMonthlyPrice}, 30-day money-back guarantee`,
       prefill: { email },
       theme: { color: '#2D7A6B' },
       handler: async (response) => {
@@ -1667,16 +1681,16 @@ async function startJournalPremiumTrial() {
           setJournalPremiumStatus('Verifying Razorpay checkout...');
           const verified = await verifyJournalCheckout(email, checkout, response);
           const now = Date.now();
-          const expiresAt = Number(verified.expiresAt || verified.trialEndsAt || (now + journalTrialDays * 24 * 60 * 60 * 1000));
+          const expiresAt = Number(verified.expiresAt || (now + 31 * 24 * 60 * 60 * 1000));
           saveJournalAccess({
             source: verified.source || 'razorpay_trial',
             planId: verified.planId || journalPlanId,
             email: verified.email || email,
             paymentId: verified.razorpayPaymentId || response.razorpay_payment_id,
             subscriptionId: verified.razorpaySubscriptionId || response.razorpay_subscription_id || checkout.subscriptionId,
-            trialStartedAt: now,
+            purchasedAt: now,
             expiresAt,
-            billingStartsAt: verified.billingStartsAt || expiresAt,
+            guaranteeEndsAt: verified.guaranteeEndsAt || (now + journalGuaranteeDays * 24 * 60 * 60 * 1000),
             price: journalMonthlyPrice,
           });
           await openJournalVault(password, { createIfMissing: true });
@@ -1738,9 +1752,9 @@ if (journalForm && journalTitle && journalMood && journalBody) {
     if (!entry.title || !entry.body) return;
 
     try {
-      await writeEncryptedJournalEntries([entry, ...readJournalEntries()]);
+      await writeJournalEntries([entry, ...readJournalEntries()]);
       journalForm.reset();
-      setJournalStatus('Encrypted entry saved in this browser.');
+      setJournalStatus(journalVaultState.unlocked ? 'Encrypted entry saved in this browser.' : 'Entry saved locally in this browser.');
       renderJournalEntries();
     } catch (error) {
       setJournalStatus(error.message || 'Could not save encrypted entry.');
@@ -1755,7 +1769,7 @@ if (journalForm && journalTitle && journalMood && journalBody) {
 }
 
 journalTrialButton?.addEventListener('click', () => {
-  startJournalPremiumTrial().catch((error) => setJournalPremiumStatus(error.message || 'Could not start premium trial.'));
+  startJournalPremiumTrial().catch((error) => setJournalPremiumStatus(error.message || 'Could not start premium.'));
 });
 
 journalUnlockButton?.addEventListener('click', () => {
