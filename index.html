@@ -74,7 +74,7 @@
 
   .nav-links {
     display: flex;
-    gap: 2.5rem;
+    gap: 2rem;
     list-style: none;
   }
 
@@ -473,6 +473,158 @@
     line-height: 1.8;
   }
 
+  /* ── HAM-A TEST ── */
+  #hama-test {
+    background: var(--white);
+  }
+
+  .test-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.8fr);
+    gap: 3rem;
+    align-items: start;
+  }
+
+  .test-form {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .test-item {
+    border: 1px solid var(--border);
+    padding: 1.4rem;
+    background: rgba(245,242,235,0.35);
+  }
+
+  .test-item-head {
+    display: flex;
+    gap: 1rem;
+    align-items: baseline;
+    margin-bottom: 0.4rem;
+  }
+
+  .test-item-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    color: var(--teal);
+    line-height: 1;
+  }
+
+  .test-item-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem;
+    color: var(--teal-dark);
+  }
+
+  .test-item-desc {
+    color: var(--muted);
+    font-size: 0.86rem;
+    margin-bottom: 1rem;
+  }
+
+  .rating-options {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+  }
+
+  .rating-options label {
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--muted);
+    cursor: pointer;
+    display: grid;
+    gap: 0.25rem;
+    min-height: 62px;
+    padding: 0.65rem 0.35rem;
+    place-items: center;
+    text-align: center;
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+  }
+
+  .rating-options input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .rating-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.35rem;
+    line-height: 1;
+  }
+
+  .rating-label {
+    font-size: 0.62rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .rating-options label:has(input:checked) {
+    background: var(--teal-dark);
+    border-color: var(--teal-dark);
+    color: white;
+  }
+
+  .score-panel {
+    border: 1px solid var(--border);
+    background: var(--cream);
+    padding: 2rem;
+    position: sticky;
+    top: 6.5rem;
+  }
+
+  .score-label {
+    color: var(--muted);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .score-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 4rem;
+    color: var(--teal-dark);
+    line-height: 1;
+    margin: 0.75rem 0 0.5rem;
+  }
+
+  .score-band {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.35rem;
+    color: var(--text);
+    margin-bottom: 1rem;
+  }
+
+  .score-note,
+  .test-disclaimer {
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.75;
+  }
+
+  .score-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin: 1.5rem 0;
+  }
+
+  .test-reset {
+    background: transparent;
+    border: 1px solid var(--teal-dark);
+    color: var(--teal-dark);
+    cursor: pointer;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    padding: 0.7rem 1.2rem;
+    text-transform: uppercase;
+  }
+
   /* ── CONTACT ── */
   #contact {
     background: var(--teal-dark);
@@ -600,6 +752,9 @@
     .steps-grid, .why-grid { grid-template-columns: 1fr; }
     #about { grid-template-columns: 1fr; gap: 2.5rem; padding: 4rem 1.5rem; }
     .about-accent { display: none; }
+    .test-layout { grid-template-columns: 1fr; }
+    .score-panel { position: static; }
+    .rating-options { grid-template-columns: repeat(5, minmax(48px, 1fr)); overflow-x: auto; }
     footer { flex-direction: column; text-align: center; padding: 1.5rem; }
   }
 </style>
@@ -616,6 +771,7 @@
     <li><a href="#how">How It Works</a></li>
     <li><a href="#about">About</a></li>
     <li><a href="#why">Why Us</a></li>
+    <li><a href="#hama-test">HAM-A Test</a></li>
     <li><a href="#contact" class="nav-cta">Contact</a></li>
   </ul>
 </nav>
@@ -728,6 +884,98 @@
       <div class="why-title">Seamless integration</div>
       <p class="why-body">Plugs into existing care systems. Privacy-first by design. A moat built into every clinical interaction.</p>
     </div>
+  </div>
+</section>
+
+<!-- HAM-A TEST -->
+<section id="hama-test">
+  <div class="section-eyebrow">Anxiety Screening</div>
+  <h2 class="section-title">Hamilton Anxiety Rating Scale</h2>
+  <p class="section-subtitle">Rate each item from 0 to 4. This HAM-A score tool is informational and intended to support, not replace, assessment by a qualified clinician.</p>
+  <div class="test-layout">
+    <form class="test-form" id="hama-form">
+      <div class="test-item reveal">
+        <div class="test-item-head"><span class="test-item-num">01</span><span class="test-item-title">Anxious mood</span></div>
+        <p class="test-item-desc">Worries, anticipation of the worst, fearful anticipation, irritability.</p>
+        <div class="rating-options" role="radiogroup" aria-label="Anxious mood rating"></div>
+      </div>
+      <div class="test-item reveal">
+        <div class="test-item-head"><span class="test-item-num">02</span><span class="test-item-title">Tension</span></div>
+        <p class="test-item-desc">Feelings of tension, fatigability, startle response, trembling, restlessness, inability to relax.</p>
+        <div class="rating-options" role="radiogroup" aria-label="Tension rating"></div>
+      </div>
+      <div class="test-item reveal">
+        <div class="test-item-head"><span class="test-item-num">03</span><span class="test-item-title">Fears</span></div>
+        <p class="test-item-desc">Fear of dark, strangers, being alone, animals, traffic, crowds, or other situations.</p>
+        <div class="rating-options" role="radiogroup" aria-label="Fears rating"></div>
+      </div>
+      <div class="test-item reveal">
+        <div class="test-item-head"><span class="test-item-num">04</span><span class="test-item-title">Insomnia</span></div>
+        <p class="test-item-desc">Difficulty falling asleep, broken sleep, fatigue on waking, dreams, nightmares, night terrors.</p>
+        <div class="rating-options" role="radiogroup" aria-label="Insomnia rating"></div>
+      </div>
+      <div class="test-item reveal">
+        <div class="test-item-head"><span class="test-item-num">05</span><span class="test-item-title">Intellectual</span></div>
+        <p class="test-item-desc">Difficulty concentrating or poor memory.</p>
+        <div class="rating-options" role="radiogroup" aria-label="Intellectual rating"></div>
+      </div>
+      <div class="test-item reveal">
+        <div class="test-item-head"><span class="test-item-num">06</span><span class="test-item-title">Depressed mood</span></div>
+        <p class="test-item-desc">Loss of interest, lack of pleasure, depression, early waking, diurnal swing.</p>
+        <div class="rating-options" role="radiogroup" aria-label="Depressed mood rating"></div>
+      </div>
+      <div class="test-item reveal">
+        <div class="test-item-head"><span class="test-item-num">07</span><span class="test-item-title">Somatic muscular</span></div>
+        <p class="test-item-desc">Pains, aches, twitching, stiffness, jerks, grinding of teeth, unsteady voice, increased tone.</p>
+        <div class="rating-options" role="radiogroup" aria-label="Somatic muscular rating"></div>
+      </div>
+      <div class="test-item reveal">
+        <div class="test-item-head"><span class="test-item-num">08</span><span class="test-item-title">Somatic sensory</span></div>
+        <p class="test-item-desc">Tinnitus, blurred vision, hot or cold flushes, weakness, prickling sensation.</p>
+        <div class="rating-options" role="radiogroup" aria-label="Somatic sensory rating"></div>
+      </div>
+      <div class="test-item reveal">
+        <div class="test-item-head"><span class="test-item-num">09</span><span class="test-item-title">Cardiovascular symptoms</span></div>
+        <p class="test-item-desc">Rapid heartbeat, palpitations, chest pain, throbbing vessels, faintness, missed beats.</p>
+        <div class="rating-options" role="radiogroup" aria-label="Cardiovascular symptoms rating"></div>
+      </div>
+      <div class="test-item reveal">
+        <div class="test-item-head"><span class="test-item-num">10</span><span class="test-item-title">Respiratory symptoms</span></div>
+        <p class="test-item-desc">Chest pressure or constriction, choking feelings, sighing, shortness of breath.</p>
+        <div class="rating-options" role="radiogroup" aria-label="Respiratory symptoms rating"></div>
+      </div>
+      <div class="test-item reveal">
+        <div class="test-item-head"><span class="test-item-num">11</span><span class="test-item-title">Gastrointestinal symptoms</span></div>
+        <p class="test-item-desc">Difficulty swallowing, abdominal discomfort, nausea, vomiting, bowel changes, weight loss.</p>
+        <div class="rating-options" role="radiogroup" aria-label="Gastrointestinal symptoms rating"></div>
+      </div>
+      <div class="test-item reveal">
+        <div class="test-item-head"><span class="test-item-num">12</span><span class="test-item-title">Genitourinary symptoms</span></div>
+        <p class="test-item-desc">Urinary frequency or urgency, menstrual changes, sexual dysfunction, loss of libido.</p>
+        <div class="rating-options" role="radiogroup" aria-label="Genitourinary symptoms rating"></div>
+      </div>
+      <div class="test-item reveal">
+        <div class="test-item-head"><span class="test-item-num">13</span><span class="test-item-title">Autonomic symptoms</span></div>
+        <p class="test-item-desc">Dry mouth, flushing, pallor, sweating, dizziness, tension headache, hair raising.</p>
+        <div class="rating-options" role="radiogroup" aria-label="Autonomic symptoms rating"></div>
+      </div>
+      <div class="test-item reveal">
+        <div class="test-item-head"><span class="test-item-num">14</span><span class="test-item-title">Behavior at interview</span></div>
+        <p class="test-item-desc">Fidgeting, restlessness, tremor, furrowed brow, strained face, sighing, rapid respiration.</p>
+        <div class="rating-options" role="radiogroup" aria-label="Behavior at interview rating"></div>
+      </div>
+    </form>
+    <aside class="score-panel reveal" aria-live="polite">
+      <div class="score-label">Total Score</div>
+      <div class="score-value"><span id="hama-score">0</span><span class="score-max">/56</span></div>
+      <div class="score-band" id="hama-band">No anxiety selected</div>
+      <p class="score-note" id="hama-note">Choose a rating for each item to calculate the Hamilton Anxiety Rating Scale total.</p>
+      <div class="score-actions">
+        <button class="test-reset" type="button" id="hama-reset">Reset</button>
+        <a href="/legal-disclaimer" class="test-reset">Disclaimer</a>
+      </div>
+      <p class="test-disclaimer">If you are in immediate danger or crisis, contact local emergency services or a crisis hotline now.</p>
+    </aside>
   </div>
 </section>
 
