@@ -32,6 +32,25 @@
   }
   .toolbar, .grid { display: grid; gap: 0.75rem; }
   .toolbar { grid-template-columns: minmax(0, 1fr) auto; }
+  .password-field { position: relative; min-width: 0; }
+  .password-field input { width: 100%; padding-right: 3rem; }
+  .password-toggle {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    color: var(--teal);
+    display: inline-flex;
+    height: 42px;
+    justify-content: center;
+    min-height: 0;
+    padding: 0;
+    position: absolute;
+    right: 0.15rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 42px;
+  }
+  .password-toggle svg { height: 19px; width: 19px; }
   input, button {
     border: 1px solid var(--line);
     font: inherit;
@@ -69,7 +88,15 @@
   <section>
     <h2>Access</h2>
     <div class="toolbar">
-      <input id="token" type="password" placeholder="Admin token">
+      <div class="password-field">
+        <input id="token" type="password" placeholder="Admin token">
+        <button class="password-toggle" id="token-toggle" type="button" aria-label="Show admin token" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </button>
+      </div>
       <button id="load" type="button">Load dashboard</button>
     </div>
   </section>
@@ -101,6 +128,7 @@
 
 <script>
 const tokenInput = document.querySelector('#token');
+const tokenToggle = document.querySelector('#token-toggle');
 const loadButton = document.querySelector('#load');
 const statusEl = document.querySelector('#status');
 const couponsEl = document.querySelector('#coupons');
@@ -111,6 +139,13 @@ const adminApiFallbackBase = 'https://payment-worker.verilogical.com';
 const adminApiBases = [adminApiBase, adminApiFallbackBase];
 
 tokenInput.value = sessionStorage.getItem('sucha-admin-token') || '';
+
+tokenToggle.addEventListener('click', () => {
+  const show = tokenInput.type === 'password';
+  tokenInput.type = show ? 'text' : 'password';
+  tokenToggle.setAttribute('aria-pressed', String(show));
+  tokenToggle.setAttribute('aria-label', show ? 'Hide admin token' : 'Show admin token');
+});
 
 function authHeaders() {
   return { Authorization: `Bearer ${tokenInput.value.trim()}` };

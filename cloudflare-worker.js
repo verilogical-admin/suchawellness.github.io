@@ -29,6 +29,21 @@ function json(data, init = {}) {
   });
 }
 
+async function serveAdminPage() {
+  const response = await fetch('https://raw.githubusercontent.com/verilogical-admin/suchawellness.github.io/main/admin.html', {
+    headers: { 'User-Agent': 'suchawellness-edge-worker' },
+  });
+  const html = await response.text();
+  return new Response(html, {
+    status: response.ok ? 200 : response.status,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-store',
+      ...SECURITY_HEADERS,
+    },
+  });
+}
+
 function getRazorpayAuth(env) {
   if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET) return null;
   return 'Basic ' + btoa(`${env.RAZORPAY_KEY_ID}:${env.RAZORPAY_KEY_SECRET}`);
@@ -304,6 +319,10 @@ export default {
     if (url.hostname === 'suchawellness.com') {
       url.hostname = 'www.suchawellness.com';
       return Response.redirect(url.toString(), 301);
+    }
+
+    if (request.method === 'GET' && (url.pathname === '/admin' || url.pathname === '/admin.html')) {
+      return serveAdminPage();
     }
 
     if (request.method === 'POST' && (url.pathname === '/api/sucha-journal/create-checkout' || url.pathname === '/api/create-order')) {

@@ -50,6 +50,34 @@ function addReadabilityStyles() {
       font-size: 1rem;
       font-weight: 400;
     }
+    .password-visibility-wrap {
+      position: relative;
+      min-width: 0;
+    }
+    .password-visibility-wrap input {
+      width: 100%;
+      padding-right: 3rem;
+    }
+    .password-visibility-toggle {
+      align-items: center;
+      background: transparent;
+      border: 0;
+      color: #2D7A6B;
+      display: inline-flex;
+      height: 42px;
+      justify-content: center;
+      min-height: 0;
+      padding: 0;
+      position: absolute;
+      right: 0.15rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 42px;
+    }
+    .password-visibility-toggle svg {
+      height: 19px;
+      width: 19px;
+    }
     @media (max-width: 640px) {
       body {
         color: #141414;
@@ -105,6 +133,34 @@ function addReadabilityStyles() {
 }
 
 addReadabilityStyles();
+
+function addPasswordVisibilityToggle(input, label = 'password') {
+  if (!input || input.dataset.visibilityToggleReady) return;
+  input.dataset.visibilityToggleReady = 'true';
+  const wrapper = document.createElement('span');
+  wrapper.className = 'password-visibility-wrap';
+  input.parentNode.insertBefore(wrapper, input);
+  wrapper.append(input);
+
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'password-visibility-toggle';
+  button.setAttribute('aria-label', `Show ${label}`);
+  button.setAttribute('aria-pressed', 'false');
+  button.innerHTML = `
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path>
+      <circle cx="12" cy="12" r="3"></circle>
+    </svg>
+  `;
+  button.addEventListener('click', () => {
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    button.setAttribute('aria-pressed', String(show));
+    button.setAttribute('aria-label', show ? `Hide ${label}` : `Show ${label}`);
+  });
+  wrapper.append(button);
+}
 
 const suchaApiBase = 'https://praivasipdf-api.verilogical.com';
 const suchaApiFallbackBase = 'https://payment-worker.verilogical.com';
@@ -1330,6 +1386,9 @@ const journalCouponButton = document.querySelector('#journal-coupon-button');
 const journalUnlockButton = document.querySelector('#journal-unlock-button');
 const journalLockUnlockButton = document.querySelector('#journal-lock-unlock-button');
 const journalPremiumStatus = document.querySelector('#journal-premium-status');
+
+addPasswordVisibilityToggle(journalPremiumPassword, 'journal password');
+addPasswordVisibilityToggle(journalUnlockPassword, 'journal password');
 
 const journalVaultState = {
   entries: [],
