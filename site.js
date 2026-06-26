@@ -309,19 +309,6 @@ function addVerificationStyles() {
   document.head.append(style);
 }
 
-function ensureSubscribeLink() {
-  const navLinks = document.querySelector('.nav-links');
-  if (!navLinks || navLinks.querySelector('[data-sucha-subscribe]')) return;
-  const item = document.createElement('li');
-  const link = document.createElement('a');
-  link.href = '#subscribe';
-  link.dataset.suchaSubscribe = 'true';
-  link.textContent = 'Subscribe';
-  item.append(link);
-  const contact = navLinks.querySelector('.nav-cta')?.closest('li');
-  navLinks.insertBefore(item, contact || null);
-}
-
 function ensureVerificationModal() {
   addVerificationStyles();
   if (document.querySelector('#sucha-verify-modal')) return;
@@ -488,7 +475,6 @@ async function confirmSuchaVerificationCode() {
   }
 }
 
-ensureSubscribeLink();
 ensureVerificationModal();
 
 document.addEventListener('click', (event) => {
