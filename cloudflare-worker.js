@@ -101,7 +101,7 @@ function readCookie(request, name) {
 }
 
 function getKv(env) {
-  return env.SUCHA_ADMIN_KV || env.SUCHA_KV || null;
+  return env.SUCHA_ADMIN_KV || env.SUCHA_KV || env.FEEDBACK_KV || null;
 }
 
 function requireAdmin(request, env) {
