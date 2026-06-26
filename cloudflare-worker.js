@@ -133,6 +133,25 @@ async function signVerificationToken(visitor, env) {
   return `${payload}.${await hmacSha256Hex(verificationSecret(env), payload)}`;
 }
 
+async function signVerificationChallenge(challenge, env) {
+  const payload = btoa(JSON.stringify(challenge));
+  return `${payload}.${await hmacSha256Hex(verificationSecret(env), payload)}`;
+}
+
+async function verifyVerificationChallenge(token, env) {
+  if (!token || !String(token).includes('.')) return null;
+  const [payload, signature] = String(token).split('.');
+  const expected = await hmacSha256Hex(verificationSecret(env), payload);
+  if (signature !== expected) return null;
+  try {
+    const challenge = JSON.parse(atob(payload));
+    if (!challenge.email || !challenge.hash || Number(challenge.expiresAt || 0) < Date.now()) return null;
+    return challenge;
+  } catch {
+    return null;
+  }
+}
+
 async function verifyVerificationToken(token, env) {
   if (!token || !String(token).includes('.')) return null;
   const [payload, signature] = String(token).split('.');
@@ -156,7 +175,7 @@ async function verifiedVisitorFromRequest(request, env) {
   return await verifyVerificationToken(authBearer(request) || readCookie(request, VERIFICATION_COOKIE), env);
 }
 
-async function sendSuchaEmail(env, { to, subject, text }) {
+async function sendSuchaEmail(env, { to, subject, text, html }) {
   if (!env.RESEND_API_KEY) throw new Error('Email sending is not configured.');
   const from = env.SUCHA_EMAIL_FROM || env.EMAIL_FROM || 'support@suchawellness.com';
   const replyTo = env.SUCHA_EMAIL_REPLY_TO || env.EMAIL_REPLY_TO || 'support@suchawellness.com';
@@ -172,6 +191,7 @@ async function sendSuchaEmail(env, { to, subject, text }) {
       reply_to: replyTo,
       subject,
       text,
+      ...(html ? { html } : {}),
     }),
   });
   const data = await response.json().catch(() => ({}));
@@ -214,6 +234,16 @@ async function requestVerificationCode(request, env) {
   const subscribed = body.subscribed !== false;
   const code = String(Math.floor(100000 + Math.random() * 900000));
   const hash = await hmacSha256Hex(verificationSecret(env), code);
+  const challenge = {
+    email,
+    hash,
+    subscribed,
+    tool: cleanText(body.tool, 80),
+    toolType: cleanText(body.toolType, 40),
+    expiresAt: Date.now() + 10 * 60 * 1000,
+  };
+  const challengeToken = await signVerificationChallenge(challenge, env);
+  const verifyUrl = `${new URL(request.url).origin}/verify-email?challenge=${encodeURIComponent(challengeToken)}`;
   await kv.put(verificationCodeKey(email), JSON.stringify({
     hash,
     subscribed,
@@ -223,7 +253,32 @@ async function requestVerificationCode(request, env) {
     await sendSuchaEmail(env, {
       to: email,
       subject: 'Your Sucha Wellness verification code',
-      text: `Your Sucha Wellness verification code is ${code}. It expires in 10 minutes.\n\nYou are receiving this because this email was used to access Sucha Wellness tools.`,
+      text: `Your Sucha Wellness verification code is ${code}. It expires in 10 minutes.\n\nOr click this verification link:\n${verifyUrl}\n\nYou are receiving this because this email was used to access Sucha Wellness tools.`,
+      html: `<!doctype html>
+<html>
+  <body style="margin:0;background:#F5F2EB;color:#171717;font-family:Jost,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F2EB;padding:28px 12px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border:1px solid #D9D2C4;border-radius:12px;overflow:hidden;">
+            <tr>
+              <td style="padding:28px 28px 18px;">
+                <div style="color:#2D7A6B;font-family:Georgia,serif;font-size:28px;line-height:1.1;font-weight:700;">Sucha Wellness</div>
+                <p style="font-size:17px;line-height:1.55;margin:20px 0 0;">Use this secure link to verify your email and continue with Sucha Wellness.</p>
+                <p style="margin:24px 0;">
+                  <a href="${verifyUrl}" style="display:inline-block;background:#2D7A6B;color:#fff;text-decoration:none;font-weight:700;border-radius:999px;padding:13px 20px;">Verify email</a>
+                </p>
+                <p style="font-size:15px;line-height:1.55;margin:0 0 18px;color:#3F4945;">Or enter this 6-digit code on the site:</p>
+                <div style="display:inline-block;letter-spacing:6px;font-size:28px;font-weight:700;color:#171717;background:#F5F2EB;border:1px solid #D9D2C4;border-radius:10px;padding:12px 16px;">${code}</div>
+                <p style="font-size:14px;line-height:1.55;margin:22px 0 0;color:#5A625F;">This link and code expire in 10 minutes. You are receiving this because this email was used to access Sucha Wellness tools.</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`,
     });
   } catch (error) {
     return json({ error: error.message || 'Could not send verification email.' }, { status: 502 });
@@ -232,7 +287,7 @@ async function requestVerificationCode(request, env) {
     tool: cleanText(body.tool, 80),
     toolType: cleanText(body.toolType, 40),
   });
-  return json({ ok: true, codeSent: true });
+  return json({ ok: true, codeSent: true, challenge: challengeToken });
 }
 
 async function verifyVerificationCode(request, env) {
@@ -263,6 +318,37 @@ async function verifyVerificationCode(request, env) {
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
       'Set-Cookie': `${VERIFICATION_COOKIE}=${encodeURIComponent(token)}; Max-Age=${VERIFICATION_TTL_SECONDS}; Path=/; SameSite=Lax; Secure; HttpOnly`,
+    },
+  });
+}
+
+async function consumeVerificationLink(request, env) {
+  const challenge = await verifyVerificationChallenge(new URL(request.url).searchParams.get('challenge') || '', env);
+  if (!challenge) {
+    return new Response('<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verification failed</title><body style="font-family:Jost,system-ui,sans-serif;background:#F5F2EB;color:#171717;display:grid;min-height:100vh;place-items:center;margin:0"><main style="max-width:520px;padding:28px"><h1 style="color:#2D7A6B;font-family:serif">Verification link expired</h1><p>Please return to Sucha Wellness and request a fresh code.</p><a href="/" style="color:#2D7A6B">Back to Sucha</a></main></body>', {
+      status: 401,
+      headers: { 'Content-Type': 'text/html; charset=utf-8', ...SECURITY_HEADERS },
+    });
+  }
+  const now = Date.now();
+  const visitor = {
+    email: challenge.email,
+    subscribed: challenge.subscribed !== false,
+    verifiedAt: new Date(now).toISOString(),
+    expiresAt: now + VERIFICATION_TTL_SECONDS * 1000,
+  };
+  await recordVerifiedVisitor(request, env, visitor, 'magic_link', {
+    tool: challenge.tool || '',
+    toolType: challenge.toolType || '',
+  });
+  const token = await signVerificationToken(visitor, env);
+  const hash = challenge.toolType === 'journal' ? '#journal' : '#take-test';
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: `/${hash}`,
+      'Set-Cookie': `${VERIFICATION_COOKIE}=${encodeURIComponent(token)}; Max-Age=${VERIFICATION_TTL_SECONDS}; Path=/; SameSite=Lax; Secure; HttpOnly`,
+      'Cache-Control': 'no-store',
     },
   });
 }
@@ -511,6 +597,10 @@ export default {
 
     if (request.method === 'GET' && (url.pathname === '/admin' || url.pathname === '/admin.html')) {
       return serveAdminPage();
+    }
+
+    if (request.method === 'GET' && url.pathname === '/verify-email') {
+      return consumeVerificationLink(request, env);
     }
 
     if (request.method === 'POST' && (url.pathname === '/api/sucha-journal/create-checkout' || url.pathname === '/api/create-order')) {

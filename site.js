@@ -378,14 +378,15 @@ async function readSuchaJson(response, fallback) {
 
 async function hasSuchaVerification() {
   const token = localStorage.getItem(suchaVerificationTokenKey);
-  if (!token) return false;
   try {
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
     const response = await fetch('/api/verification/status', {
-      headers: { Authorization: `Bearer ${token}` },
+      headers,
+      credentials: 'same-origin',
     });
     return response.ok;
   } catch {
-    return true;
+    return Boolean(token);
   }
 }
 
