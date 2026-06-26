@@ -219,11 +219,15 @@ async function requestVerificationCode(request, env) {
     subscribed,
     createdAt: new Date().toISOString(),
   }), { expirationTtl: 10 * 60 });
-  await sendSuchaEmail(env, {
-    to: email,
-    subject: 'Your Sucha Wellness verification code',
-    text: `Your Sucha Wellness verification code is ${code}. It expires in 10 minutes.\n\nYou are receiving this because this email was used to access Sucha Wellness tools.`,
-  });
+  try {
+    await sendSuchaEmail(env, {
+      to: email,
+      subject: 'Your Sucha Wellness verification code',
+      text: `Your Sucha Wellness verification code is ${code}. It expires in 10 minutes.\n\nYou are receiving this because this email was used to access Sucha Wellness tools.`,
+    });
+  } catch (error) {
+    return json({ error: error.message || 'Could not send verification email.' }, { status: 502 });
+  }
   await recordVerifiedVisitor(request, env, { email, subscribed, verifiedAt: new Date().toISOString(), expiresAt: Date.now() + VERIFICATION_TTL_SECONDS * 1000 }, 'code_sent', {
     tool: cleanText(body.tool, 80),
     toolType: cleanText(body.toolType, 40),
