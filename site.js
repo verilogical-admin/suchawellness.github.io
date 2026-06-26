@@ -193,6 +193,312 @@ function trackSuchaEvent(event, detail = {}) {
 
 trackSuchaEvent('page_view');
 
+const suchaVerificationTokenKey = 'sucha-verification-token:v1';
+const suchaVerificationEmailKey = 'sucha-verification-email:v1';
+let suchaVerificationPending = null;
+
+function addVerificationStyles() {
+  if (document.querySelector('#sucha-verification-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'sucha-verification-styles';
+  style.textContent = `
+    .sucha-verify-modal {
+      align-items: center;
+      background: rgba(23,23,23,0.38);
+      display: none;
+      inset: 0;
+      justify-content: center;
+      padding: 1rem;
+      position: fixed;
+      z-index: 400;
+    }
+    .sucha-verify-modal.on { display: flex; }
+    .sucha-verify-card {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      box-shadow: 0 24px 80px rgba(45,122,107,0.18);
+      color: var(--text);
+      max-height: calc(100vh - 2rem);
+      overflow: auto;
+      padding: 2rem;
+      width: min(480px, 100%);
+    }
+    .sucha-verify-mark {
+      align-items: center;
+      color: var(--teal-dark);
+      display: flex;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem;
+      gap: 0.7rem;
+      margin-bottom: 1rem;
+    }
+    .sucha-verify-mark span:first-child {
+      border: 1px solid var(--teal);
+      display: grid;
+      height: 38px;
+      place-items: center;
+      width: 38px;
+    }
+    .sucha-verify-card h2 {
+      color: var(--teal-dark);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 400;
+      line-height: 1.12;
+      margin-bottom: 0.7rem;
+    }
+    .sucha-verify-card p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.65;
+      margin-bottom: 1rem;
+    }
+    .sucha-verify-grid {
+      display: grid;
+      gap: 0.75rem;
+    }
+    .sucha-verify-grid input[type="email"],
+    .sucha-verify-grid input[type="text"] {
+      border: 1px solid var(--border);
+      color: var(--text);
+      font: inherit;
+      min-height: 46px;
+      padding: 0.8rem;
+      width: 100%;
+    }
+    .sucha-verify-check {
+      align-items: start;
+      color: var(--muted);
+      display: flex;
+      font-size: 0.9rem;
+      gap: 0.65rem;
+      line-height: 1.45;
+    }
+    .sucha-verify-check input { margin-top: 0.28rem; }
+    .sucha-verify-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      margin-top: 0.9rem;
+    }
+    .sucha-verify-actions button {
+      border: 1px solid var(--teal-dark);
+      cursor: pointer;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      padding: 0.75rem 1rem;
+      text-transform: uppercase;
+    }
+    .sucha-verify-actions button:first-child,
+    .sucha-verify-actions button:nth-child(2) {
+      background: var(--teal-dark);
+      color: white;
+    }
+    .sucha-verify-close {
+      background: transparent;
+      color: var(--teal-dark);
+    }
+    .sucha-verify-status {
+      color: var(--muted);
+      font-size: 0.9rem;
+      min-height: 1.4rem;
+    }
+    .sucha-verify-status.error { color: #9f2f23; }
+  `;
+  document.head.append(style);
+}
+
+function ensureSubscribeLink() {
+  const navLinks = document.querySelector('.nav-links');
+  if (!navLinks || navLinks.querySelector('[data-sucha-subscribe]')) return;
+  const item = document.createElement('li');
+  const link = document.createElement('a');
+  link.href = '#subscribe';
+  link.dataset.suchaSubscribe = 'true';
+  link.textContent = 'Subscribe';
+  item.append(link);
+  const contact = navLinks.querySelector('.nav-cta')?.closest('li');
+  navLinks.insertBefore(item, contact || null);
+}
+
+function ensureVerificationModal() {
+  addVerificationStyles();
+  if (document.querySelector('#sucha-verify-modal')) return;
+  const modal = document.createElement('div');
+  modal.className = 'sucha-verify-modal';
+  modal.id = 'sucha-verify-modal';
+  modal.setAttribute('aria-hidden', 'true');
+  modal.innerHTML = `
+    <div class="sucha-verify-card" role="dialog" aria-modal="true" aria-labelledby="sucha-verify-title">
+      <div class="sucha-verify-mark"><span>S</span><span>Sucha Wellness</span></div>
+      <h2 id="sucha-verify-title">Verify your email to continue</h2>
+      <p id="sucha-verify-copy">Use one verified email for Sucha tests, journal access, and optional updates.</p>
+      <div class="sucha-verify-grid">
+        <input id="sucha-verify-email" type="email" autocomplete="email" placeholder="Email address">
+        <label class="sucha-verify-check">
+          <input id="sucha-verify-subscribe" type="checkbox" checked>
+          <span>Send me occasional Sucha updates and wellness notifications.</span>
+        </label>
+        <input id="sucha-verify-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code">
+        <div class="sucha-verify-status" id="sucha-verify-status" role="status" aria-live="polite"></div>
+      </div>
+      <div class="sucha-verify-actions">
+        <button id="sucha-verify-send" type="button">Send code</button>
+        <button id="sucha-verify-confirm" type="button">Verify</button>
+        <button class="sucha-verify-close" id="sucha-verify-close" type="button">Close</button>
+      </div>
+    </div>
+  `;
+  document.body.append(modal);
+
+  modal.querySelector('#sucha-verify-send').addEventListener('click', sendSuchaVerificationCode);
+  modal.querySelector('#sucha-verify-confirm').addEventListener('click', confirmSuchaVerificationCode);
+  modal.querySelector('#sucha-verify-close').addEventListener('click', () => resolveSuchaVerification(false));
+  modal.addEventListener('click', (event) => {
+    if (event.target === modal) resolveSuchaVerification(false);
+  });
+  modal.querySelector('#sucha-verify-code').addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') confirmSuchaVerificationCode();
+  });
+}
+
+function setSuchaVerifyStatus(message, isError = false) {
+  const status = document.querySelector('#sucha-verify-status');
+  if (!status) return;
+  status.textContent = message || '';
+  status.classList.toggle('error', Boolean(isError));
+}
+
+async function readSuchaJson(response, fallback) {
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data.ok) throw new Error(data.error || fallback);
+  return data;
+}
+
+async function hasSuchaVerification() {
+  const token = localStorage.getItem(suchaVerificationTokenKey);
+  if (!token) return false;
+  try {
+    const response = await fetch('/api/verification/status', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.ok;
+  } catch {
+    return true;
+  }
+}
+
+function openSuchaVerification(context = {}) {
+  ensureVerificationModal();
+  const modal = document.querySelector('#sucha-verify-modal');
+  const email = document.querySelector('#sucha-verify-email');
+  const code = document.querySelector('#sucha-verify-code');
+  const title = document.querySelector('#sucha-verify-title');
+  const copy = document.querySelector('#sucha-verify-copy');
+  title.textContent = context.mode === 'subscribe' ? 'Subscribe to Sucha updates' : 'Verify your email to continue';
+  copy.textContent = context.mode === 'subscribe'
+    ? 'Use one verified email for Sucha updates, wellness notifications, tests, and journal access.'
+    : `Verify once to use ${context.tool || 'Sucha tools'} on this browser.`;
+  email.value = localStorage.getItem(suchaVerificationEmailKey) || '';
+  code.value = '';
+  setSuchaVerifyStatus('');
+  modal.classList.add('on');
+  modal.setAttribute('aria-hidden', 'false');
+  setTimeout(() => email.focus(), 50);
+}
+
+function resolveSuchaVerification(ok) {
+  const modal = document.querySelector('#sucha-verify-modal');
+  if (modal) {
+    modal.classList.remove('on');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+  if (suchaVerificationPending) {
+    suchaVerificationPending.resolve(Boolean(ok));
+    suchaVerificationPending = null;
+  }
+}
+
+async function requireSuchaVerification(context = {}) {
+  if (await hasSuchaVerification()) return true;
+  if (suchaVerificationPending) return suchaVerificationPending.promise;
+  let resolve;
+  const promise = new Promise((done) => { resolve = done; });
+  suchaVerificationPending = { promise, resolve, context };
+  openSuchaVerification(context);
+  return promise;
+}
+
+async function sendSuchaVerificationCode() {
+  const email = document.querySelector('#sucha-verify-email');
+  const subscribe = document.querySelector('#sucha-verify-subscribe');
+  const context = suchaVerificationPending?.context || { mode: 'subscribe', tool: 'Sucha updates', toolType: 'subscribe' };
+  const value = (email?.value || '').trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+    setSuchaVerifyStatus('Enter a valid email address.', true);
+    return;
+  }
+  setSuchaVerifyStatus('Sending code...');
+  try {
+    const response = await fetch('/api/verification/request-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: value,
+        subscribed: subscribe?.checked !== false,
+        tool: context.tool || 'Sucha tools',
+        toolType: context.toolType || context.mode || 'tool',
+      }),
+    });
+    await readSuchaJson(response, 'Could not send verification code.');
+    localStorage.setItem(suchaVerificationEmailKey, value);
+    setSuchaVerifyStatus('Code sent. Check your email.');
+    document.querySelector('#sucha-verify-code')?.focus();
+  } catch (error) {
+    setSuchaVerifyStatus(error.message || 'Could not send verification code.', true);
+  }
+}
+
+async function confirmSuchaVerificationCode() {
+  const email = document.querySelector('#sucha-verify-email');
+  const code = document.querySelector('#sucha-verify-code');
+  const context = suchaVerificationPending?.context || { mode: 'subscribe', tool: 'Sucha updates', toolType: 'subscribe' };
+  setSuchaVerifyStatus('Verifying...');
+  try {
+    const response = await fetch('/api/verification/verify-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email?.value || '',
+        code: code?.value || '',
+        tool: context.tool || 'Sucha tools',
+        toolType: context.toolType || context.mode || 'tool',
+      }),
+    });
+    const data = await readSuchaJson(response, 'Could not verify code.');
+    localStorage.setItem(suchaVerificationTokenKey, data.token);
+    localStorage.setItem(suchaVerificationEmailKey, data.visitor?.email || email.value.trim());
+    setSuchaVerifyStatus('Verified.');
+    trackSuchaEvent('email_verified', { tool: context.tool || '', toolType: context.toolType || '' });
+    resolveSuchaVerification(true);
+  } catch (error) {
+    setSuchaVerifyStatus(error.message || 'Could not verify code.', true);
+  }
+}
+
+ensureSubscribeLink();
+ensureVerificationModal();
+
+document.addEventListener('click', (event) => {
+  const subscribeLink = event.target.closest?.('[data-sucha-subscribe]');
+  if (!subscribeLink) return;
+  event.preventDefault();
+  requireSuchaVerification({ mode: 'subscribe', tool: 'Sucha updates', toolType: 'subscribe' }).then((ok) => {
+    if (ok) document.querySelector('#take-test')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
 const reveals = document.querySelectorAll('.reveal');
 
 const observer = new IntersectionObserver((entries) => {
@@ -554,6 +860,7 @@ function addJournalStyles() {
       resize: vertical;
     }
     .journal-premium,
+    .journal-reminder,
     .journal-lock {
       border: 1px solid rgba(45,122,107,0.26);
       background: rgba(255,255,255,0.76);
@@ -561,6 +868,15 @@ function addJournalStyles() {
       gap: 0.9rem;
       margin-top: 0.4rem;
       padding: 1rem;
+    }
+    .journal-reminder {
+      border-style: dashed;
+    }
+    .journal-reminder-row {
+      align-items: center;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
     }
     .journal-premium-badge {
       color: var(--teal-dark);
@@ -871,6 +1187,27 @@ function ensureJournalPremiumMarkup() {
 }
 
 ensureJournalPremiumMarkup();
+
+function ensureJournalReminderMarkup() {
+  const sidebar = document.querySelector('#journal .journal-sidebar');
+  if (!sidebar || document.querySelector('#journal-reminder')) return;
+  const reminder = document.createElement('div');
+  reminder.className = 'journal-reminder';
+  reminder.id = 'journal-reminder';
+  reminder.innerHTML = `
+    <div class="journal-premium-badge">Daily reminder</div>
+    <p class="journal-note">Get a gentle local reminder to use your journal. No reminder emails are sent.</p>
+    <div class="journal-reminder-row">
+      <button class="journal-premium-button secondary" type="button" id="journal-reminder-button">Enable reminder</button>
+      <button class="journal-clear" type="button" id="journal-reminder-reset">Reset today</button>
+    </div>
+    <p class="journal-note" id="journal-reminder-status">Reminder is off.</p>
+  `;
+  const premium = sidebar.querySelector('.journal-premium');
+  sidebar.insertBefore(reminder, premium || null);
+}
+
+ensureJournalReminderMarkup();
 addReadabilityStyles();
 
 const screeningTests = {
@@ -1257,7 +1594,16 @@ function renderScreeningTest(key) {
 }
 
 screeningCards.forEach((card) => {
-  card.addEventListener('click', () => renderScreeningTest(card.dataset.test));
+  card.addEventListener('click', async () => {
+    const key = card.dataset.test;
+    const test = screeningTests[key];
+    const ok = await requireSuchaVerification({
+      mode: 'tool',
+      tool: test?.title || 'Sucha screening test',
+      toolType: 'test',
+    });
+    if (ok) renderScreeningTest(key);
+  });
 });
 
 screeningForm?.addEventListener('submit', (event) => {
@@ -1351,6 +1697,15 @@ if (hamaForm) {
     });
   });
 
+  hamaForm.addEventListener('click', async (event) => {
+    const input = event.target.closest?.('input[type="radio"]');
+    if (!input || await hasSuchaVerification()) return;
+    event.preventDefault();
+    event.stopPropagation();
+    input.checked = false;
+    await requireSuchaVerification({ mode: 'tool', tool: 'Hamilton Anxiety Rating Scale', toolType: 'test' });
+  }, true);
+
   hamaForm.addEventListener('change', updateHamaScore);
   hamaReset?.addEventListener('click', () => {
     hamaForm.reset();
@@ -1361,6 +1716,8 @@ if (hamaForm) {
 const journalLegacyStorageKey = 'sucha-journal-entries';
 const journalVaultStorageKey = 'sucha-journal-vault:v1';
 const journalAccessStorageKey = 'sucha-journal-premium-access:v1';
+const journalReminderEnabledKey = 'sucha-journal-reminder-enabled:v1';
+const journalReminderLastShownKey = 'sucha-journal-reminder-last-shown:v1';
 const journalPlanId = 'journal_monthly_5';
 const journalProduct = 'SuchaJournal';
 const journalGuaranteeDays = 30;
@@ -1373,6 +1730,9 @@ const journalSearch = document.querySelector('#journal-search');
 const journalList = document.querySelector('#journal-list');
 const journalCount = document.querySelector('#journal-count');
 const journalLatest = document.querySelector('#journal-latest');
+const journalReminderButton = document.querySelector('#journal-reminder-button');
+const journalReminderReset = document.querySelector('#journal-reminder-reset');
+const journalReminderStatus = document.querySelector('#journal-reminder-status');
 const journalWeek = document.querySelector('#journal-week');
 const journalStatus = document.querySelector('#journal-status');
 const journalPrivate = document.querySelector('#journal-private');
@@ -1403,6 +1763,60 @@ function setJournalStatus(message) {
 
 function setJournalPremiumStatus(message) {
   if (journalPremiumStatus) journalPremiumStatus.textContent = message;
+}
+
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function setJournalReminderStatus(message) {
+  if (journalReminderStatus) journalReminderStatus.textContent = message;
+}
+
+function updateJournalReminderStatus() {
+  if (localStorage.getItem(journalReminderEnabledKey) === 'true') {
+    const permission = 'Notification' in window ? Notification.permission : 'unavailable';
+    setJournalReminderStatus(permission === 'granted'
+      ? 'Daily local reminder is on with browser notifications.'
+      : 'Daily local reminder is on. Browser notifications are optional.');
+    if (journalReminderButton) journalReminderButton.textContent = 'Reminder on';
+  } else {
+    setJournalReminderStatus('Reminder is off.');
+    if (journalReminderButton) journalReminderButton.textContent = 'Enable reminder';
+  }
+}
+
+function showJournalReminderIfDue() {
+  if (localStorage.getItem(journalReminderEnabledKey) !== 'true') return;
+  if (localStorage.getItem(journalReminderLastShownKey) === todayKey()) return;
+  localStorage.setItem(journalReminderLastShownKey, todayKey());
+  setJournalStatus('Gentle reminder: write one sentence in your journal today.');
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification('Sucha Journal', {
+      body: 'A gentle reminder to write one sentence today.',
+      icon: '/assets/sucha-web-icon-180.png',
+    });
+  }
+  trackSuchaEvent('journal_reminder_shown');
+}
+
+async function enableJournalReminder() {
+  localStorage.setItem(journalReminderEnabledKey, 'true');
+  if ('Notification' in window && Notification.permission === 'default') {
+    try {
+      await Notification.requestPermission();
+    } catch {
+      // On-site reminders still work even when browser notifications are unavailable.
+    }
+  }
+  updateJournalReminderStatus();
+  showJournalReminderIfDue();
+  trackSuchaEvent('journal_reminder_enabled');
+}
+
+function resetJournalReminderToday() {
+  localStorage.removeItem(journalReminderLastShownKey);
+  showJournalReminderIfDue();
 }
 
 function readLegacyJournalEntries() {
@@ -1893,6 +2307,11 @@ async function unlockJournalFromInput(input) {
 if (journalForm && journalTitle && journalMood && journalBody) {
   journalForm.addEventListener('submit', async (event) => {
     event.preventDefault();
+    const ok = await requireSuchaVerification({ mode: 'tool', tool: 'Sucha Journal', toolType: 'journal' });
+    if (!ok) {
+      setJournalStatus('Verify your email to save journal entries.');
+      return;
+    }
 
     const entry = {
       id: `journal-${Date.now()}`,
@@ -1921,6 +2340,14 @@ if (journalForm && journalTitle && journalMood && journalBody) {
 
   journalSearch?.addEventListener('input', renderJournalEntries);
 }
+
+journalReminderButton?.addEventListener('click', () => {
+  enableJournalReminder().catch(() => setJournalReminderStatus('Could not enable browser notifications. On-site reminders are still available.'));
+});
+
+journalReminderReset?.addEventListener('click', resetJournalReminderToday);
+updateJournalReminderStatus();
+showJournalReminderIfDue();
 
 journalTrialButton?.addEventListener('click', () => {
   trackSuchaEvent('premium_upgrade_click');

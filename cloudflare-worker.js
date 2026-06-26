@@ -11,6 +11,8 @@ const SECURITY_HEADERS = {
 const JOURNAL_PLAN_ID = 'journal_monthly_5';
 const JOURNAL_PRODUCT = 'SuchaJournal';
 const GUARANTEE_DAYS = 30;
+const VERIFICATION_COOKIE = 'sucha_verified_visitor';
+const VERIFICATION_TTL_SECONDS = 90 * 24 * 60 * 60;
 const COUPON_HASHES = [
   'b09ec9ef54d652c18c09ed3ecf48a142bbddea9f9e76c165864109c24fc775ab',
   '2aacdc460a8dae37fb0888261e219c1d0c6b8d6e0371e453af90a1d37cf5e47c',
@@ -82,6 +84,22 @@ async function sha256Hex(message) {
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
+function normalizeEmail(value) {
+  const email = String(value || '').trim().toLowerCase();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : '';
+}
+
+function cleanText(value, max = 120) {
+  return String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
+}
+
+function readCookie(request, name) {
+  const cookie = request.headers.get('Cookie') || '';
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = cookie.match(new RegExp(`(?:^|;\\s*)${escaped}=([^;]+)`));
+  return match ? decodeURIComponent(match[1]) : '';
+}
+
 function getKv(env) {
   return env.SUCHA_ADMIN_KV || env.SUCHA_KV || null;
 }
@@ -91,6 +109,165 @@ function requireAdmin(request, env) {
   if (!expected) return false;
   const header = request.headers.get('Authorization') || '';
   return header === `Bearer ${expected}`;
+}
+
+function verificationSecret(env) {
+  return env.SUCHA_VERIFICATION_SECRET || env.PRAIVASIPDF_QUOTA_SECRET || env.RAZORPAY_KEY_SECRET || env.SUCHA_ADMIN_TOKEN || 'sucha-verification';
+}
+
+function verificationCodeKey(email) {
+  return `verification:code:${email}`;
+}
+
+async function verifiedVisitorId(email, env) {
+  return (await hmacSha256Hex(verificationSecret(env), email)).slice(0, 24);
+}
+
+async function signVerificationToken(visitor, env) {
+  const payload = btoa(JSON.stringify({
+    email: visitor.email,
+    subscribed: Boolean(visitor.subscribed),
+    verifiedAt: visitor.verifiedAt,
+    expiresAt: visitor.expiresAt,
+  }));
+  return `${payload}.${await hmacSha256Hex(verificationSecret(env), payload)}`;
+}
+
+async function verifyVerificationToken(token, env) {
+  if (!token || !String(token).includes('.')) return null;
+  const [payload, signature] = String(token).split('.');
+  const expected = await hmacSha256Hex(verificationSecret(env), payload);
+  if (signature !== expected) return null;
+  try {
+    const visitor = JSON.parse(atob(payload));
+    if (!visitor.email || Number(visitor.expiresAt || 0) < Date.now()) return null;
+    return visitor;
+  } catch {
+    return null;
+  }
+}
+
+function authBearer(request) {
+  const header = request.headers.get('Authorization') || '';
+  return header.startsWith('Bearer ') ? header.slice(7).trim() : '';
+}
+
+async function verifiedVisitorFromRequest(request, env) {
+  return await verifyVerificationToken(authBearer(request) || readCookie(request, VERIFICATION_COOKIE), env);
+}
+
+async function sendSuchaEmail(env, { to, subject, text }) {
+  if (!env.RESEND_API_KEY) throw new Error('Email sending is not configured.');
+  const from = env.SUCHA_EMAIL_FROM || env.EMAIL_FROM || 'support@suchawellness.com';
+  const replyTo = env.SUCHA_EMAIL_REPLY_TO || env.EMAIL_REPLY_TO || 'support@suchawellness.com';
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from,
+      to: [to],
+      reply_to: replyTo,
+      subject,
+      text,
+    }),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.message || data.error || 'Email provider rejected the message.');
+  return data;
+}
+
+async function recordVerifiedVisitor(request, env, visitor, event, detail = {}) {
+  const kv = getKv(env);
+  if (!kv || !visitor.email) return;
+  const now = new Date();
+  const id = await verifiedVisitorId(visitor.email, env);
+  const key = `verified:${id}`;
+  const existing = await kv.get(key, { type: 'json' }) || {};
+  const item = {
+    ...existing,
+    id,
+    email: visitor.email,
+    subscribed: Boolean(visitor.subscribed ?? existing.subscribed),
+    verifiedAt: existing.verifiedAt || visitor.verifiedAt || now.toISOString(),
+    expiresAt: visitor.expiresAt || existing.expiresAt || 0,
+    lastSeenAt: now.toISOString(),
+    lastEvent: event,
+    lastTool: cleanText(detail.tool || existing.lastTool || '', 80),
+    lastToolType: cleanText(detail.toolType || existing.lastToolType || '', 40),
+    country: request.headers.get('CF-IPCountry') || existing.country || 'unknown',
+    region: cleanText(request.cf?.region || existing.region || 'unknown', 80),
+    city: cleanText(request.cf?.city || existing.city || 'unknown', 80),
+    visits: Number(existing.visits || 0) + 1,
+  };
+  await kv.put(key, JSON.stringify(item), { expirationTtl: VERIFICATION_TTL_SECONDS + 30 * 24 * 60 * 60 });
+}
+
+async function requestVerificationCode(request, env) {
+  const kv = getKv(env);
+  if (!kv) return json({ error: 'Verification storage is not configured.' }, { status: 501 });
+  const body = await readJson(request);
+  const email = normalizeEmail(body.email);
+  if (!email) return json({ error: 'Enter a valid email address.' }, { status: 400 });
+  const subscribed = body.subscribed !== false;
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const hash = await hmacSha256Hex(verificationSecret(env), code);
+  await kv.put(verificationCodeKey(email), JSON.stringify({
+    hash,
+    subscribed,
+    createdAt: new Date().toISOString(),
+  }), { expirationTtl: 10 * 60 });
+  await sendSuchaEmail(env, {
+    to: email,
+    subject: 'Your Sucha Wellness verification code',
+    text: `Your Sucha Wellness verification code is ${code}. It expires in 10 minutes.\n\nYou are receiving this because this email was used to access Sucha Wellness tools.`,
+  });
+  await recordVerifiedVisitor(request, env, { email, subscribed, verifiedAt: new Date().toISOString(), expiresAt: Date.now() + VERIFICATION_TTL_SECONDS * 1000 }, 'code_sent', {
+    tool: cleanText(body.tool, 80),
+    toolType: cleanText(body.toolType, 40),
+  });
+  return json({ ok: true, codeSent: true });
+}
+
+async function verifyVerificationCode(request, env) {
+  const kv = getKv(env);
+  if (!kv) return json({ error: 'Verification storage is not configured.' }, { status: 501 });
+  const body = await readJson(request);
+  const email = normalizeEmail(body.email);
+  const code = String(body.code || '').trim();
+  if (!email || !/^\d{6}$/.test(code)) return json({ error: 'Enter the 6-digit code sent to your email.' }, { status: 400 });
+  const saved = await kv.get(verificationCodeKey(email), { type: 'json' });
+  const actual = await hmacSha256Hex(verificationSecret(env), code);
+  if (!saved || saved.hash !== actual) return json({ error: 'Invalid or expired verification code.' }, { status: 401 });
+  await kv.delete(verificationCodeKey(email));
+  const now = Date.now();
+  const visitor = {
+    email,
+    subscribed: saved.subscribed !== false,
+    verifiedAt: new Date(now).toISOString(),
+    expiresAt: now + VERIFICATION_TTL_SECONDS * 1000,
+  };
+  await recordVerifiedVisitor(request, env, visitor, 'verified', {
+    tool: cleanText(body.tool, 80),
+    toolType: cleanText(body.toolType, 40),
+  });
+  const token = await signVerificationToken(visitor, env);
+  return new Response(JSON.stringify({ ok: true, token, visitor }), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Set-Cookie': `${VERIFICATION_COOKIE}=${encodeURIComponent(token)}; Max-Age=${VERIFICATION_TTL_SECONDS}; Path=/; SameSite=Lax; Secure; HttpOnly`,
+    },
+  });
+}
+
+async function verificationStatus(request, env) {
+  const visitor = await verifiedVisitorFromRequest(request, env);
+  if (!visitor) return json({ ok: false, verified: false }, { status: 401 });
+  await recordVerifiedVisitor(request, env, visitor, 'status_check');
+  return json({ ok: true, verified: true, visitor: { email: visitor.email, subscribed: Boolean(visitor.subscribed), expiresAt: visitor.expiresAt } });
 }
 
 async function getCouponState(kv, hash) {
@@ -169,7 +346,14 @@ async function adminSummary(request, env) {
     const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
     analytics.push({ date, ...(await kv.get(`analytics:${date}`, { type: 'json' }) || {}) });
   }
-  return json({ coupons: couponStates, analytics });
+  const verifiedList = await kv.list({ prefix: 'verified:', limit: 500 });
+  const verifiedVisitors = [];
+  for (const key of verifiedList.keys) {
+    const item = await kv.get(key.name, { type: 'json' });
+    if (item) verifiedVisitors.push(item);
+  }
+  verifiedVisitors.sort((a, b) => String(b.lastSeenAt || b.verifiedAt).localeCompare(String(a.lastSeenAt || a.verifiedAt)));
+  return json({ coupons: couponStates, analytics, verifiedVisitors });
 }
 
 async function adminRevokeCoupon(request, env) {
@@ -339,6 +523,18 @@ export default {
 
     if (request.method === 'POST' && url.pathname === '/api/analytics/track') {
       return trackAnalytics(request, env);
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/verification/request-code') {
+      return requestVerificationCode(request, env);
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/verification/verify-code') {
+      return verifyVerificationCode(request, env);
+    }
+
+    if (request.method === 'GET' && url.pathname === '/api/verification/status') {
+      return verificationStatus(request, env);
     }
 
     if (request.method === 'GET' && url.pathname === '/api/admin/summary') {

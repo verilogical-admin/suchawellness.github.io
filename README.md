@@ -38,3 +38,18 @@ The admin page is available at `/admin` or `/admin.html`. It supports five one-t
 coupons, coupon revocation, and coarse usage analytics: page views, screening tool usage,
 journal events, and Cloudflare-provided country/region summaries. Journal text and
 screening answers are not sent to analytics.
+
+## Sucha email verification
+
+Tests and journal usage are gated by a single Sucha-branded email verification flow. The
+same verified email can also be used for updates/notifications when the checked-by-default
+subscribe option is left enabled. The Worker stores verified email, consent state, country,
+region/city, date, and tool usage metadata in KV; it does not store screening answers or
+journal content.
+
+Set these Worker secrets/vars before enabling live verification email:
+
+- `RESEND_API_KEY`
+- `SUCHA_EMAIL_FROM` such as `support@suchawellness.com` after the sender/domain is verified
+- `SUCHA_EMAIL_REPLY_TO` such as `support@suchawellness.com`
+- `SUCHA_VERIFICATION_SECRET` for signing verification tokens

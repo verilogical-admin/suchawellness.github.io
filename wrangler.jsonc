@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "suchawellness",
+  "account_id": "6367f6ce82085b3a5b20fa5477081ad9",
+  "main": "cloudflare-worker.js",
+  "compatibility_date": "2026-05-14",
+  "observability": {
+    "enabled": true
+  },
+  "kv_namespaces": [
+    {
+      "binding": "FEEDBACK_KV",
+      "id": "316e20b344e247f89b6d959049e14e83"
+    }
+  ],
+  "routes": [
+    { "pattern": "suchawellness.com/*", "zone_name": "suchawellness.com" },
+    { "pattern": "www.suchawellness.com/*", "zone_name": "suchawellness.com" }
+  ]
+}

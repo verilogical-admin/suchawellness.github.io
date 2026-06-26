@@ -5,7 +5,9 @@ const statusEl = document.querySelector('#status');
 const couponsEl = document.querySelector('#coupons');
 const totalsEl = document.querySelector('#totals');
 const analyticsEl = document.querySelector('#analytics');
-const adminApiBase = 'https://praivasipdf-api.verilogical.com';
+const adminApiBase = location.protocol === 'https:' && /(^|\.)suchawellness\.com$/i.test(location.hostname)
+  ? location.origin
+  : 'https://praivasipdf-api.verilogical.com';
 const adminApiFallbackBase = 'https://payment-worker.verilogical.com';
 const adminApiBases = [adminApiBase, adminApiFallbackBase];
 
@@ -115,6 +117,31 @@ function renderAnalytics(days) {
   });
 }
 
+function renderVerifiedVisitors(visitors = []) {
+  const existing = document.querySelector('#verified-visitors-card');
+  existing?.remove();
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.id = 'verified-visitors-card';
+  const rows = visitors.slice(0, 120).map((visitor) => [
+    visitor.email || '',
+    visitor.subscribed ? 'subscribed' : 'no updates',
+    visitor.lastToolType || '',
+    visitor.lastTool || '',
+    visitor.country || '',
+    visitor.region || '',
+    visitor.city || '',
+    fmt(visitor.lastSeenAt || visitor.verifiedAt),
+    visitor.visits || 0,
+  ].join(' | '));
+  card.innerHTML = `
+    <strong>Verified emails</strong>
+    <p class="label">${visitors.length} verified visitor${visitors.length === 1 ? '' : 's'}</p>
+    <textarea readonly style="width:100%;min-height:180px;margin-top:10px">${rows.join('\n') || 'No verified visitors yet.'}</textarea>
+  `;
+  totalsEl.after(card);
+}
+
 async function loadDashboard() {
   const token = tokenInput.value.trim();
   if (!token) {
@@ -126,6 +153,7 @@ async function loadDashboard() {
   const data = await adminFetch('/api/admin/summary', { headers: authHeaders() });
   renderCoupons(data.coupons || []);
   renderAnalytics(data.analytics || []);
+  renderVerifiedVisitors(data.verifiedVisitors || []);
   setStatus('Dashboard loaded.');
 }
 
