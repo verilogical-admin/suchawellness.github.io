@@ -1753,10 +1753,10 @@ const riasecScale = [
 ];
 
 const rseScale = [
-  ['Strongly agree', 0],
-  ['Agree', 1],
-  ['Disagree', 2],
-  ['Strongly disagree', 3]
+  ['Strongly disagree', 0],
+  ['Disagree', 1],
+  ['Agree', 2],
+  ['Strongly agree', 3]
 ];
 
 screeningTests.careerRiasec = {
