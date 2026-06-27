@@ -523,6 +523,7 @@ document.querySelectorAll('.step-card, .why-card, .screening-card').forEach((ele
 const screeningCardData = [
   ['depression', 'BDI-style screen', 'BDI Depression Quick Screen', 'For overwhelming sadness, despair, low energy, or negative self-image.', 'Start test'],
   ['bai', 'Sucha screen', 'Beck Anxiety Inventory (BAI) Quick Screen', 'A BAI-informed anxiety symptom check for recent physical and panic-like symptoms.', 'Start test'],
+  ['careerRiasec', 'Career guidance', 'Career Pathway RIASEC Quiz', 'A one-question-at-a-time interest quiz to identify your top Holland Code career themes.', 'Start quiz'],
   ['universal', 'Universal screen', 'Universal Mental Health Screen', 'A broader Sucha-hosted screen for common mental health signals.', 'Start test'],
   ['adhd', 'Sucha screen', 'ADHD Test', 'For trouble focusing, remembering things, completing tasks, or sitting still.', 'Start test'],
   ['anxiety', 'Sucha screen', 'Anxiety Test', 'For worry or fear that affects day-to-day functioning.', 'Start test'],
@@ -662,9 +663,101 @@ function addScreeningStyles() {
       margin-top: 1.5rem;
       padding: 1.2rem;
     }
+    .riasec-progress {
+      color: var(--teal-dark);
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      margin-bottom: 0.9rem;
+      text-transform: uppercase;
+    }
+    .riasec-progress-bar {
+      background: rgba(45,122,107,0.12);
+      height: 6px;
+      margin: 0.7rem 0 1.2rem;
+      overflow: hidden;
+    }
+    .riasec-progress-fill {
+      background: var(--teal);
+      display: block;
+      height: 100%;
+      transition: width 0.2s ease;
+      width: 0;
+    }
+    .riasec-question {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 1.4rem;
+    }
+    .riasec-options {
+      display: grid;
+      gap: 0.55rem;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      margin-top: 1rem;
+    }
+    .riasec-option {
+      background: var(--white);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.72rem;
+      min-height: 58px;
+      padding: 0.65rem;
+      text-transform: uppercase;
+    }
+    .riasec-option:hover,
+    .riasec-option:focus-visible {
+      border-color: var(--teal);
+      color: var(--teal-dark);
+      outline: none;
+    }
+    .riasec-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .riasec-result-grid {
+      display: grid;
+      gap: 0.75rem;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 1rem;
+    }
+    .riasec-result-card {
+      border: 1px solid var(--border);
+      padding: 1rem;
+    }
+    .riasec-result-code {
+      color: var(--teal-dark);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.7rem;
+      line-height: 1;
+    }
+    .riasec-result-title {
+      color: var(--text);
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      margin-top: 0.4rem;
+      text-transform: uppercase;
+    }
+    .riasec-result-card p,
+    .riasec-result-card ul {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.55;
+      margin-top: 0.55rem;
+    }
+    .riasec-result-card ul {
+      padding-left: 1rem;
+    }
     @media (max-width: 900px) {
       .inline-test-head { display: grid; }
       .inline-options { grid-template-columns: 1fr; }
+      .riasec-options,
+      .riasec-result-grid {
+        grid-template-columns: 1fr;
+      }
     }
   `;
   document.head.append(style);
@@ -732,7 +825,7 @@ function ensureScreeningMarkup() {
       <aside class="inline-test-result" id="screening-result" aria-live="polite" hidden>
         <div class="score-label">Result</div>
         <div class="score-band" id="screening-band"></div>
-        <p class="score-note" id="screening-note"></p>
+        <div class="score-note" id="screening-note"></div>
       </aside>
     `;
     tools.after(panel);
@@ -1228,8 +1321,8 @@ const screeningTests = {
     ]
   },
   depression: {
-    title: 'Depression Test',
-    description: 'A brief Sucha screen for low mood, loss of interest, energy changes, and self-critical thinking.',
+    title: 'BDI Depression Quick Screen',
+    description: 'A BDI-style Sucha screen for low mood, loss of interest, energy changes, and self-critical thinking.',
     questions: [
       'You felt down, empty, tearful, or hopeless.',
       'Things that usually matter to you felt flat or uninteresting.',
@@ -1448,6 +1541,99 @@ const screeningTests = {
   }
 };
 
+const riasecQuestions = [
+  ['R', 'I like to work on cars.'],
+  ['I', 'I like to do puzzles.'],
+  ['A', 'I am good at working independently.'],
+  ['S', 'I like to work in teams.'],
+  ['E', 'I am an ambitious person; I set goals for myself.'],
+  ['C', 'I like to organize things, files, desks, or offices.'],
+  ['R', 'I like to build things.'],
+  ['A', 'I like to read about art and music.'],
+  ['C', 'I like to have clear instructions to follow.'],
+  ['E', 'I like to try to influence or persuade people.'],
+  ['I', 'I like to do experiments.'],
+  ['S', 'I like to teach or train people.'],
+  ['S', 'I like trying to help people solve their problems.'],
+  ['R', 'I like to take care of animals.'],
+  ['C', 'I would not mind working 8 hours per day in an office.'],
+  ['E', 'I like selling things.'],
+  ['A', 'I enjoy creative writing.'],
+  ['I', 'I enjoy science.'],
+  ['E', 'I am quick to take on new responsibilities.'],
+  ['S', 'I am interested in healing people.'],
+  ['I', 'I enjoy trying to figure out how things work.'],
+  ['R', 'I like putting things together or assembling things.'],
+  ['A', 'I am a creative person.'],
+  ['C', 'I pay attention to details.'],
+  ['C', 'I like to do filing or typing.'],
+  ['I', 'I like to analyze things, problems, or situations.'],
+  ['A', 'I like to play instruments or sing.'],
+  ['S', 'I enjoy learning about other cultures.'],
+  ['E', 'I would like to start my own business.'],
+  ['R', 'I like to cook.'],
+  ['A', 'I like acting in plays.'],
+  ['R', 'I am a practical person.'],
+  ['I', 'I like working with numbers or charts.'],
+  ['S', 'I like to get into discussions about issues.'],
+  ['C', 'I am good at keeping records of my work.'],
+  ['E', 'I like to lead.'],
+  ['R', 'I like working outdoors.'],
+  ['C', 'I would like to work in an office.'],
+  ['I', 'I am good at math.'],
+  ['S', 'I like helping people.'],
+  ['A', 'I like to draw.'],
+  ['E', 'I like to give speeches.']
+];
+
+const riasecTypes = {
+  R: {
+    title: 'Realistic',
+    description: 'Hands-on, practical, mechanical, outdoor, technical, or building-focused work.',
+    pathways: ['Natural resources', 'Health services', 'Industrial and engineering technology']
+  },
+  I: {
+    title: 'Investigative',
+    description: 'Analyzing, researching, experimenting, solving problems, and understanding how things work.',
+    pathways: ['Health services', 'Business', 'Industrial and engineering technology']
+  },
+  A: {
+    title: 'Artistic',
+    description: 'Creative, expressive, flexible, design-oriented, musical, visual, or performance-based work.',
+    pathways: ['Arts and communication', 'Public and human services']
+  },
+  S: {
+    title: 'Social',
+    description: 'Helping, teaching, healing, supporting, counseling, or working closely with people.',
+    pathways: ['Health services', 'Public and human services']
+  },
+  E: {
+    title: 'Enterprising',
+    description: 'Leading, persuading, selling, starting projects, managing people, or shaping decisions.',
+    pathways: ['Business', 'Public and human services', 'Arts and communication']
+  },
+  C: {
+    title: 'Conventional',
+    description: 'Organizing details, records, data, systems, office workflows, numbers, and clear procedures.',
+    pathways: ['Health services', 'Business', 'Industrial and engineering technology']
+  }
+};
+
+const riasecScale = [
+  ['Strongly disagree', 0],
+  ['Disagree', 1],
+  ['Not sure', 2],
+  ['Agree', 3],
+  ['Strongly agree', 4]
+];
+
+screeningTests.careerRiasec = {
+  title: 'Career Pathway RIASEC Quiz',
+  description: 'A one-question-at-a-time Holland Code interest quiz based on the attached RIASEC career pathway worksheet.',
+  riasec: true,
+  questions: riasecQuestions.map(([code, text]) => ({ code, text }))
+};
+
 const screeningScale = ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'];
 const screeningCards = document.querySelectorAll('.screening-card[data-test]');
 const publicScreeningTests = new Set(['depression', 'bai']);
@@ -1460,6 +1646,7 @@ const screeningBand = document.querySelector('#screening-band');
 const screeningNote = document.querySelector('#screening-note');
 const screeningClose = document.querySelector('#screening-close');
 let activeScreeningKey = null;
+const screeningStepState = { index: 0, answers: [] };
 
 function getScreeningInterpretation(test, score, maxScore, answeredValues) {
   const ratio = maxScore ? score / maxScore : 0;
@@ -1520,9 +1707,46 @@ function getScreeningInterpretation(test, score, maxScore, answeredValues) {
   };
 }
 
+function getScreeningQuestions(test) {
+  return test.riasec ? test.questions : test.questions.map((text) => ({ text }));
+}
+
+function showRiasecResult() {
+  const scores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
+  screeningStepState.answers.forEach((answer, index) => {
+    const question = screeningTests.careerRiasec.questions[index];
+    scores[question.code] += Number(answer ?? 0);
+  });
+  const ranked = Object.keys(scores).sort((a, b) => scores[b] - scores[a] || a.localeCompare(b));
+  const code = ranked.slice(0, 3).join('');
+
+  screeningBand.textContent = `Your Holland Code: ${code}`;
+  screeningNote.innerHTML = `
+    <p>Your strongest themes are ${ranked.slice(0, 3).map((letter) => `${letter} - ${riasecTypes[letter].title}`).join(', ')}. Use this as a starting point for career reflection, not a fixed label.</p>
+    <div class="riasec-result-grid">
+      ${ranked.slice(0, 3).map((letter) => {
+        const type = riasecTypes[letter];
+        return `
+          <div class="riasec-result-card">
+            <div class="riasec-result-code">${letter}</div>
+            <div class="riasec-result-title">${type.title} (${scores[letter]})</div>
+            <p>${type.description}</p>
+            <ul>${type.pathways.map((pathway) => `<li>${pathway}</li>`).join('')}</ul>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+  screeningResult.hidden = false;
+}
+
 function showScreeningResult(test) {
-  const checked = [...screeningForm.querySelectorAll('input[type=\"radio\"]:checked')];
-  const answeredValues = checked.map((input) => Number(input.value));
+  if (test.riasec) {
+    showRiasecResult();
+    return;
+  }
+
+  const answeredValues = screeningStepState.answers.map((value) => Number(value));
   const score = answeredValues.reduce((total, value) => total + value, 0);
   const maxScore = test.questions.length * (screeningScale.length - 1);
   const interpretation = getScreeningInterpretation(test, score, maxScore, answeredValues);
@@ -1532,65 +1756,97 @@ function showScreeningResult(test) {
   screeningResult.hidden = false;
 }
 
+function renderScreeningStep() {
+  const test = screeningTests[activeScreeningKey];
+  if (!test || !screeningPanel || !screeningForm) return;
+  const questions = getScreeningQuestions(test);
+  const question = questions[screeningStepState.index];
+  const isFinalQuestion = screeningStepState.index === questions.length - 1;
+  const scale = test.riasec ? riasecScale : screeningScale.map((label, value) => [label, value]);
+
+  screeningForm.innerHTML = '';
+  screeningResult.hidden = true;
+  screeningNote.textContent = '';
+
+  const progress = document.createElement('div');
+  const progressBar = document.createElement('div');
+  const progressFill = document.createElement('span');
+  const item = document.createElement('div');
+  const heading = document.createElement('div');
+  const options = document.createElement('div');
+  const nav = document.createElement('div');
+  const back = document.createElement('button');
+  const reset = document.createElement('button');
+
+  progress.className = 'riasec-progress';
+  progress.textContent = `Question ${screeningStepState.index + 1} of ${questions.length}`;
+  progressBar.className = 'riasec-progress-bar';
+  progressFill.className = 'riasec-progress-fill';
+  progressFill.style.width = `${((screeningStepState.index + 1) / questions.length) * 100}%`;
+  progressBar.append(progressFill);
+
+  item.className = 'riasec-question';
+  heading.className = 'inline-question-title';
+  heading.textContent = question.text;
+  options.className = 'riasec-options';
+  options.setAttribute('role', 'group');
+  options.setAttribute('aria-label', question.text);
+
+  scale.forEach(([label, value]) => {
+    const option = document.createElement('button');
+    option.className = 'riasec-option';
+    option.type = 'button';
+    option.textContent = label;
+    option.addEventListener('click', () => {
+      screeningStepState.answers[screeningStepState.index] = value;
+      if (isFinalQuestion) {
+        screeningForm.innerHTML = '';
+        showScreeningResult(test);
+        trackSuchaEvent('test_submitted', { test: activeScreeningKey });
+        return;
+      }
+      screeningStepState.index += 1;
+      renderScreeningStep();
+    });
+    options.append(option);
+  });
+
+  nav.className = 'riasec-nav';
+  back.className = 'test-reset';
+  back.type = 'button';
+  back.textContent = 'Back';
+  back.disabled = screeningStepState.index === 0;
+  back.addEventListener('click', () => {
+    if (screeningStepState.index === 0) return;
+    screeningStepState.index -= 1;
+    renderScreeningStep();
+  });
+
+  reset.className = 'test-reset';
+  reset.type = 'button';
+  reset.textContent = 'Reset';
+  reset.addEventListener('click', () => {
+    screeningStepState.index = 0;
+    screeningStepState.answers = [];
+    renderScreeningStep();
+  });
+
+  item.append(heading, options);
+  nav.append(back, reset);
+  screeningForm.append(progress, progressBar, item, nav);
+}
+
 function renderScreeningTest(key) {
   const test = screeningTests[key];
   if (!test || !screeningPanel || !screeningForm) return;
 
   activeScreeningKey = key;
+  screeningStepState.index = 0;
+  screeningStepState.answers = [];
   screeningTitle.textContent = test.title;
   screeningDesc.textContent = test.description;
-  screeningForm.innerHTML = '';
   screeningResult.hidden = true;
-
-  test.questions.forEach((question, questionIndex) => {
-    const item = document.createElement('div');
-    const heading = document.createElement('div');
-    const options = document.createElement('div');
-
-    item.className = 'inline-question';
-    heading.className = 'inline-question-title';
-    heading.textContent = `${String(questionIndex + 1).padStart(2, '0')}. ${question}`;
-    options.className = 'inline-options';
-    options.setAttribute('role', 'radiogroup');
-    options.setAttribute('aria-label', question);
-
-    screeningScale.forEach((label, value) => {
-      const option = document.createElement('label');
-      const input = document.createElement('input');
-      const labelText = document.createElement('span');
-
-      input.type = 'radio';
-      input.name = `${key}-${questionIndex}`;
-      input.value = value;
-      input.required = true;
-
-      labelText.textContent = label;
-      option.append(input, labelText);
-      options.append(option);
-    });
-
-    item.append(heading, options);
-    screeningForm.append(item);
-  });
-
-  const actions = document.createElement('div');
-  const submit = document.createElement('button');
-  const reset = document.createElement('button');
-
-  actions.className = 'inline-test-actions';
-  submit.className = 'test-submit';
-  submit.type = 'submit';
-  submit.textContent = 'Show result';
-  reset.className = 'test-reset';
-  reset.type = 'button';
-  reset.textContent = 'Reset';
-  reset.addEventListener('click', () => {
-    screeningForm.reset();
-    screeningResult.hidden = true;
-  });
-
-  actions.append(submit, reset);
-  screeningForm.append(actions);
+  renderScreeningStep();
 
   screeningPanel.hidden = false;
   screeningPanel.classList.add('visible');
@@ -1615,18 +1871,13 @@ screeningCards.forEach((card) => {
   });
 });
 
-screeningForm?.addEventListener('submit', (event) => {
-  event.preventDefault();
-  if (!activeScreeningKey) return;
-  showScreeningResult(screeningTests[activeScreeningKey]);
-  trackSuchaEvent('test_submitted', { test: activeScreeningKey });
-});
-
 screeningClose?.addEventListener('click', () => {
   screeningPanel.hidden = true;
   screeningForm.innerHTML = '';
   screeningResult.hidden = true;
   activeScreeningKey = null;
+  screeningStepState.index = 0;
+  screeningStepState.answers = [];
 });
 
 const hamaForm = document.querySelector('#hama-form');
@@ -1706,6 +1957,56 @@ if (hamaForm) {
     });
   });
 
+  const hamaItems = [...hamaForm.querySelectorAll('.test-item')];
+  const hamaStepState = { index: 0 };
+  const hamaStepControls = document.createElement('div');
+  const hamaProgress = document.createElement('div');
+  const hamaProgressBar = document.createElement('div');
+  const hamaProgressFill = document.createElement('span');
+  const hamaNav = document.createElement('div');
+  const hamaBack = document.createElement('button');
+  const hamaResetStep = document.createElement('button');
+
+  hamaStepControls.className = 'hama-step-controls';
+  hamaProgress.className = 'riasec-progress';
+  hamaProgressBar.className = 'riasec-progress-bar';
+  hamaProgressFill.className = 'riasec-progress-fill';
+  hamaNav.className = 'riasec-nav';
+  hamaBack.className = 'test-reset';
+  hamaBack.type = 'button';
+  hamaBack.textContent = 'Back';
+  hamaResetStep.className = 'test-reset';
+  hamaResetStep.type = 'button';
+  hamaResetStep.textContent = 'Reset';
+  hamaProgressBar.append(hamaProgressFill);
+  hamaNav.append(hamaBack, hamaResetStep);
+  hamaStepControls.append(hamaProgress, hamaProgressBar);
+  hamaForm.insertBefore(hamaStepControls, hamaItems[0] || null);
+  hamaForm.append(hamaNav);
+
+  function renderHamaStep() {
+    hamaItems.forEach((item, index) => {
+      item.hidden = index !== hamaStepState.index;
+      item.classList.toggle('visible', index === hamaStepState.index);
+    });
+    hamaProgress.textContent = `Question ${hamaStepState.index + 1} of ${hamaItems.length}`;
+    hamaProgressFill.style.width = `${((hamaStepState.index + 1) / hamaItems.length) * 100}%`;
+    hamaBack.disabled = hamaStepState.index === 0;
+  }
+
+  hamaBack.addEventListener('click', () => {
+    if (hamaStepState.index === 0) return;
+    hamaStepState.index -= 1;
+    renderHamaStep();
+  });
+
+  hamaResetStep.addEventListener('click', () => {
+    hamaForm.reset();
+    hamaStepState.index = 0;
+    updateHamaScore();
+    renderHamaStep();
+  });
+
   hamaForm.addEventListener('click', async (event) => {
     const input = event.target.closest?.('input[type="radio"]');
     if (!input || await hasSuchaVerification()) return;
@@ -1715,11 +2016,21 @@ if (hamaForm) {
     await requireSuchaVerification({ mode: 'tool', tool: 'Hamilton Anxiety Rating Scale', toolType: 'test' });
   }, true);
 
-  hamaForm.addEventListener('change', updateHamaScore);
+  hamaForm.addEventListener('change', (event) => {
+    updateHamaScore();
+    if (!event.target.closest?.('input[type="radio"]')) return;
+    if (hamaStepState.index < hamaItems.length - 1) {
+      hamaStepState.index += 1;
+      renderHamaStep();
+    }
+  });
   hamaReset?.addEventListener('click', () => {
     hamaForm.reset();
+    hamaStepState.index = 0;
     updateHamaScore();
+    renderHamaStep();
   });
+  renderHamaStep();
 }
 
 const journalLegacyStorageKey = 'sucha-journal-entries';
