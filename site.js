@@ -477,6 +477,23 @@ async function confirmSuchaVerificationCode() {
 
 ensureVerificationModal();
 
+const siteNav = document.querySelector('nav');
+const navMenuToggle = document.querySelector('.nav-menu-toggle');
+const navLinksList = document.querySelector('.nav-links');
+
+navMenuToggle?.addEventListener('click', () => {
+  const isOpen = siteNav?.classList.toggle('is-menu-open');
+  navMenuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  navMenuToggle.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
+});
+
+navLinksList?.addEventListener('click', (event) => {
+  if (!event.target.closest?.('a')) return;
+  siteNav?.classList.remove('is-menu-open');
+  navMenuToggle?.setAttribute('aria-expanded', 'false');
+  navMenuToggle?.setAttribute('aria-label', 'Open menu');
+});
+
 document.addEventListener('click', (event) => {
   const subscribeLink = event.target.closest?.('[data-sucha-subscribe]');
   if (!subscribeLink) return;
@@ -504,11 +521,11 @@ document.querySelectorAll('.step-card, .why-card, .screening-card').forEach((ele
 });
 
 const screeningCardData = [
+  ['depression', 'BDI-style screen', 'BDI Depression Quick Screen', 'For overwhelming sadness, despair, low energy, or negative self-image.', 'Start test'],
+  ['bai', 'Sucha screen', 'Beck Anxiety Inventory (BAI) Quick Screen', 'A BAI-informed anxiety symptom check for recent physical and panic-like symptoms.', 'Start test'],
   ['universal', 'Universal screen', 'Universal Mental Health Screen', 'A broader Sucha-hosted screen for common mental health signals.', 'Start test'],
-  ['depression', 'Sucha screen', 'Depression Test', 'For overwhelming sadness, despair, low energy, or negative self-image.', 'Start test'],
   ['adhd', 'Sucha screen', 'ADHD Test', 'For trouble focusing, remembering things, completing tasks, or sitting still.', 'Start test'],
   ['anxiety', 'Sucha screen', 'Anxiety Test', 'For worry or fear that affects day-to-day functioning.', 'Start test'],
-  ['bai', 'Sucha screen', 'Beck Anxiety Inventory (BAI) Quick Screen', 'A BAI-informed anxiety symptom check for recent physical and panic-like symptoms.', 'Start test'],
   ['ocd', 'Sucha screen', 'OCD Test', 'For repetitive thoughts and behaviors, including checking or rituals, that interfere with life.', 'Start test'],
   ['bipolar', 'Sucha screen', 'Bipolar Test', 'For extreme mood swings or unusual shifts in mood and energy.', 'Start test'],
   ['psychosis', 'Sucha screen', 'Psychosis & Schizophrenia Test', 'For experiences that feel unreal, confusing, or like the brain is playing tricks.', 'Start test'],
@@ -1433,6 +1450,7 @@ const screeningTests = {
 
 const screeningScale = ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'];
 const screeningCards = document.querySelectorAll('.screening-card[data-test]');
+const publicScreeningTests = new Set(['depression', 'bai']);
 const screeningPanel = document.querySelector('#screening-panel');
 const screeningTitle = document.querySelector('#screening-title');
 const screeningDesc = document.querySelector('#screening-desc');
@@ -1584,6 +1602,10 @@ screeningCards.forEach((card) => {
   card.addEventListener('click', async () => {
     const key = card.dataset.test;
     const test = screeningTests[key];
+    if (publicScreeningTests.has(key)) {
+      renderScreeningTest(key);
+      return;
+    }
     const ok = await requireSuchaVerification({
       mode: 'tool',
       tool: test?.title || 'Sucha screening test',
