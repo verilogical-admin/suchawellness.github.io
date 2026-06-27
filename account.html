@@ -257,10 +257,24 @@
   }
   .message-meta,
   .message-empty,
-  .message-help {
+  .message-info {
     color: var(--muted);
     font-size: 0.88rem;
     margin: 0;
+  }
+  .message-info {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.65rem;
+  }
+  .message-info summary {
+    color: var(--teal);
+    cursor: pointer;
+    font-weight: 500;
+    list-style-position: inside;
+  }
+  .message-info p {
+    font-size: 0.88rem;
+    margin: 0.45rem 0 0;
   }
   .message-body {
     color: var(--text);
@@ -361,6 +375,6 @@
   </section>
 </main>
 
-<script src="/account.js?v=care-messages-1" defer></script>
+<script src="/account.js?v=care-messages-2" defer></script>
 </body>
 </html>

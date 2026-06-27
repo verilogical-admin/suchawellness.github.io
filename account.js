@@ -283,7 +283,10 @@ async function renderRequests(requests) {
       <pre></pre>
       <div class="message-thread"></div>
       <form class="message-composer" hidden>
-        <p class="message-help">This message is encrypted with this request key and saved to this account dashboard on this browser. Sharing with a matched care seeker or provider will come after the payment gate is enabled.</p>
+        <details class="message-info">
+          <summary>Info</summary>
+          <p>This message is encrypted with this request key and saved to this account dashboard on this browser. Sharing with a matched care seeker or provider will come after the payment gate is enabled.</p>
+        </details>
         <textarea name="message" placeholder="Write a follow-up message for this request" required></textarea>
         <div class="message-composer-actions">
           <button type="submit">Send message</button>
