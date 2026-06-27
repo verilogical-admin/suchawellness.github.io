@@ -494,6 +494,20 @@ navLinksList?.addEventListener('click', (event) => {
   navMenuToggle?.setAttribute('aria-label', 'Open menu');
 });
 
+document.querySelectorAll('[data-research-toggle]').forEach((toggle) => {
+  toggle.addEventListener('click', () => {
+    const targetId = toggle.getAttribute('aria-controls');
+    const target = targetId ? document.getElementById(targetId) : null;
+    if (!target) return;
+
+    const willOpen = target.hidden;
+    target.hidden = !willOpen;
+    toggle.setAttribute('aria-expanded', String(willOpen));
+    toggle.textContent = willOpen ? 'Hide research' : 'Show research';
+    if (willOpen) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
 document.addEventListener('click', (event) => {
   const subscribeLink = event.target.closest?.('[data-sucha-subscribe]');
   if (!subscribeLink) return;
