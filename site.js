@@ -524,6 +524,7 @@ const screeningCardData = [
   ['depression', 'BDI-style screen', 'BDI Depression Quick Screen', 'For overwhelming sadness, despair, low energy, or negative self-image.', 'Start test'],
   ['bai', 'Sucha screen', 'Beck Anxiety Inventory (BAI) Quick Screen', 'A BAI-informed anxiety symptom check for recent physical and panic-like symptoms.', 'Start test'],
   ['careerRiasec', 'Career guidance', 'Career Pathway RIASEC Quiz', 'A one-question-at-a-time interest quiz to identify your top Holland Code career themes.', 'Start quiz'],
+  ['selfEsteem', 'Self-esteem scale', 'Rosenberg Self-Esteem Scale (RSE)', 'A 10-item self-esteem scale for reflecting on self-worth, self-respect, and overall self-attitude.', 'Start test'],
   ['universal', 'Universal screen', 'Universal Mental Health Screen', 'A broader Sucha-hosted screen for common mental health signals.', 'Start test'],
   ['adhd', 'Sucha screen', 'ADHD Test', 'For trouble focusing, remembering things, completing tasks, or sitting still.', 'Start test'],
   ['anxiety', 'Sucha screen', 'Anxiety Test', 'For worry or fear that affects day-to-day functioning.', 'Start test'],
@@ -547,6 +548,7 @@ const screeningCardData = [
 const screeningGroups = [
   ['Start here', 'Open first-step screens for visitors who want to begin quickly.', ['depression', 'bai']],
   ['Career interests', 'Career and vocational reflection tools.', ['careerRiasec']],
+  ['Self-esteem and identity', 'Reflection tools for self-worth, self-respect, and personal confidence.', ['selfEsteem']],
   ['Common mental health screens', 'Focused screens for mood, anxiety, attention, and related concerns.', ['universal', 'adhd', 'anxiety', 'ocd', 'bipolar', 'psychosis']],
   ['Body, trauma, and behavior patterns', 'Screens for eating, trauma, addiction, gambling, and self-injury patterns.', ['eating', 'ptsd', 'addiction', 'gambling', 'selfInjury']],
   ['Family and youth', 'Screens for parents, young people, and new or expecting parents.', ['postpartum', 'parent', 'youth']],
@@ -1472,6 +1474,23 @@ const screeningTests = {
       'Physical anxiety symptoms made you avoid normal activities.'
     ]
   },
+  selfEsteem: {
+    title: 'Rosenberg Self-Esteem Scale (RSE)',
+    description: 'A 10-item self-esteem scale developed by Morris Rosenberg to reflect on self-worth, self-respect, and overall self-attitude.',
+    rse: true,
+    questions: [
+      { text: 'On the whole, I am satisfied with myself.', reverse: false },
+      { text: 'At times I think I am no good at all.', reverse: true },
+      { text: 'I feel that I have a number of good qualities.', reverse: false },
+      { text: 'I am able to do things as well as most other people.', reverse: false },
+      { text: 'I feel I do not have much to be proud of.', reverse: true },
+      { text: 'I certainly feel useless at times.', reverse: true },
+      { text: 'I feel that I am a person of worth.', reverse: false },
+      { text: 'I wish I could have more respect for myself.', reverse: true },
+      { text: 'All in all, I am inclined to think that I am a failure.', reverse: true },
+      { text: 'I take a positive attitude toward myself.', reverse: false }
+    ]
+  },
   ocd: {
     title: 'OCD Test',
     description: 'A brief Sucha screen for intrusive thoughts, rituals, checking, and time-consuming compulsions.',
@@ -1733,6 +1752,13 @@ const riasecScale = [
   ['Strongly agree', 4]
 ];
 
+const rseScale = [
+  ['Strongly agree', 0],
+  ['Agree', 1],
+  ['Disagree', 2],
+  ['Strongly disagree', 3]
+];
+
 screeningTests.careerRiasec = {
   title: 'Career Pathway RIASEC Quiz',
   description: 'A one-question-at-a-time Holland Code interest quiz based on the attached RIASEC career pathway worksheet.',
@@ -1814,7 +1840,7 @@ function getScreeningInterpretation(test, score, maxScore, answeredValues) {
 }
 
 function getScreeningQuestions(test) {
-  return test.riasec ? test.questions : test.questions.map((text) => ({ text }));
+  return test.riasec || test.rse ? test.questions : test.questions.map((text) => ({ text }));
 }
 
 function resultSupportNote() {
@@ -1873,9 +1899,56 @@ function showRiasecResult() {
   screeningResult.hidden = false;
 }
 
+function getRseBand(score) {
+  if (score < 15) {
+    return {
+      band: 'Lower self-esteem range',
+      note: 'Your answers suggest self-esteem may be feeling strained right now. This can show up as self-criticism, difficulty recognizing strengths, or feeling less worthy than others.'
+    };
+  }
+
+  if (score <= 25) {
+    return {
+      band: 'Typical self-esteem range',
+      note: 'Your answers fall in a common middle range. This can mean you recognize some strengths while still having moments of doubt, criticism, or low confidence.'
+    };
+  }
+
+  return {
+    band: 'Higher self-esteem range',
+    note: 'Your answers suggest a stronger current sense of self-worth and self-respect. It can still be helpful to notice situations that affect confidence over time.'
+  };
+}
+
+function showRseResult(test) {
+  const scoredValues = screeningStepState.answers.map((answer, index) => {
+    const value = Number(answer);
+    return test.questions[index].reverse ? 3 - value : value;
+  });
+  const score = scoredValues.reduce((total, value) => total + value, 0);
+  const positiveItems = scoredValues.filter((value) => value >= 2).length;
+  const interpretation = getRseBand(score);
+
+  screeningBand.textContent = `${interpretation.band} (${score}/30)`;
+  screeningNote.innerHTML = `
+    <div class="result-summary">
+      <p><strong>What this means:</strong> ${interpretation.note} The Rosenberg Self-Esteem Scale is best read as a snapshot of how you are relating to yourself today, not as a fixed label.</p>
+      <p><strong>Your pattern:</strong> After reverse scoring the negatively worded items, ${positiveItems} of ${scoredValues.length} answers leaned toward a stronger self-esteem response. Scores are commonly read with lower scores suggesting more self-esteem strain and higher scores suggesting stronger self-regard.</p>
+      <p><strong>Suggested next step:</strong> If this score feels low, painful, or very different from how you usually feel, consider journaling about the situations that affect your self-respect and discussing the pattern with a qualified counsellor, therapist, psychologist, or doctor.</p>
+      <p class="result-support-note">${resultSupportNote()}</p>
+    </div>
+  `;
+  screeningResult.hidden = false;
+}
+
 function showScreeningResult(test) {
   if (test.riasec) {
     showRiasecResult();
+    return;
+  }
+
+  if (test.rse) {
+    showRseResult(test);
     return;
   }
 
@@ -1904,7 +1977,7 @@ function renderScreeningStep() {
   const questions = getScreeningQuestions(test);
   const question = questions[screeningStepState.index];
   const isFinalQuestion = screeningStepState.index === questions.length - 1;
-  const scale = test.riasec ? riasecScale : screeningScale.map((label, value) => [label, value]);
+  const scale = test.riasec ? riasecScale : test.rse ? rseScale : screeningScale.map((label, value) => [label, value]);
 
   screeningForm.innerHTML = '';
   screeningResult.hidden = true;
