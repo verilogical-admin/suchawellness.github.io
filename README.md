@@ -75,6 +75,10 @@ on browsers that still have the local request key. Follow-up messages can be com
 inside each request card and are encrypted with that same local request key; cross-user
 sharing should wait for the payment-gated matching flow.
 
+The account wallet supports Razorpay top-ups in USD and INR. Balances are tracked per
+currency so provider payments can later be settled from the Sucha wallet without putting
+care details into card, UPI, or Razorpay payment metadata.
+
 Do not put PHI into email, analytics, logs, URLs, Razorpay notes, or support tickets.
 Razorpay wallet/payment support should use non-PHI metadata only. A public HIPAA
 compliance claim should wait until vendor BAAs, access policies, audit procedures,

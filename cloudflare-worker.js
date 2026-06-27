@@ -15,6 +15,12 @@ const JOURNAL_PLAN_ID = 'journal_monthly_5';
 const JOURNAL_PRODUCT = 'SuchaJournal';
 const GUARANTEE_DAYS = 30;
 const VERIFICATION_COOKIE = 'sucha_verified_visitor';
+const WALLET_PRODUCT = 'SuchaCareWallet';
+const WALLET_CURRENCY = 'INR';
+const WALLET_LIMITS = {
+  INR: { min: 10000, max: 5000000, minLabel: '₹100', maxLabel: '₹50,000' },
+  USD: { min: 500, max: 500000, minLabel: '$5', maxLabel: '$5,000' },
+};
 const VERIFICATION_TTL_SECONDS = 90 * 24 * 60 * 60;
 const COUPON_HASHES = [
   'b09ec9ef54d652c18c09ed3ecf48a142bbddea9f9e76c165864109c24fc775ab',
@@ -102,6 +108,18 @@ function cleanCareType(value) {
 
 function careRequestKey(id) {
   return `care:request:${id}`;
+}
+
+function walletKey(ownerHash) {
+  return `wallet:${ownerHash}`;
+}
+
+function walletOrderKey(orderId) {
+  return `wallet:order:${orderId}`;
+}
+
+function walletTransactionKey(ownerHash, paymentId) {
+  return `wallet:tx:${ownerHash}:${paymentId}`;
 }
 
 async function careOwnerHash(email, env) {
@@ -509,6 +527,7 @@ async function listMyCareRequests(request, env) {
   const visitor = await verifiedVisitorFromRequest(request, env);
   if (!visitor?.email) return json({ error: 'Verify your email to view care requests.' }, { status: 401 });
   const ownerHash = await careOwnerHash(visitor.email, env);
+  const wallet = await readWallet(kv, ownerHash);
   const list = await kv.list({ prefix: `care:owner:${ownerHash}:`, limit: 100 });
   const requests = [];
   for (const item of list.keys) {
@@ -517,7 +536,7 @@ async function listMyCareRequests(request, env) {
     if (record) requests.push(carePublicRecord(record));
   }
   requests.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
-  return json({ ok: true, requests });
+  return json({ ok: true, requests, wallet: publicWallet(wallet) });
 }
 
 async function adminSummary(request, env) {
@@ -686,6 +705,172 @@ async function verifySuchaJournalCheckout(request, env) {
   });
 }
 
+function normalizeWalletCurrency(value) {
+  const currency = String(value || WALLET_CURRENCY).trim().toUpperCase();
+  if (!WALLET_LIMITS[currency]) throw new Error('Wallet currency must be USD or INR.');
+  return currency;
+}
+
+function normalizeWalletAmountMinor(value, currency) {
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) throw new Error('Enter a valid wallet amount.');
+  const minor = Math.round(amount * 100);
+  const limits = WALLET_LIMITS[currency] || WALLET_LIMITS[WALLET_CURRENCY];
+  if (minor < limits.min) throw new Error(`Minimum wallet top-up is ${limits.minLabel}.`);
+  if (minor > limits.max) throw new Error(`Maximum wallet top-up is ${limits.maxLabel}.`);
+  return minor;
+}
+
+async function readWallet(kv, ownerHash) {
+  const wallet = await kv.get(walletKey(ownerHash), { type: 'json' });
+  return wallet || {
+    balances: { USD: 0, INR: 0 },
+    transactions: [],
+    updatedAt: null,
+  };
+}
+
+function publicWallet(wallet) {
+  const balances = {
+    USD: Number(wallet.balances?.USD || (wallet.currency === 'USD' ? wallet.balanceMinor : 0) || 0),
+    INR: Number(wallet.balances?.INR || (wallet.currency === 'INR' ? wallet.balanceMinor : 0) || 0),
+  };
+  return {
+    balanceMinor: balances.INR,
+    currency: WALLET_CURRENCY,
+    balances,
+    transactions: Array.isArray(wallet.transactions) ? wallet.transactions.slice(0, 20) : [],
+    updatedAt: wallet.updatedAt || null,
+  };
+}
+
+async function createWalletCheckout(request, env) {
+  const kv = getKv(env);
+  if (!kv) return json({ error: 'Wallet storage is not configured.' }, { status: 501 });
+  const auth = getRazorpayAuth(env);
+  if (!auth) return json({ error: 'Razorpay Worker secrets are not configured.' }, { status: 501 });
+  const visitor = await verifiedVisitorFromRequest(request, env);
+  if (!visitor?.email) return json({ error: 'Verify your email before adding wallet funds.' }, { status: 401 });
+
+  const body = await readJson(request);
+  let amountMinor;
+  let currency;
+  try {
+    currency = normalizeWalletCurrency(body.currency);
+    amountMinor = normalizeWalletAmountMinor(body.amount, currency);
+  } catch (error) {
+    return json({ error: error.message }, { status: 400 });
+  }
+
+  const ownerHash = await careOwnerHash(visitor.email, env);
+  const now = Date.now();
+  const response = await fetch('https://api.razorpay.com/v1/orders', {
+    method: 'POST',
+    headers: {
+      Authorization: auth,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      amount: amountMinor,
+      currency,
+      receipt: `sucha_wallet_${now}`,
+      notes: {
+        product: WALLET_PRODUCT,
+        ownerHash,
+        purpose: 'wallet_topup',
+        supportEmail: 'support@suchawellness.com',
+      },
+    }),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) return json({ error: data.error?.description || 'Could not create Razorpay wallet order.' }, { status: 502 });
+
+  const order = {
+    orderId: data.id,
+    ownerHash,
+    amountMinor: data.amount || amountMinor,
+    currency: data.currency || currency,
+    createdAt: new Date(now).toISOString(),
+    status: 'created',
+  };
+  await kv.put(walletOrderKey(data.id), JSON.stringify(order), { expirationTtl: 60 * 60 * 24 });
+  await recordVerifiedVisitor(request, env, visitor, 'wallet_checkout_created', {
+    tool: 'Sucha Wallet',
+    toolType: 'billing',
+  });
+
+  return json({
+    ok: true,
+    mode: 'order',
+    keyId: env.RAZORPAY_KEY_ID,
+    orderId: data.id,
+    amount: order.amountMinor,
+    currency: order.currency,
+  });
+}
+
+async function verifyWalletCheckout(request, env) {
+  const kv = getKv(env);
+  if (!kv) return json({ error: 'Wallet storage is not configured.' }, { status: 501 });
+  if (!env.RAZORPAY_KEY_SECRET) return json({ error: 'Razorpay Worker secrets are not configured.' }, { status: 501 });
+  const visitor = await verifiedVisitorFromRequest(request, env);
+  if (!visitor?.email) return json({ error: 'Verify your email before adding wallet funds.' }, { status: 401 });
+
+  const body = await readJson(request);
+  const ownerHash = await careOwnerHash(visitor.email, env);
+  const orderId = String(body.razorpay_order_id || '');
+  const paymentId = String(body.razorpay_payment_id || '');
+  const signature = String(body.razorpay_signature || '');
+  const order = orderId ? await kv.get(walletOrderKey(orderId), { type: 'json' }) : null;
+  if (!order || order.ownerHash !== ownerHash) return json({ ok: false, error: 'Wallet order was not found for this account.' }, { status: 404 });
+
+  const expected = await hmacSha256Hex(env.RAZORPAY_KEY_SECRET, `${orderId}|${paymentId}`);
+  if (!signature || signature !== expected) {
+    return json({ ok: false, error: 'Razorpay signature verification failed.' }, { status: 400 });
+  }
+
+  const existingTransaction = await kv.get(walletTransactionKey(ownerHash, paymentId), { type: 'json' });
+  let wallet = await readWallet(kv, ownerHash);
+  if (!existingTransaction) {
+    const now = new Date().toISOString();
+    const transaction = {
+      id: paymentId,
+      orderId,
+      amountMinor: Number(order.amountMinor || 0),
+      currency: order.currency || WALLET_CURRENCY,
+      source: 'razorpay',
+      status: 'credited',
+      createdAt: now,
+    };
+    wallet = {
+      ...wallet,
+      balances: {
+        USD: Number(wallet.balances?.USD || (wallet.currency === 'USD' ? wallet.balanceMinor : 0) || 0) + (transaction.currency === 'USD' ? transaction.amountMinor : 0),
+        INR: Number(wallet.balances?.INR || (wallet.currency === 'INR' ? wallet.balanceMinor : 0) || 0) + (transaction.currency === 'INR' ? transaction.amountMinor : 0),
+      },
+      balanceMinor: Number(wallet.balances?.INR || (wallet.currency === 'INR' ? wallet.balanceMinor : 0) || 0) + (transaction.currency === 'INR' ? transaction.amountMinor : 0),
+      currency: WALLET_CURRENCY,
+      updatedAt: now,
+      transactions: [transaction, ...(Array.isArray(wallet.transactions) ? wallet.transactions : [])].slice(0, 50),
+    };
+    await kv.put(walletTransactionKey(ownerHash, paymentId), JSON.stringify(transaction), { expirationTtl: 60 * 60 * 24 * 365 });
+    await kv.put(walletKey(ownerHash), JSON.stringify(wallet), { expirationTtl: 60 * 60 * 24 * 365 });
+    await kv.put(walletOrderKey(orderId), JSON.stringify({ ...order, status: 'paid', paymentId, paidAt: now }), { expirationTtl: 60 * 60 * 24 * 30 });
+    await recordVerifiedVisitor(request, env, visitor, 'wallet_funded', {
+      tool: 'Sucha Wallet',
+      toolType: 'billing',
+    });
+  }
+
+  return json({
+    ok: true,
+    product: WALLET_PRODUCT,
+    razorpayPaymentId: paymentId,
+    razorpayOrderId: orderId,
+    wallet: publicWallet(wallet),
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -714,6 +899,14 @@ export default {
 
     if (request.method === 'POST' && (url.pathname === '/api/sucha-journal/verify-checkout' || url.pathname === '/api/verify-payment')) {
       return verifySuchaJournalCheckout(request, env);
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/account/wallet/create-checkout') {
+      return createWalletCheckout(request, env);
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/account/wallet/verify-checkout') {
+      return verifyWalletCheckout(request, env);
     }
 
     if (request.method === 'POST' && url.pathname === '/api/sucha-journal/redeem-coupon') {

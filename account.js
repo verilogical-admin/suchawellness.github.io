@@ -10,6 +10,13 @@ const codeForm = document.querySelector('#account-code-form');
 const emailInput = document.querySelector('#account-email');
 const codeInput = document.querySelector('#account-code');
 const loginStatus = document.querySelector('#login-status');
+const walletBalanceEl = document.querySelector('#wallet-balance');
+const walletForm = document.querySelector('#wallet-form');
+const walletCurrencyInput = document.querySelector('#wallet-currency');
+const walletAmountInput = document.querySelector('#wallet-amount');
+const walletAddFundsButton = document.querySelector('#wallet-add-funds');
+const walletStatus = document.querySelector('#wallet-status');
+const walletTransactions = document.querySelector('#wallet-transactions');
 const suchaApiBase = 'https://praivasipdf-api.verilogical.com';
 const suchaApiFallbackBase = 'https://payment-worker.verilogical.com';
 const suchaApiBases = location.protocol === 'https:' && /(^|\.)suchawellness\.com$/i.test(location.hostname)
@@ -28,6 +35,12 @@ function setLoginStatus(message, isError = false) {
   if (!loginStatus) return;
   loginStatus.textContent = message;
   loginStatus.style.color = isError ? '#9b2c2c' : '';
+}
+
+function setWalletStatus(message, isError = false) {
+  if (!walletStatus) return;
+  walletStatus.textContent = message;
+  walletStatus.style.color = isError ? '#9b2c2c' : '';
 }
 
 function bytesToBase64(bytes) {
@@ -121,6 +134,48 @@ async function accountFetch(path) {
   throw lastError || new Error('Could not load account data.');
 }
 
+async function accountPost(path, body, fallback) {
+  const token = localStorage.getItem(verificationTokenKey);
+  let lastError = null;
+  for (const base of suchaApiBases) {
+    try {
+      const response = await fetch(`${base}${path}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: base === location.origin ? 'same-origin' : 'omit',
+        body: JSON.stringify(body),
+      });
+      return await readJson(response, fallback);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error(fallback);
+}
+
+async function ensureRazorpayLoaded() {
+  if (typeof Razorpay !== 'undefined') return true;
+  return new Promise((resolve) => {
+    const existing = document.querySelector('script[src*="checkout.razorpay.com"]');
+    if (existing) {
+      existing.addEventListener('load', () => resolve(typeof Razorpay !== 'undefined'), { once: true });
+      existing.addEventListener('error', () => resolve(false), { once: true });
+      setTimeout(() => resolve(typeof Razorpay !== 'undefined'), 7000);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(typeof Razorpay !== 'undefined');
+    script.onerror = () => resolve(false);
+    document.head.append(script);
+    setTimeout(() => resolve(typeof Razorpay !== 'undefined'), 7000);
+  });
+}
+
 async function decryptCarePayload(request, localKey) {
   const key = await crypto.subtle.importKey(
     'raw',
@@ -198,6 +253,60 @@ function actionCountFor(requests) {
     return count + (messages[request.id]?.length || 0);
   }, 0);
   return openRequests + localMessages;
+}
+
+function formatMoney(minor, currency = 'INR') {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: 2,
+  }).format(Number(minor || 0) / 100);
+}
+
+function walletLimits(currency) {
+  return currency === 'INR'
+    ? { min: 100, max: 50000, defaultAmount: 1000 }
+    : { min: 5, max: 5000, defaultAmount: 50 };
+}
+
+function syncWalletAmountLimits() {
+  if (!walletAmountInput || !walletCurrencyInput) return;
+  const limits = walletLimits(walletCurrencyInput.value);
+  walletAmountInput.min = String(limits.min);
+  walletAmountInput.max = String(limits.max);
+  if (!walletAmountInput.value || Number(walletAmountInput.value) < limits.min || Number(walletAmountInput.value) > limits.max) {
+    walletAmountInput.value = String(limits.defaultAmount);
+  }
+}
+
+function renderWallet(wallet = {}) {
+  const balances = wallet.balances || {};
+  if (walletBalanceEl) {
+    walletBalanceEl.textContent = `${formatMoney(balances.USD || 0, 'USD')} / ${formatMoney(balances.INR || wallet.balanceMinor || 0, 'INR')}`;
+  }
+  if (!walletTransactions) return;
+  walletTransactions.replaceChildren();
+  const transactions = Array.isArray(wallet.transactions) ? wallet.transactions : [];
+  if (!transactions.length) {
+    const empty = document.createElement('p');
+    empty.className = 'message-empty';
+    empty.textContent = 'No wallet transactions yet.';
+    walletTransactions.append(empty);
+    return;
+  }
+  transactions.slice(0, 10).forEach((transaction) => {
+    const row = document.createElement('div');
+    row.className = 'wallet-transaction';
+
+    const detail = document.createElement('span');
+    detail.textContent = `${transaction.status || 'credited'} · ${new Date(transaction.createdAt).toLocaleString()}`;
+
+    const amount = document.createElement('strong');
+    amount.textContent = formatMoney(transaction.amountMinor, transaction.currency || 'INR');
+
+    row.append(detail, amount);
+    walletTransactions.append(row);
+  });
 }
 
 async function renderMessageThread(container, request, localKey) {
@@ -353,8 +462,84 @@ async function renderRequests(requests) {
 async function loadAccount() {
   setStatus('Loading encrypted care requests...');
   const data = await accountFetch('/api/care/requests/mine');
+  renderWallet(data.wallet);
   await renderRequests(data.requests || []);
   setStatus('Dashboard loaded. Private details decrypt only on browsers that hold the local keys.');
+}
+
+async function createWalletCheckout(amount, currency) {
+  return accountPost('/api/account/wallet/create-checkout', { amount, currency }, 'Could not create Razorpay wallet checkout.');
+}
+
+async function verifyWalletCheckout(response) {
+  return accountPost('/api/account/wallet/verify-checkout', {
+    razorpay_order_id: response.razorpay_order_id,
+    razorpay_payment_id: response.razorpay_payment_id,
+    razorpay_signature: response.razorpay_signature,
+  }, 'Could not verify wallet payment.');
+}
+
+async function startWalletTopUp() {
+  if (location.protocol === 'file:') throw new Error('Open the live site or localhost to use Razorpay Checkout.');
+  const currency = walletCurrencyInput?.value || 'USD';
+  const limits = walletLimits(currency);
+  const amount = Number(walletAmountInput?.value || 0);
+  const minimum = currency === 'INR' ? '₹100' : '$5';
+  const maximum = currency === 'INR' ? '₹50,000' : '$5,000';
+  if (!Number.isFinite(amount) || amount < limits.min) throw new Error(`Enter at least ${minimum} to add to your wallet.`);
+  if (amount > limits.max) throw new Error(`Maximum wallet top-up is ${maximum}.`);
+
+  const email = localStorage.getItem(verificationEmailKey) || '';
+  const ready = await ensureRazorpayLoaded();
+  if (!ready) throw new Error('Razorpay Checkout could not load. Check the connection and try again.');
+
+  walletAddFundsButton.disabled = true;
+  setWalletStatus('Opening secure Razorpay checkout...');
+
+  try {
+    const checkout = await createWalletCheckout(amount, currency);
+    const options = {
+      key: checkout.keyId,
+      name: 'Sucha Wellness',
+      description: `Sucha wallet top-up (${checkout.currency || currency})`,
+      amount: checkout.amount,
+      currency: checkout.currency || 'INR',
+      order_id: checkout.orderId,
+      prefill: email ? { email } : {},
+      theme: { color: '#2D7A6B' },
+      notes: {
+        product: 'Sucha Wallet',
+      },
+      handler: async (response) => {
+        try {
+          setWalletStatus('Verifying payment and updating wallet...');
+          const verified = await verifyWalletCheckout(response);
+          renderWallet(verified.wallet);
+          setWalletStatus('Wallet funded. Your payment record stays separate from care details.');
+        } catch (error) {
+          setWalletStatus(error.message || 'Payment verification failed.', true);
+        } finally {
+          walletAddFundsButton.disabled = false;
+        }
+      },
+      modal: {
+        ondismiss: () => {
+          walletAddFundsButton.disabled = false;
+          setWalletStatus('Checkout closed. Wallet was not changed unless payment completed.');
+        },
+      },
+    };
+
+    const rz = new Razorpay(options);
+    rz.on('payment.failed', (event) => {
+      walletAddFundsButton.disabled = false;
+      setWalletStatus(`Razorpay payment failed: ${event.error?.description || 'Try again.'}`, true);
+    });
+    rz.open();
+  } catch (error) {
+    walletAddFundsButton.disabled = false;
+    throw error;
+  }
 }
 
 settingsToggle?.addEventListener('click', () => {
@@ -413,7 +598,20 @@ loadButton?.addEventListener('click', () => {
   loadAccount().catch((error) => setStatus(error.message || 'Could not load dashboard.'));
 });
 
+walletForm?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  startWalletTopUp().catch((error) => setWalletStatus(error.message || 'Could not add wallet funds.', true));
+});
+
+walletCurrencyInput?.addEventListener('change', () => {
+  syncWalletAmountLimits();
+  setWalletStatus(walletCurrencyInput.value === 'INR'
+    ? 'INR supports UPI and cards in Razorpay checkout when enabled.'
+    : 'USD is best for international card top-ups when enabled by Razorpay and the issuing bank.');
+});
+
 emailInput.value = localStorage.getItem(verificationEmailKey) || '';
+syncWalletAmountLimits();
 
 loadAccount().catch(() => {
   setStatus('Open Settings > Email verify to verify this browser and load your account dashboard.');

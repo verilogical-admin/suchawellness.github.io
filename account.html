@@ -159,6 +159,56 @@
     padding: 0.65rem 0.8rem;
     width: 100%;
   }
+  .billing-form {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  .billing-form label {
+    color: var(--text);
+    display: grid;
+    font-weight: 500;
+    gap: 0.35rem;
+  }
+  .billing-form input,
+  .billing-form select {
+    border: 1px solid var(--line);
+    background: white;
+    color: var(--text);
+    font: inherit;
+    min-height: 42px;
+    padding: 0.65rem 0.8rem;
+    width: 100%;
+  }
+  .payment-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0.2rem 0;
+  }
+  .payment-chip {
+    border: 1px solid var(--line);
+    color: var(--teal);
+    font-size: 0.82rem;
+    padding: 0.25rem 0.55rem;
+  }
+  .wallet-transactions {
+    display: grid;
+    gap: 0.6rem;
+    margin-top: 1rem;
+  }
+  .wallet-transaction {
+    border: 1px solid var(--line);
+    background: white;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: space-between;
+    padding: 0.75rem;
+  }
+  .wallet-transaction strong {
+    color: var(--teal);
+    white-space: nowrap;
+  }
   .login-status {
     color: var(--muted);
     font-size: 0.88rem;
@@ -385,8 +435,28 @@
     <div class="panel hidden" id="panel-billing">
       <div class="eyebrow">Billing</div>
       <h2>Wallet and payments</h2>
-      <p>Wallet loading and provider payments should run through Razorpay with no PHI in payment notes or receipts. This panel is reserved for the Razorpay wallet flow after payment products and compliance review are configured.</p>
-      <button class="secondary" type="button" disabled>Add funds with Razorpay</button>
+      <p>Add funds to your Sucha wallet through Razorpay. UPI, Indian cards, and international cards can appear in checkout when enabled by Razorpay and the issuing bank. Care details are not sent to Razorpay payment notes.</p>
+      <div class="payment-options" aria-label="Supported payment options">
+        <span class="payment-chip">UPI</span>
+        <span class="payment-chip">Cards</span>
+        <span class="payment-chip">International cards</span>
+      </div>
+      <form class="billing-form" id="wallet-form">
+        <label>
+          Currency
+          <select id="wallet-currency" required>
+            <option value="USD">USD</option>
+            <option value="INR">INR</option>
+          </select>
+        </label>
+        <label>
+          Amount to add
+          <input id="wallet-amount" type="number" inputmode="decimal" min="5" max="5000" step="1" value="50" required>
+        </label>
+        <button type="submit" id="wallet-add-funds">Add funds with Razorpay</button>
+      </form>
+      <p class="login-status" id="wallet-status">Wallet funds can later be used to pay matched providers while keeping care details out of card/UPI payment metadata.</p>
+      <div class="wallet-transactions" id="wallet-transactions" aria-live="polite"></div>
     </div>
 
     <div class="panel hidden" id="panel-info">
@@ -405,6 +475,6 @@
   </section>
 </main>
 
-<script src="/account.js?v=intake-info-toggle-1" defer></script>
+<script src="/account.js?v=wallet-razorpay-1" defer></script>
 </body>
 </html>
