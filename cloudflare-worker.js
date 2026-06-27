@@ -1,5 +1,5 @@
 const SECURITY_HEADERS = {
-  'Content-Security-Policy': "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https://*.razorpay.com; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' https://checkout.razorpay.com; script-src-attr 'none'; connect-src 'self' https://payment-worker.verilogical.com https://praivasipdf-api.verilogical.com https://api.razorpay.com https://checkout.razorpay.com; frame-src https://api.razorpay.com https://checkout.razorpay.com; form-action 'self'; worker-src 'self'; manifest-src 'self'; media-src 'self'; upgrade-insecure-requests",
+  'Content-Security-Policy': "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https://*.razorpay.com; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' https://checkout.razorpay.com; script-src-attr 'none'; connect-src 'self' https://www.suchawellness.com https://payment-worker.verilogical.com https://praivasipdf-api.verilogical.com https://api.razorpay.com https://checkout.razorpay.com; frame-src https://api.razorpay.com https://checkout.razorpay.com; form-action 'self'; worker-src 'self'; manifest-src 'self'; media-src 'self'; upgrade-insecure-requests",
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
   'X-Content-Type-Options': 'nosniff',
@@ -35,7 +35,23 @@ function json(data, init = {}) {
     ...init,
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+      'Access-Control-Max-Age': '86400',
       ...(init.headers || {}),
+    },
+  });
+}
+
+function corsPreflight() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+      'Access-Control-Max-Age': '86400',
     },
   });
 }
@@ -874,6 +890,10 @@ async function verifyWalletCheckout(request, env) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+
+    if (request.method === 'OPTIONS' && url.pathname.startsWith('/api/')) {
+      return corsPreflight();
+    }
 
     if (url.protocol === 'http:') {
       url.protocol = 'https:';

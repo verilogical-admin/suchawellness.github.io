@@ -17,11 +17,15 @@ const walletAmountInput = document.querySelector('#wallet-amount');
 const walletAddFundsButton = document.querySelector('#wallet-add-funds');
 const walletStatus = document.querySelector('#wallet-status');
 const walletTransactions = document.querySelector('#wallet-transactions');
+const suchaApiPrimaryBase = 'https://www.suchawellness.com';
 const suchaApiBase = 'https://praivasipdf-api.verilogical.com';
 const suchaApiFallbackBase = 'https://payment-worker.verilogical.com';
 const suchaApiBases = location.protocol === 'https:' && /(^|\.)suchawellness\.com$/i.test(location.hostname)
   ? [location.origin, suchaApiBase, suchaApiFallbackBase]
-  : [suchaApiBase, suchaApiFallbackBase];
+  : [suchaApiPrimaryBase, suchaApiBase, suchaApiFallbackBase];
+const walletApiBases = location.protocol === 'https:' && /(^|\.)suchawellness\.com$/i.test(location.hostname)
+  ? [location.origin, suchaApiPrimaryBase]
+  : [suchaApiPrimaryBase];
 const verificationTokenKey = 'sucha-verification-token:v1';
 const verificationEmailKey = 'sucha-verification-email:v1';
 const careRequestKeysStorageKey = 'sucha-care-request-keys:v1';
@@ -136,8 +140,9 @@ async function accountFetch(path) {
 
 async function accountPost(path, body, fallback) {
   const token = localStorage.getItem(verificationTokenKey);
+  const bases = path.startsWith('/api/account/wallet/') ? walletApiBases : suchaApiBases;
   let lastError = null;
-  for (const base of suchaApiBases) {
+  for (const base of bases) {
     try {
       const response = await fetch(`${base}${path}`, {
         method: 'POST',
