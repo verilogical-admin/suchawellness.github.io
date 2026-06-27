@@ -50,7 +50,7 @@
         '<button id="sucha-genie-send" type="submit">Send feedback</button>' +
         '<div id="sucha-genie-status" role="status" aria-live="polite"></div>' +
         '<p id="sucha-genie-note">For care matching or clinical support, use the care forms. This feedback widget is for Sucha site and product feedback.</p>' +
-        '<p id="sucha-genie-brand">Want a widget like this for your brand? <button type="button" id="sucha-genie-brand-request">Ask Feedback Mama</button></p>' +
+        '<p id="sucha-genie-brand">Want a widget like this for your brand? <button type="button" id="sucha-genie-brand-request">Ask FeedbackMama™</button></p>' +
       '</form>' +
     '</div>' +
     '<button id="sucha-genie-button" type="button" aria-label="Open Sucha feedback genie">S</button>';
@@ -173,7 +173,7 @@
 
   brandRequest.addEventListener("click", function () {
     type.value = "Brand widget request";
-    message.value = "I want a Feedback Mama widget and dashboard for my brand. Please contact me.";
+    message.value = "I want a FeedbackMama™ widget and dashboard for my brand. Please contact me.";
     togglePanel(true);
     contact.focus();
   });
