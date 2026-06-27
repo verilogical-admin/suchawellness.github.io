@@ -124,6 +124,46 @@
     display: grid;
     gap: 0.75rem;
   }
+  .login-box {
+    background: var(--white);
+    border: 1px solid var(--line);
+    padding: 1rem;
+  }
+  .login-step {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.65rem;
+  }
+  .step-dot {
+    align-items: center;
+    background: var(--teal);
+    border-radius: 999px;
+    color: white;
+    display: inline-flex;
+    font-size: 0.72rem;
+    height: 24px;
+    justify-content: center;
+    width: 24px;
+  }
+  .login-form {
+    display: grid;
+    gap: 0.65rem;
+  }
+  .login-form input {
+    border: 1px solid var(--line);
+    background: white;
+    color: var(--text);
+    font: inherit;
+    min-height: 42px;
+    padding: 0.65rem 0.8rem;
+    width: 100%;
+  }
+  .login-status {
+    color: var(--muted);
+    font-size: 0.88rem;
+    margin: 0;
+  }
   .stat {
     border: 1px solid var(--line);
     background: var(--white);
@@ -201,6 +241,20 @@
       <h1>Care account</h1>
       <p>Care requests are stored separately from the public website. Private details are encrypted on your device before upload.</p>
     </div>
+    <div class="login-box">
+      <div class="login-step"><span class="step-dot">1</span><strong>Verify your email</strong></div>
+      <p>Use the same email you used for care requests. We will send a 6-digit code and a sign-in link.</p>
+      <form class="login-form" id="account-login-form">
+        <input id="account-email" type="email" autocomplete="email" placeholder="Email address" required>
+        <button type="submit">Send login code</button>
+      </form>
+      <div class="login-step" style="margin-top:1rem"><span class="step-dot">2</span><strong>Enter the code</strong></div>
+      <form class="login-form" id="account-code-form">
+        <input id="account-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code" required>
+        <button type="submit">Verify and load dashboard</button>
+      </form>
+      <p class="login-status" id="login-status">Email verification is your account login for now. Password/passkey login and reset can be added in the next account phase.</p>
+    </div>
     <div class="stats">
       <div class="stat"><span>Submitted queries</span><strong id="request-count">0</strong></div>
       <div class="stat"><span>Wallet loaded</span><strong id="wallet-balance">$0</strong></div>
@@ -234,6 +288,6 @@
   </section>
 </main>
 
-<script src="/account.js?v=care-account-1" defer></script>
+<script src="/account.js?v=account-login-1" defer></script>
 </body>
 </html>

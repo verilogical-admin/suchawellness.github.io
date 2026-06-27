@@ -373,11 +373,13 @@ async function consumeVerificationLink(request, env) {
     toolType: challenge.toolType || '',
   });
   const token = await signVerificationToken(visitor, env);
-  const hash = challenge.toolType === 'journal' ? '#journal' : '#take-test';
+  const location = challenge.toolType === 'account'
+    ? '/account'
+    : `/${challenge.toolType === 'journal' ? '#journal' : '#take-test'}`;
   return new Response(null, {
     status: 302,
     headers: {
-      Location: `/${hash}`,
+      Location: location,
       'Set-Cookie': `${VERIFICATION_COOKIE}=${encodeURIComponent(token)}; Max-Age=${VERIFICATION_TTL_SECONDS}; Path=/; SameSite=Lax; Secure; HttpOnly`,
       'Cache-Control': 'no-store',
     },

@@ -5,16 +5,28 @@ const requestsList = document.querySelector('#requests-list');
 const settingsToggle = document.querySelector('#settings-toggle');
 const settingsMenu = document.querySelector('#settings-menu');
 const loadButton = document.querySelector('#load-account');
+const loginForm = document.querySelector('#account-login-form');
+const codeForm = document.querySelector('#account-code-form');
+const emailInput = document.querySelector('#account-email');
+const codeInput = document.querySelector('#account-code');
+const loginStatus = document.querySelector('#login-status');
 const suchaApiBase = 'https://praivasipdf-api.verilogical.com';
 const suchaApiFallbackBase = 'https://payment-worker.verilogical.com';
 const suchaApiBases = location.protocol === 'https:' && /(^|\.)suchawellness\.com$/i.test(location.hostname)
   ? [location.origin, suchaApiBase, suchaApiFallbackBase]
   : [suchaApiBase, suchaApiFallbackBase];
 const verificationTokenKey = 'sucha-verification-token:v1';
+const verificationEmailKey = 'sucha-verification-email:v1';
 const careRequestKeysStorageKey = 'sucha-care-request-keys:v1';
 
 function setStatus(message) {
   if (statusEl) statusEl.textContent = message;
+}
+
+function setLoginStatus(message, isError = false) {
+  if (!loginStatus) return;
+  loginStatus.textContent = message;
+  loginStatus.style.color = isError ? '#9b2c2c' : '';
 }
 
 function bytesToBase64(bytes) {
@@ -41,6 +53,42 @@ async function readJson(response, fallback) {
   const data = await response.json().catch(() => ({}));
   if (!response.ok || !data.ok) throw new Error(data.error || fallback);
   return data;
+}
+
+async function apiPost(path, body, fallback) {
+  let lastError = null;
+  for (const base of suchaApiBases) {
+    try {
+      const response = await fetch(`${base}${path}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: base === location.origin ? 'same-origin' : 'omit',
+        body: JSON.stringify(body),
+      });
+      return await readJson(response, fallback);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error(fallback);
+}
+
+async function sendAccountCode(email) {
+  return apiPost('/api/verification/request-code', {
+    email,
+    subscribed: false,
+    tool: 'Sucha Account',
+    toolType: 'account',
+  }, 'Could not send login code.');
+}
+
+async function verifyAccountCode(email, code) {
+  return apiPost('/api/verification/verify-code', {
+    email,
+    code,
+    tool: 'Sucha Account',
+    toolType: 'account',
+  }, 'Could not verify login code.');
 }
 
 async function accountFetch(path) {
@@ -153,10 +201,48 @@ settingsMenu?.addEventListener('click', (event) => {
   settingsToggle?.setAttribute('aria-expanded', 'false');
 });
 
+loginForm?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const email = emailInput.value.trim().toLowerCase();
+  if (!email) {
+    setLoginStatus('Enter your email address first.', true);
+    return;
+  }
+  localStorage.setItem(verificationEmailKey, email);
+  setLoginStatus('Sending login code...');
+  sendAccountCode(email)
+    .then(() => {
+      setLoginStatus('Code sent. Check your email, then enter the 6-digit code below. You can also click the sign-in link in the email.');
+      codeInput?.focus();
+    })
+    .catch((error) => setLoginStatus(error.message || 'Could not send login code.', true));
+});
+
+codeForm?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const email = (emailInput.value.trim() || localStorage.getItem(verificationEmailKey) || '').toLowerCase();
+  const code = codeInput.value.trim();
+  if (!email || !/^\d{6}$/.test(code)) {
+    setLoginStatus('Enter your email and the 6-digit code from Sucha.', true);
+    return;
+  }
+  setLoginStatus('Verifying and loading dashboard...');
+  verifyAccountCode(email, code)
+    .then(async (data) => {
+      localStorage.setItem(verificationTokenKey, data.token);
+      localStorage.setItem(verificationEmailKey, data.visitor?.email || email);
+      setLoginStatus('Verified. Loading your private dashboard...');
+      await loadAccount();
+    })
+    .catch((error) => setLoginStatus(error.message || 'Could not verify login code.', true));
+});
+
 loadButton?.addEventListener('click', () => {
   loadAccount().catch((error) => setStatus(error.message || 'Could not load dashboard.'));
 });
 
+emailInput.value = localStorage.getItem(verificationEmailKey) || '';
+
 loadAccount().catch(() => {
-  setStatus('Verify your email from the main Sucha site, then return here to load your dashboard.');
+  setStatus('Verify your email above to load your account dashboard.');
 });
