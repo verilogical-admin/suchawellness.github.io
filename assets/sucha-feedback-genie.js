@@ -5,11 +5,14 @@
   var API = /(^|\.)suchawellness\.com$/i.test(location.hostname)
     ? location.origin
     : "https://www.suchawellness.com";
+  var FEEDBACK_MAMA_API = "https://feedbackmama.com/api";
+  var FEEDBACK_MAMA_HANDLE = "chand";
   var page = location.pathname.split("/").pop() || "index.html";
 
   var style = document.createElement("style");
   style.textContent =
     "#sucha-genie{position:fixed;right:18px;bottom:18px;z-index:1200;font-family:'Jost',system-ui,sans-serif}" +
+    "#sucha-genie:before{content:'\\1F9DE';position:absolute;right:2px;top:-20px;width:28px;height:28px;border-radius:50%;background:#fff;border:1px solid rgba(45,122,107,.22);box-shadow:0 8px 20px rgba(45,122,107,.22);display:grid;place-items:center;font-size:17px;line-height:1;z-index:1}" +
     "#sucha-genie-button{width:58px;height:58px;border:0;border-radius:50%;cursor:pointer;background:radial-gradient(circle at 34% 24%,#fff 0 10%,#BEE7DC 12% 34%,#2D7A6B 62%,#15493F 100%);box-shadow:0 16px 38px rgba(45,122,107,.34);color:white;font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:500;display:grid;place-items:center;transition:transform .16s,box-shadow .16s}" +
     "#sucha-genie-button:hover,#sucha-genie-button:focus-visible{transform:translateY(-2px) scale(1.04);box-shadow:0 18px 44px rgba(45,122,107,.42)}" +
     "#sucha-genie-panel{position:absolute;right:0;bottom:72px;width:min(360px,calc(100vw - 28px));background:#fff;border:1px solid rgba(45,122,107,.22);box-shadow:0 24px 70px rgba(23,23,23,.18);display:none;overflow:hidden}" +
@@ -39,9 +42,9 @@
   root.innerHTML =
     '<div id="sucha-genie-toast"></div>' +
     '<div id="sucha-genie-panel" aria-hidden="true">' +
-      '<div id="sucha-genie-head"><div><b>Sucha Mama</b><br><span>Site feedback, product ideas, experience issues</span></div><button id="sucha-genie-close" type="button" aria-label="Close feedback panel">x</button></div>' +
+      '<div id="sucha-genie-head"><div><b>Sucha Mama</b><br><span>Site feedback, feature requests, experience issues</span></div><button id="sucha-genie-close" type="button" aria-label="Close feedback panel">x</button></div>' +
       '<form id="sucha-genie-form">' +
-        '<div class="sucha-genie-row"><label for="sucha-genie-type">Type</label><select id="sucha-genie-type"><option>Feedback</option><option>Product idea</option><option>Issue</option><option>Care platform feedback</option><option>Brand widget request</option></select></div>' +
+        '<div class="sucha-genie-row"><label for="sucha-genie-type">Type</label><select id="sucha-genie-type"><option>Feedback</option><option>Feature request</option><option>Issue</option><option>Care platform feedback</option><option>Brand widget request</option></select></div>' +
         '<div class="sucha-genie-row"><label for="sucha-genie-message">Message</label><textarea id="sucha-genie-message" required placeholder="Tell us about the site or product experience. Please do not include medical details here."></textarea></div>' +
         '<div class="sucha-genie-row"><label for="sucha-genie-contact">Contact for reply (optional)</label><input id="sucha-genie-contact" placeholder="Email, phone, or leave blank"></div>' +
         '<button id="sucha-genie-send" type="submit">Send feedback</button>' +
@@ -90,6 +93,75 @@
     status.style.display = "none";
   }
 
+  function bytesToBase64(bytes) {
+    var binary = "";
+    new Uint8Array(bytes).forEach(function (byte) {
+      binary += String.fromCharCode(byte);
+    });
+    return btoa(binary);
+  }
+
+  function randomBytes(length) {
+    var bytes = new Uint8Array(length);
+    crypto.getRandomValues(bytes);
+    return bytes;
+  }
+
+  async function encryptForMama(publicKeyJwk, payload) {
+    var publicKey = await crypto.subtle.importKey(
+      "jwk",
+      publicKeyJwk,
+      { name: "RSA-OAEP", hash: "SHA-256" },
+      false,
+      ["encrypt"]
+    );
+    var contentKey = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt"]);
+    var iv = randomBytes(12);
+    var ciphertext = await crypto.subtle.encrypt(
+      { name: "AES-GCM", iv: iv },
+      contentKey,
+      new TextEncoder().encode(JSON.stringify(payload))
+    );
+    var rawContentKey = await crypto.subtle.exportKey("raw", contentKey);
+    var encryptedKey = await crypto.subtle.encrypt({ name: "RSA-OAEP" }, publicKey, rawContentKey);
+    return {
+      ciphertext: bytesToBase64(ciphertext),
+      encryptedKey: bytesToBase64(encryptedKey),
+      iv: bytesToBase64(iv)
+    };
+  }
+
+  async function sendBrandRequestToChandMama(text) {
+    var profileResponse = await fetch(FEEDBACK_MAMA_API + "/mamas/" + encodeURIComponent(FEEDBACK_MAMA_HANDLE));
+    var profile = await profileResponse.json().catch(function () { return {}; });
+    if (!profileResponse.ok || !profile.publicKeyJwk) {
+      throw new Error(profile.error || "Chand Mama dashboard is not ready for widget requests yet.");
+    }
+    var encrypted = await encryptForMama(profile.publicKeyJwk, {
+      text: text,
+      tag: "Brand widget request",
+      authorName: contact.value.trim(),
+      temporaryHandle: "Sucha Mama widget",
+      anonymous: !contact.value.trim(),
+      submittedAt: new Date().toISOString(),
+      source: "Sucha Wellness feedback widget",
+      url: location.href
+    });
+    var response = await fetch(FEEDBACK_MAMA_API + "/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        handle: FEEDBACK_MAMA_HANDLE,
+        ...encrypted,
+        tag: "Brand widget request",
+        anonymous: !contact.value.trim()
+      })
+    });
+    var data = await response.json().catch(function () { return {}; });
+    if (!response.ok || data.ok === false) throw new Error(data.error || "Could not send to Chand Mama.");
+    return data;
+  }
+
   bubble.addEventListener("click", function () {
     clearStatus();
     togglePanel();
@@ -112,8 +184,17 @@
     if (!text) return;
     send.disabled = true;
     send.textContent = "Sending...";
-    showStatus("Sending to Sucha Mama...", "ok");
+    var isBrandWidgetRequest = type.value === "Brand widget request";
+    showStatus(isBrandWidgetRequest ? "Sending to Chand Mama..." : "Sending to Sucha Mama...", "ok");
     try {
+      if (isBrandWidgetRequest) {
+        var chandData = await sendBrandRequestToChandMama(text);
+        form.reset();
+        showStatus("Thanks. Chand Mama received your widget request. Ref: " + chandData.id, "ok");
+        togglePanel(false);
+        showToast("Thanks. Chand Mama received your widget request. Ref: " + chandData.id);
+        return;
+      }
       var response = await fetch(API + "/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
