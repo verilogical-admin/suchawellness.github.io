@@ -30,7 +30,8 @@
     "#sucha-genie-status.err{display:block;background:#FFF1F0;color:#9b2c2c;border-color:#f4b4ad}#sucha-genie-status.ok{display:block}" +
     "#sucha-genie-note,#sucha-genie-brand{color:#4E534A;font-size:12px;line-height:1.45;margin:0}" +
     "#sucha-genie-brand{border-top:1px solid rgba(45,122,107,.18);padding-top:10px}" +
-    "#sucha-genie-brand button{background:transparent;border:0;color:#2D7A6B;cursor:pointer;font:inherit;font-weight:600;padding:0;text-align:left}" +
+    "#sucha-genie-brand button,#sucha-genie-brand a{background:transparent;border:0;color:#2D7A6B;cursor:pointer;font:inherit;font-weight:600;padding:0;text-align:left;text-decoration:none}" +
+    "#sucha-genie-brand a{margin-left:6px}" +
     "#sucha-genie-toast{position:absolute;right:0;bottom:72px;width:min(360px,calc(100vw - 28px));background:#15493F;color:#fff;display:none;font-size:13px;line-height:1.45;padding:12px 14px;box-shadow:0 18px 44px rgba(23,23,23,.2)}" +
     "@media (max-width:900px){#sucha-genie{right:16px;bottom:16px}}" +
     "@media (max-width:640px){#sucha-genie{right:14px;bottom:14px}#sucha-genie-button{width:54px;height:54px;font-size:28px}#sucha-genie-panel,#sucha-genie-toast{position:fixed;left:12px!important;right:12px!important;bottom:82px!important;width:auto!important;max-height:calc(100vh - 104px);overflow:auto}#sucha-genie-form{padding:12px}.sucha-genie-row textarea{min-height:96px}}" +
@@ -50,7 +51,7 @@
         '<button id="sucha-genie-send" type="submit">Send feedback</button>' +
         '<div id="sucha-genie-status" role="status" aria-live="polite"></div>' +
         '<p id="sucha-genie-note">For care matching or clinical support, use the care forms. This feedback widget is for Sucha site and product feedback.</p>' +
-        '<p id="sucha-genie-brand">Want a widget like this for your brand? <button type="button" id="sucha-genie-brand-request">Ask FeedbackMama™</button></p>' +
+        '<p id="sucha-genie-brand">Want a widget like this for your brand? <button type="button" id="sucha-genie-brand-request">Ask FeedbackMama™</button> · <a href="https://feedbackmama.com" target="_blank" rel="noopener">Visit feedbackmama.com</a></p>' +
       '</form>' +
     '</div>' +
     '<button id="sucha-genie-button" type="button" aria-label="Open Sucha feedback genie">S</button>';
