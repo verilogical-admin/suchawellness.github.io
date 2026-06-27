@@ -164,14 +164,24 @@
     gap: 0.75rem;
     margin-top: 1rem;
   }
-  .billing-form label {
+  .billing-form label,
+  .security-form label,
+  .lock-form label {
     color: var(--text);
     display: grid;
     font-weight: 500;
     gap: 0.35rem;
   }
+  .security-form,
+  .lock-form {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
   .billing-form input,
-  .billing-form select {
+  .billing-form select,
+  .security-form input,
+  .lock-form input {
     border: 1px solid var(--line);
     background: white;
     color: var(--text);
@@ -354,6 +364,28 @@
     padding: 0.8rem;
     white-space: pre-wrap;
   }
+  .lock-overlay {
+    align-items: center;
+    background: rgba(245,242,235,0.96);
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    padding: 1rem;
+    position: fixed;
+    z-index: 30;
+  }
+  .lock-overlay[hidden] { display: none; }
+  .lock-card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    box-shadow: 0 24px 70px rgba(45,122,107,0.16);
+    max-width: 440px;
+    padding: 1.3rem;
+    width: min(100%, 440px);
+  }
+  .account-locked main {
+    visibility: hidden;
+  }
   .notice {
     border-left: 3px solid var(--teal-soft);
     padding-left: 0.9rem;
@@ -369,6 +401,7 @@
 <header>
   <a class="brand" href="/">Sucha Account</a>
   <div class="header-actions">
+    <button class="button secondary" id="account-lock-now" type="button" hidden>Lock</button>
     <a class="button secondary" href="/">Main site</a>
     <div class="settings-wrap">
       <button class="icon-button" id="settings-toggle" type="button" aria-label="Settings" aria-expanded="false">
@@ -387,6 +420,38 @@
     </div>
   </div>
 </header>
+
+<section class="lock-overlay" id="account-lock-overlay" role="dialog" aria-modal="true" aria-labelledby="account-lock-title" hidden>
+  <div class="lock-card">
+    <div class="eyebrow">Locked</div>
+    <h2 id="account-lock-title">Unlock account dashboard</h2>
+    <p>This browser has a local account lock. Unlock to load care requests, wallet details, and encrypted request threads.</p>
+    <form class="lock-form" id="account-unlock-form">
+      <label>
+        Local passcode
+        <input id="account-unlock-passcode" type="password" autocomplete="current-password" minlength="6" required>
+      </label>
+      <button type="submit">Unlock dashboard</button>
+    </form>
+    <details class="message-info" style="margin-top:1rem">
+      <summary>Forgot passcode?</summary>
+      <p>Verify your account email to reset only this browser lock. This does not recover deleted browser encryption keys.</p>
+      <form class="lock-form" id="account-lock-reset-form">
+        <label>
+          Email address
+          <input id="account-lock-reset-email" type="email" autocomplete="email" placeholder="Email address">
+        </label>
+        <button type="button" id="account-lock-reset-send">Send reset code</button>
+        <label>
+          Reset code
+          <input id="account-lock-reset-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code">
+        </label>
+        <button type="submit">Verify and reset lock</button>
+      </form>
+    </details>
+    <p class="login-status" id="account-lock-status">This passcode is stored only as a browser hash. Email verification cannot recover it.</p>
+  </div>
+</section>
 
 <main>
   <aside class="panel stack">
@@ -471,10 +536,26 @@
       <h2>Encryption and recovery</h2>
       <p>Current care requests use browser-held encryption keys. Password reset can restore account access in a future account system, but it should not unlock old encrypted care details unless a recovery key or trusted-device recovery is configured.</p>
       <p class="notice">Do not store PHI in email, URLs, payment metadata, analytics, or support tickets.</p>
+      <form class="security-form" id="account-lock-setup-form">
+        <label>
+          Local dashboard passcode
+          <input id="account-lock-passcode" type="password" autocomplete="new-password" minlength="6" placeholder="At least 6 characters">
+        </label>
+        <label>
+          Confirm passcode
+          <input id="account-lock-passcode-confirm" type="password" autocomplete="new-password" minlength="6">
+        </label>
+        <button type="submit">Set local lock</button>
+      </form>
+      <div class="message-composer-actions">
+        <button class="secondary" id="account-security-lock-now" type="button">Lock now</button>
+        <button class="secondary" id="account-lock-remove" type="button">Remove local lock</button>
+      </div>
+      <p class="login-status" id="account-security-status">A local lock helps when someone else uses this device. It does not replace encryption or device-level security.</p>
     </div>
   </section>
 </main>
 
-<script src="/account.js?v=wallet-razorpay-1" defer></script>
+<script src="/account.js?v=account-lock-1" defer></script>
 </body>
 </html>

@@ -79,6 +79,10 @@ The account wallet supports Razorpay top-ups in USD and INR. Balances are tracke
 currency so provider payments can later be settled from the Sucha wallet without putting
 care details into card, UPI, or Razorpay payment metadata.
 
+The account page also supports an optional browser-local dashboard lock. The passcode is
+stored only as a salted browser hash. Email verification can reset that local lock, but it
+does not recreate deleted browser-held care encryption keys.
+
 Do not put PHI into email, analytics, logs, URLs, Razorpay notes, or support tickets.
 Razorpay wallet/payment support should use non-PHI metadata only. A public HIPAA
 compliance claim should wait until vendor BAAs, access policies, audit procedures,

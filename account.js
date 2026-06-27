@@ -17,6 +17,21 @@ const walletAmountInput = document.querySelector('#wallet-amount');
 const walletAddFundsButton = document.querySelector('#wallet-add-funds');
 const walletStatus = document.querySelector('#wallet-status');
 const walletTransactions = document.querySelector('#wallet-transactions');
+const accountLockNowButton = document.querySelector('#account-lock-now');
+const accountSecurityLockNowButton = document.querySelector('#account-security-lock-now');
+const accountLockOverlay = document.querySelector('#account-lock-overlay');
+const accountUnlockForm = document.querySelector('#account-unlock-form');
+const accountUnlockPasscode = document.querySelector('#account-unlock-passcode');
+const accountLockStatus = document.querySelector('#account-lock-status');
+const accountLockResetForm = document.querySelector('#account-lock-reset-form');
+const accountLockResetEmail = document.querySelector('#account-lock-reset-email');
+const accountLockResetCode = document.querySelector('#account-lock-reset-code');
+const accountLockResetSend = document.querySelector('#account-lock-reset-send');
+const accountLockSetupForm = document.querySelector('#account-lock-setup-form');
+const accountLockPasscode = document.querySelector('#account-lock-passcode');
+const accountLockPasscodeConfirm = document.querySelector('#account-lock-passcode-confirm');
+const accountLockRemoveButton = document.querySelector('#account-lock-remove');
+const accountSecurityStatus = document.querySelector('#account-security-status');
 const suchaApiPrimaryBase = 'https://www.suchawellness.com';
 const suchaApiBase = 'https://praivasipdf-api.verilogical.com';
 const suchaApiFallbackBase = 'https://payment-worker.verilogical.com';
@@ -30,6 +45,8 @@ const verificationTokenKey = 'sucha-verification-token:v1';
 const verificationEmailKey = 'sucha-verification-email:v1';
 const careRequestKeysStorageKey = 'sucha-care-request-keys:v1';
 const careRequestMessagesStorageKey = 'sucha-care-request-messages:v1';
+const accountLockStorageKey = 'sucha-account-local-lock:v1';
+const accountLockSessionKey = 'sucha-account-unlocked:v1';
 
 function setStatus(message) {
   if (statusEl) statusEl.textContent = message;
@@ -45,6 +62,18 @@ function setWalletStatus(message, isError = false) {
   if (!walletStatus) return;
   walletStatus.textContent = message;
   walletStatus.style.color = isError ? '#9b2c2c' : '';
+}
+
+function setAccountLockStatus(message, isError = false) {
+  if (!accountLockStatus) return;
+  accountLockStatus.textContent = message;
+  accountLockStatus.style.color = isError ? '#9b2c2c' : '';
+}
+
+function setAccountSecurityStatus(message, isError = false) {
+  if (!accountSecurityStatus) return;
+  accountSecurityStatus.textContent = message;
+  accountSecurityStatus.style.color = isError ? '#9b2c2c' : '';
 }
 
 function bytesToBase64(bytes) {
@@ -77,6 +106,105 @@ function readCareMessages() {
 
 function writeCareMessages(messages) {
   localStorage.setItem(careRequestMessagesStorageKey, JSON.stringify(messages));
+}
+
+function readAccountLockConfig() {
+  try {
+    return JSON.parse(localStorage.getItem(accountLockStorageKey) || 'null');
+  } catch {
+    return null;
+  }
+}
+
+function isAccountLockConfigured() {
+  const config = readAccountLockConfig();
+  return Boolean(config?.salt && config?.hash);
+}
+
+function isAccountUnlocked() {
+  return !isAccountLockConfigured() || sessionStorage.getItem(accountLockSessionKey) === 'true';
+}
+
+function clearDashboardView() {
+  requestsList?.replaceChildren();
+  walletTransactions?.replaceChildren();
+  if (requestCountEl) requestCountEl.textContent = '0';
+  if (actionCountEl) actionCountEl.textContent = '0';
+  if (walletBalanceEl) walletBalanceEl.textContent = '$0';
+}
+
+function applyAccountLockState() {
+  const configured = isAccountLockConfigured();
+  const unlocked = isAccountUnlocked();
+  document.body.classList.toggle('account-locked', configured && !unlocked);
+  if (accountLockOverlay) accountLockOverlay.hidden = !configured || unlocked;
+  if (accountLockNowButton) accountLockNowButton.hidden = !configured;
+  if (accountSecurityLockNowButton) accountSecurityLockNowButton.disabled = !configured || !unlocked;
+  if (accountLockRemoveButton) accountLockRemoveButton.disabled = !configured;
+}
+
+async function hashAccountPasscode(passcode, salt) {
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(passcode),
+    'PBKDF2',
+    false,
+    ['deriveBits']
+  );
+  const derived = await crypto.subtle.deriveBits(
+    {
+      name: 'PBKDF2',
+      salt: base64ToBytes(salt),
+      iterations: 150000,
+      hash: 'SHA-256',
+    },
+    keyMaterial,
+    256
+  );
+  return bytesToBase64(new Uint8Array(derived));
+}
+
+async function setLocalAccountLock(passcode) {
+  if (!crypto?.subtle) throw new Error('This browser does not support local account locking.');
+  const salt = bytesToBase64(crypto.getRandomValues(new Uint8Array(16)));
+  const hash = await hashAccountPasscode(passcode, salt);
+  localStorage.setItem(accountLockStorageKey, JSON.stringify({
+    version: 1,
+    salt,
+    hash,
+    createdAt: new Date().toISOString(),
+  }));
+  sessionStorage.setItem(accountLockSessionKey, 'true');
+  applyAccountLockState();
+}
+
+async function verifyLocalAccountLock(passcode) {
+  const config = readAccountLockConfig();
+  if (!config?.salt || !config?.hash) return true;
+  const hash = await hashAccountPasscode(passcode, config.salt);
+  return hash === config.hash;
+}
+
+function lockAccount() {
+  if (!isAccountLockConfigured()) {
+    setAccountSecurityStatus('Set a local passcode first.', true);
+    return;
+  }
+  sessionStorage.removeItem(accountLockSessionKey);
+  clearDashboardView();
+  setStatus('Dashboard locked. Unlock this browser to load account details.');
+  applyAccountLockState();
+  accountUnlockPasscode?.focus();
+}
+
+function resetLocalAccountLockAfterEmail(data, email) {
+  localStorage.setItem(verificationTokenKey, data.token);
+  localStorage.setItem(verificationEmailKey, data.visitor?.email || email);
+  localStorage.removeItem(accountLockStorageKey);
+  sessionStorage.setItem(accountLockSessionKey, 'true');
+  applyAccountLockState();
+  setAccountLockStatus('Email verified. Local lock reset. Set a new passcode in Settings > Security.');
+  setStatus('Local lock reset after email verification. Set a new passcode in Settings > Security.');
 }
 
 async function readJson(response, fallback) {
@@ -465,6 +593,10 @@ async function renderRequests(requests) {
 }
 
 async function loadAccount() {
+  if (!isAccountUnlocked()) {
+    applyAccountLockState();
+    throw new Error('Unlock this browser before loading your account dashboard.');
+  }
   setStatus('Loading encrypted care requests...');
   const data = await accountFetch('/api/care/requests/mine');
   renderWallet(data.wallet);
@@ -485,6 +617,7 @@ async function verifyWalletCheckout(response) {
 }
 
 async function startWalletTopUp() {
+  if (!isAccountUnlocked()) throw new Error('Unlock this browser before adding wallet funds.');
   if (location.protocol === 'file:') throw new Error('Open the live site or localhost to use Razorpay Checkout.');
   const currency = walletCurrencyInput?.value || 'USD';
   const limits = walletLimits(currency);
@@ -563,6 +696,89 @@ settingsMenu?.addEventListener('click', (event) => {
   settingsToggle?.setAttribute('aria-expanded', 'false');
 });
 
+accountUnlockForm?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const passcode = accountUnlockPasscode.value;
+  verifyLocalAccountLock(passcode)
+    .then(async (ok) => {
+      if (!ok) {
+        setAccountLockStatus('That passcode did not unlock this browser.', true);
+        return;
+      }
+      sessionStorage.setItem(accountLockSessionKey, 'true');
+      accountUnlockPasscode.value = '';
+      setAccountLockStatus('Unlocked.');
+      applyAccountLockState();
+      await loadAccount();
+    })
+    .catch((error) => setAccountLockStatus(error.message || 'Could not unlock dashboard.', true));
+});
+
+accountLockSetupForm?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const passcode = accountLockPasscode.value;
+  const confirm = accountLockPasscodeConfirm.value;
+  if (!passcode || passcode.length < 6) {
+    setAccountSecurityStatus('Use a local passcode of at least 6 characters.', true);
+    return;
+  }
+  if (passcode !== confirm) {
+    setAccountSecurityStatus('The passcodes do not match.', true);
+    return;
+  }
+  setLocalAccountLock(passcode)
+    .then(() => {
+      accountLockPasscode.value = '';
+      accountLockPasscodeConfirm.value = '';
+      setAccountSecurityStatus('Local lock is on. Use Lock now when you step away.');
+    })
+    .catch((error) => setAccountSecurityStatus(error.message || 'Could not set local lock.', true));
+});
+
+accountLockNowButton?.addEventListener('click', lockAccount);
+accountSecurityLockNowButton?.addEventListener('click', lockAccount);
+
+accountLockRemoveButton?.addEventListener('click', () => {
+  localStorage.removeItem(accountLockStorageKey);
+  sessionStorage.removeItem(accountLockSessionKey);
+  applyAccountLockState();
+  setAccountSecurityStatus('Local lock removed from this browser.');
+});
+
+accountLockResetSend?.addEventListener('click', () => {
+  const email = (accountLockResetEmail.value.trim() || localStorage.getItem(verificationEmailKey) || '').toLowerCase();
+  if (!email) {
+    setAccountLockStatus('Enter your account email first.', true);
+    return;
+  }
+  accountLockResetEmail.value = email;
+  setAccountLockStatus('Sending reset code...');
+  sendAccountCode(email)
+    .then(() => {
+      setAccountLockStatus('Reset code sent. Enter the 6-digit code to reset this browser lock.');
+      accountLockResetCode?.focus();
+    })
+    .catch((error) => setAccountLockStatus(error.message || 'Could not send reset code.', true));
+});
+
+accountLockResetForm?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const email = (accountLockResetEmail.value.trim() || localStorage.getItem(verificationEmailKey) || '').toLowerCase();
+  const code = accountLockResetCode.value.trim();
+  if (!email || !/^\d{6}$/.test(code)) {
+    setAccountLockStatus('Enter your email and the 6-digit reset code.', true);
+    return;
+  }
+  setAccountLockStatus('Verifying email and resetting lock...');
+  verifyAccountCode(email, code)
+    .then(async (data) => {
+      resetLocalAccountLockAfterEmail(data, email);
+      accountLockResetCode.value = '';
+      await loadAccount();
+    })
+    .catch((error) => setAccountLockStatus(error.message || 'Could not reset local lock.', true));
+});
+
 loginForm?.addEventListener('submit', (event) => {
   event.preventDefault();
   const email = emailInput.value.trim().toLowerCase();
@@ -616,8 +832,15 @@ walletCurrencyInput?.addEventListener('change', () => {
 });
 
 emailInput.value = localStorage.getItem(verificationEmailKey) || '';
+if (accountLockResetEmail) accountLockResetEmail.value = localStorage.getItem(verificationEmailKey) || '';
 syncWalletAmountLimits();
+applyAccountLockState();
 
-loadAccount().catch(() => {
-  setStatus('Open Settings > Email verify to verify this browser and load your account dashboard.');
-});
+if (isAccountUnlocked()) {
+  loadAccount().catch(() => {
+    setStatus('Open Settings > Email verify to verify this browser and load your account dashboard.');
+  });
+} else {
+  clearDashboardView();
+  setStatus('Dashboard locked. Unlock this browser to load account details.');
+}
