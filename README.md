@@ -69,7 +69,7 @@ Current endpoints:
 - `GET /api/admin/summary` includes care request metadata for admin monitoring, but not
   decrypted care details.
 
-The `/account.html` page is separate from the public site and shows submitted requests,
+The `/account` page is separate from the public site and shows submitted requests,
 settings, billing/wallet placeholders, and security notes. Request contents decrypt only
 on browsers that still have the local request key.
 
