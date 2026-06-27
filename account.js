@@ -76,6 +76,12 @@ function setAccountSecurityStatus(message, isError = false) {
   accountSecurityStatus.style.color = isError ? '#9b2c2c' : '';
 }
 
+function showAccountPanel(panelName = 'account') {
+  document.querySelectorAll('[id^="panel-"]').forEach((panel) => {
+    panel.classList.toggle('hidden', panel.id !== `panel-${panelName}`);
+  });
+}
+
 function bytesToBase64(bytes) {
   let binary = '';
   bytes.forEach((byte) => {
@@ -689,9 +695,7 @@ settingsToggle?.addEventListener('click', () => {
 settingsMenu?.addEventListener('click', (event) => {
   const button = event.target.closest('button[data-panel]');
   if (!button) return;
-  document.querySelectorAll('[id^="panel-"]').forEach((panel) => {
-    panel.classList.toggle('hidden', panel.id !== `panel-${button.dataset.panel}`);
-  });
+  showAccountPanel(button.dataset.panel);
   settingsMenu.hidden = true;
   settingsToggle?.setAttribute('aria-expanded', 'false');
 });
@@ -709,6 +713,7 @@ accountUnlockForm?.addEventListener('submit', (event) => {
       accountUnlockPasscode.value = '';
       setAccountLockStatus('Unlocked.');
       applyAccountLockState();
+      showAccountPanel('account');
       await loadAccount();
     })
     .catch((error) => setAccountLockStatus(error.message || 'Could not unlock dashboard.', true));
@@ -774,6 +779,7 @@ accountLockResetForm?.addEventListener('submit', (event) => {
     .then(async (data) => {
       resetLocalAccountLockAfterEmail(data, email);
       accountLockResetCode.value = '';
+      showAccountPanel('account');
       await loadAccount();
     })
     .catch((error) => setAccountLockStatus(error.message || 'Could not reset local lock.', true));
