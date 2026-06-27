@@ -5,6 +5,7 @@ const statusEl = document.querySelector('#status');
 const couponsEl = document.querySelector('#coupons');
 const totalsEl = document.querySelector('#totals');
 const analyticsEl = document.querySelector('#analytics');
+const careRequestsEl = document.querySelector('#care-requests');
 const adminApiBase = location.protocol === 'https:' && /(^|\.)suchawellness\.com$/i.test(location.hostname)
   ? location.origin
   : 'https://praivasipdf-api.verilogical.com';
@@ -142,6 +143,27 @@ function renderVerifiedVisitors(visitors = []) {
   totalsEl.after(card);
 }
 
+function renderCareRequests(requests = []) {
+  if (!careRequestsEl) return;
+  careRequestsEl.replaceChildren();
+  if (!requests.length) {
+    careRequestsEl.innerHTML = '<tr><td colspan="6">No encrypted care requests yet.</td></tr>';
+    return;
+  }
+  requests.slice(0, 200).forEach((request) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td><strong>${request.id}</strong></td>
+      <td>${request.type === 'provider' ? 'Provider' : 'Care seeker'}</td>
+      <td>${request.status || 'submitted'}</td>
+      <td>${request.city || 'unknown'}, ${request.region || 'unknown'}, ${request.country || 'unknown'}</td>
+      <td>${fmt(request.createdAt)}</td>
+      <td>${request.encryption?.unreadableByServer ? 'Client encrypted' : 'Unknown'}</td>
+    `;
+    careRequestsEl.append(row);
+  });
+}
+
 async function loadDashboard() {
   const token = tokenInput.value.trim();
   if (!token) {
@@ -154,6 +176,7 @@ async function loadDashboard() {
   renderCoupons(data.coupons || []);
   renderAnalytics(data.analytics || []);
   renderVerifiedVisitors(data.verifiedVisitors || []);
+  renderCareRequests(data.careRequests || []);
   setStatus('Dashboard loaded.');
 }
 

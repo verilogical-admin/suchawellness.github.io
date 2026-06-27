@@ -165,6 +165,7 @@ function addPasswordVisibilityToggle(input, label = 'password') {
 const suchaApiBase = 'https://praivasipdf-api.verilogical.com';
 const suchaApiFallbackBase = 'https://payment-worker.verilogical.com';
 const suchaApiBases = [suchaApiBase, suchaApiFallbackBase];
+const careRequestKeysStorageKey = 'sucha-care-request-keys:v1';
 
 function trackSuchaEvent(event, detail = {}) {
   const payload = JSON.stringify({
@@ -363,6 +364,73 @@ async function readSuchaJson(response, fallback) {
   return data;
 }
 
+function readCareRequestKeys() {
+  try {
+    return JSON.parse(localStorage.getItem(careRequestKeysStorageKey) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function saveCareRequestKey(id, key, type) {
+  const keys = readCareRequestKeys();
+  keys[id] = {
+    key,
+    type,
+    createdAt: new Date().toISOString(),
+  };
+  localStorage.setItem(careRequestKeysStorageKey, JSON.stringify(keys));
+}
+
+async function encryptCarePayload(payload) {
+  if (!crypto?.subtle) throw new Error('Secure browser encryption is not available.');
+  const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+  const rawKey = await crypto.subtle.exportKey('raw', key);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const data = new TextEncoder().encode(JSON.stringify(payload));
+  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data);
+  return {
+    encryptedPayload: {
+      iv: bytesToBase64(iv),
+      data: bytesToBase64(new Uint8Array(encrypted)),
+    },
+    localKey: bytesToBase64(new Uint8Array(rawKey)),
+  };
+}
+
+async function postCareRequest(type, payload) {
+  const token = localStorage.getItem(suchaVerificationTokenKey);
+  let lastError = null;
+  const bases = location.protocol === 'https:' && /(^|\.)suchawellness\.com$/i.test(location.hostname)
+    ? [location.origin, ...suchaApiBases]
+    : suchaApiBases;
+  const encrypted = await encryptCarePayload(payload);
+
+  for (const base of bases) {
+    try {
+      const response = await fetch(`${base}/api/care/requests`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: base === location.origin ? 'same-origin' : 'omit',
+        body: JSON.stringify({
+          type,
+          encryptedPayload: encrypted.encryptedPayload,
+        }),
+      });
+      const data = await readSuchaJson(response, 'Could not save secure care request.');
+      saveCareRequestKey(data.request.id, encrypted.localKey, type);
+      return data.request;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError || new Error('Could not save secure care request.');
+}
+
 async function hasSuchaVerification() {
   const token = localStorage.getItem(suchaVerificationTokenKey);
   try {
@@ -521,33 +589,43 @@ document.querySelectorAll('[data-care-toggle]').forEach((toggle) => {
 });
 
 document.querySelectorAll('[data-care-form]').forEach((form) => {
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const type = form.dataset.careForm;
     const status = form.querySelector('.care-status');
     const fields = Array.from(form.elements)
       .filter((field) => field.name)
-      .map((field) => [field.name, field.value.trim()])
-      .filter(([, value]) => value);
-    const subject = type === 'provider'
-      ? 'Sucha provider page request'
-      : 'Sucha licensed therapist/counsellor match request';
-    const intro = type === 'provider'
-      ? 'Provider request details:'
-      : 'Care seeker matching details:';
-    const body = [
-      intro,
-      '',
-      ...fields.map(([name, value]) => `${name}: ${value}`),
-      '',
-      'Please contact me about next steps.'
-    ].join('\n');
+      .map((field) => [field.name, field.value.trim()]);
+    const payload = Object.fromEntries(fields);
 
-    if (status) {
-      status.textContent = 'Opening your email app with this request. Please review before sending.';
+    if (status) status.textContent = 'Encrypting this request in your browser...';
+    const ok = await requireSuchaVerification({
+      mode: 'tool',
+      tool: type === 'provider' ? 'Sucha provider onboarding' : 'Sucha care matching',
+      toolType: 'care',
+    });
+    if (!ok) {
+      if (status) status.textContent = 'Email verification is required before creating a secure care request.';
+      return;
     }
-    window.location.href = `mailto:support@suchawellness.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    trackSuchaEvent('care_request_started', { type });
+
+    try {
+      if (status) status.textContent = 'Saving encrypted request. Sucha stores ciphertext only.';
+      const saved = await postCareRequest(type, {
+        type,
+        fields: payload,
+        submittedAt: new Date().toISOString(),
+        privacy: 'Client-side encrypted before storage. Decryption key remains on this browser.',
+      });
+      if (status) {
+        status.innerHTML = `Secure request <strong>${saved.id}</strong> saved. The private details were encrypted before upload and the key stays on this browser. You can view your saved request from your account page on this device.`;
+      }
+      form.reset();
+      trackSuchaEvent('care_request_saved', { type });
+    } catch (error) {
+      if (status) status.textContent = error.message || 'Could not save encrypted care request.';
+      trackSuchaEvent('care_request_failed', { type });
+    }
   });
 });
 

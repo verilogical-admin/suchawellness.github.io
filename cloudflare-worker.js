@@ -1,11 +1,14 @@
 const SECURITY_HEADERS = {
-  'Content-Security-Policy': "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https://*.razorpay.com; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' https://checkout.razorpay.com; connect-src 'self' https://payment-worker.verilogical.com https://praivasipdf-api.verilogical.com https://api.razorpay.com https://checkout.razorpay.com; frame-src https://api.razorpay.com https://checkout.razorpay.com; form-action 'self'; upgrade-insecure-requests",
+  'Content-Security-Policy': "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https://*.razorpay.com; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' https://checkout.razorpay.com; script-src-attr 'none'; connect-src 'self' https://payment-worker.verilogical.com https://praivasipdf-api.verilogical.com https://api.razorpay.com https://checkout.razorpay.com; frame-src https://api.razorpay.com https://checkout.razorpay.com; form-action 'self'; worker-src 'self'; manifest-src 'self'; media-src 'self'; upgrade-insecure-requests",
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'DENY',
   'Cross-Origin-Resource-Policy': 'same-origin',
-  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  'Cross-Origin-Opener-Policy': 'same-origin',
+  'X-Permitted-Cross-Domain-Policies': 'none',
+  'X-Robots-Tag': 'noai, noimageai',
+  'Permissions-Policy': 'accelerometer=(), autoplay=(), camera=(), clipboard-read=(), clipboard-write=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(self), usb=()',
 };
 
 const JOURNAL_PLAN_ID = 'journal_monthly_5';
@@ -91,6 +94,34 @@ function normalizeEmail(value) {
 
 function cleanText(value, max = 120) {
   return String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
+}
+
+function cleanCareType(value) {
+  return ['seeker', 'provider'].includes(value) ? value : 'seeker';
+}
+
+function careRequestKey(id) {
+  return `care:request:${id}`;
+}
+
+async function careOwnerHash(email, env) {
+  return (await hmacSha256Hex(verificationSecret(env), `care:${email}`)).slice(0, 32);
+}
+
+function carePublicRecord(record) {
+  return {
+    id: record.id,
+    type: record.type,
+    status: record.status || 'submitted',
+    createdAt: record.createdAt,
+    updatedAt: record.updatedAt || record.createdAt,
+    country: record.country || 'unknown',
+    region: record.region || 'unknown',
+    city: record.city || 'unknown',
+    encryptedPayload: record.encryptedPayload || null,
+    encryption: record.encryption || null,
+    preview: record.preview || {},
+  };
 }
 
 function readCookie(request, name) {
@@ -422,6 +453,71 @@ async function trackAnalytics(request, env) {
   return json({ ok: true, stored: true });
 }
 
+async function createCareRequest(request, env) {
+  const kv = getKv(env);
+  if (!kv) return json({ error: 'Care request storage is not configured.' }, { status: 501 });
+  const visitor = await verifiedVisitorFromRequest(request, env);
+  if (!visitor?.email) return json({ error: 'Verify your email before creating a care request.' }, { status: 401 });
+
+  const body = await readJson(request);
+  const encryptedPayload = body.encryptedPayload || {};
+  if (!encryptedPayload.iv || !encryptedPayload.data) {
+    return json({ error: 'Encrypted care request payload is required.' }, { status: 400 });
+  }
+
+  const now = new Date().toISOString();
+  const id = `care_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`;
+  const ownerHash = await careOwnerHash(visitor.email, env);
+  const record = {
+    id,
+    ownerHash,
+    type: cleanCareType(body.type),
+    status: 'submitted',
+    createdAt: now,
+    updatedAt: now,
+    country: request.headers.get('CF-IPCountry') || 'unknown',
+    region: cleanText(request.cf?.region || 'unknown', 80),
+    city: cleanText(request.cf?.city || 'unknown', 80),
+    encryptedPayload: {
+      iv: cleanText(encryptedPayload.iv, 80),
+      data: String(encryptedPayload.data || '').slice(0, 24000),
+    },
+    encryption: {
+      version: 'client-aes-gcm-v1',
+      unreadableByServer: true,
+      keyStored: 'client-device-only',
+    },
+    preview: {
+      typeLabel: cleanCareType(body.type) === 'provider' ? 'Provider onboarding' : 'Care seeker matching',
+    },
+  };
+
+  await kv.put(careRequestKey(id), JSON.stringify(record), { expirationTtl: 60 * 60 * 24 * 365 });
+  await kv.put(`care:owner:${ownerHash}:${id}`, JSON.stringify({ id, createdAt: now }), { expirationTtl: 60 * 60 * 24 * 365 });
+  await recordVerifiedVisitor(request, env, visitor, 'care_request_created', {
+    tool: record.preview.typeLabel,
+    toolType: 'care',
+  });
+  return json({ ok: true, request: carePublicRecord(record) });
+}
+
+async function listMyCareRequests(request, env) {
+  const kv = getKv(env);
+  if (!kv) return json({ error: 'Care request storage is not configured.' }, { status: 501 });
+  const visitor = await verifiedVisitorFromRequest(request, env);
+  if (!visitor?.email) return json({ error: 'Verify your email to view care requests.' }, { status: 401 });
+  const ownerHash = await careOwnerHash(visitor.email, env);
+  const list = await kv.list({ prefix: `care:owner:${ownerHash}:`, limit: 100 });
+  const requests = [];
+  for (const item of list.keys) {
+    const id = item.name.split(':').pop();
+    const record = await kv.get(careRequestKey(id), { type: 'json' });
+    if (record) requests.push(carePublicRecord(record));
+  }
+  requests.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  return json({ ok: true, requests });
+}
+
 async function adminSummary(request, env) {
   if (!requireAdmin(request, env)) return json({ error: 'Unauthorized' }, { status: 401 });
   const kv = getKv(env);
@@ -443,7 +539,14 @@ async function adminSummary(request, env) {
     if (item) verifiedVisitors.push(item);
   }
   verifiedVisitors.sort((a, b) => String(b.lastSeenAt || b.verifiedAt).localeCompare(String(a.lastSeenAt || a.verifiedAt)));
-  return json({ coupons: couponStates, analytics, verifiedVisitors });
+  const careList = await kv.list({ prefix: 'care:request:', limit: 500 });
+  const careRequests = [];
+  for (const key of careList.keys) {
+    const item = await kv.get(key.name, { type: 'json' });
+    if (item) careRequests.push(carePublicRecord(item));
+  }
+  careRequests.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  return json({ coupons: couponStates, analytics, verifiedVisitors, careRequests });
 }
 
 async function adminRevokeCoupon(request, env) {
@@ -617,6 +720,14 @@ export default {
 
     if (request.method === 'POST' && url.pathname === '/api/analytics/track') {
       return trackAnalytics(request, env);
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/care/requests') {
+      return createCareRequest(request, env);
+    }
+
+    if (request.method === 'GET' && url.pathname === '/api/care/requests/mine') {
+      return listMyCareRequests(request, env);
     }
 
     if (request.method === 'POST' && url.pathname === '/api/verification/request-code') {

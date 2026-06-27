@@ -124,8 +124,28 @@
     <div class="cards" id="totals"></div>
     <div class="grid" id="analytics"></div>
   </section>
+
+  <section>
+    <h2>Encrypted Care Requests</h2>
+    <p class="status">Only metadata is shown here. Private intake contents are client-side encrypted and are not readable by the site dashboard.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Request</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Location</th>
+          <th>Created</th>
+          <th>Encryption</th>
+        </tr>
+      </thead>
+      <tbody id="care-requests">
+        <tr><td colspan="6">Load dashboard to view care request metadata.</td></tr>
+      </tbody>
+    </table>
+  </section>
 </main>
 
-<script src="/admin.js?v=password-eye-fix-1" defer></script>
+<script src="/admin.js?v=care-dashboard-1" defer></script>
 </body>
 </html>

@@ -53,3 +53,27 @@ Set these Worker secrets/vars before enabling live verification email:
 - `SUCHA_EMAIL_FROM` such as `support@suchawellness.com` after the sender/domain is verified
 - `SUCHA_EMAIL_REPLY_TO` such as `support@suchawellness.com`
 - `SUCHA_VERIFICATION_SECRET` for signing verification tokens
+
+## HIPAA-ready care platform foundation
+
+The public care seeker/provider forms no longer send private intake details by email.
+Before storage, the browser encrypts the submitted form payload with AES-GCM and keeps
+the decryption key in that browser only. The Worker stores ciphertext plus operational
+metadata such as request id, request type, status, timestamp, and Cloudflare-provided
+coarse location.
+
+Current endpoints:
+
+- `POST /api/care/requests` stores an encrypted care request for a verified visitor.
+- `GET /api/care/requests/mine` returns the verified visitor's encrypted requests.
+- `GET /api/admin/summary` includes care request metadata for admin monitoring, but not
+  decrypted care details.
+
+The `/account.html` page is separate from the public site and shows submitted requests,
+settings, billing/wallet placeholders, and security notes. Request contents decrypt only
+on browsers that still have the local request key.
+
+Do not put PHI into email, analytics, logs, URLs, Razorpay notes, or support tickets.
+Razorpay wallet/payment support should use non-PHI metadata only. A public HIPAA
+compliance claim should wait until vendor BAAs, access policies, audit procedures,
+incident response, retention/deletion workflows, and legal/security review are complete.
