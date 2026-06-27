@@ -544,6 +544,17 @@ const screeningCardData = [
   ['selfInjury', 'Sucha survey', 'Self-Injury Survey', 'A support-oriented survey for people who have hurt themselves on purpose without trying to die.', 'Start survey']
 ];
 
+const screeningGroups = [
+  ['Start here', 'Open first-step screens for visitors who want to begin quickly.', ['depression', 'bai']],
+  ['Career interests', 'Career and vocational reflection tools.', ['careerRiasec']],
+  ['Common mental health screens', 'Focused screens for mood, anxiety, attention, and related concerns.', ['universal', 'adhd', 'anxiety', 'ocd', 'bipolar', 'psychosis']],
+  ['Body, trauma, and behavior patterns', 'Screens for eating, trauma, addiction, gambling, and self-injury patterns.', ['eating', 'ptsd', 'addiction', 'gambling', 'selfInjury']],
+  ['Family and youth', 'Screens for parents, young people, and new or expecting parents.', ['postpartum', 'parent', 'youth']],
+  ['Reflection surveys', 'Short surveys for broader wellness and mental health reflection.', ['goodDay', 'psychedelics', 'aiMentalHealth']]
+];
+
+const screeningCardMap = new Map(screeningCardData.map((card) => [card[0], card]));
+
 function addScreeningStyles() {
   if (document.querySelector('#screening-runtime-styles')) return;
 
@@ -556,6 +567,47 @@ function addScreeningStyles() {
       font: inherit;
       text-align: left;
       width: 100%;
+    }
+    .screening-tools {
+      display: block;
+    }
+    .screening-group {
+      margin-bottom: 2rem;
+    }
+    .screening-group-head {
+      margin: 0 0 0.85rem;
+    }
+    .screening-group-title {
+      color: var(--teal-dark);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.55rem;
+      font-weight: 500;
+      line-height: 1.1;
+    }
+    .screening-group-desc,
+    .screening-disclaimer {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.65;
+      margin-top: 0.35rem;
+      max-width: 760px;
+    }
+    .screening-disclaimer {
+      background: rgba(245,242,235,0.8);
+      border-left: 3px solid var(--teal);
+      margin: 1.4rem 0 2rem;
+      padding: 1rem 1.1rem;
+    }
+    .screening-disclaimer a,
+    .result-support-note a {
+      color: var(--teal-dark);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .screening-group-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
     }
     .screening-card:focus-visible {
       border-color: var(--teal);
@@ -663,6 +715,22 @@ function addScreeningStyles() {
       margin-top: 1.5rem;
       padding: 1.2rem;
     }
+    .result-summary {
+      display: grid;
+      gap: 0.85rem;
+    }
+    .result-summary p,
+    .result-support-note {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.7;
+      margin: 0;
+    }
+    .result-support-note {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      padding: 1rem;
+    }
     .riasec-progress {
       color: var(--teal-dark);
       font-size: 0.78rem;
@@ -754,6 +822,9 @@ function addScreeningStyles() {
     @media (max-width: 900px) {
       .inline-test-head { display: grid; }
       .inline-options { grid-template-columns: 1fr; }
+      .screening-group-grid {
+        grid-template-columns: 1fr;
+      }
       .riasec-options,
       .riasec-result-grid {
         grid-template-columns: 1fr;
@@ -788,6 +859,39 @@ function createScreeningCard([key, tag, title, description, action]) {
   return card;
 }
 
+function createScreeningGroups() {
+  return screeningGroups.map(([title, description, keys]) => {
+    const section = document.createElement('section');
+    const head = document.createElement('div');
+    const heading = document.createElement('h3');
+    const copy = document.createElement('p');
+    const grid = document.createElement('div');
+
+    section.className = 'screening-group';
+    head.className = 'screening-group-head';
+    heading.className = 'screening-group-title';
+    copy.className = 'screening-group-desc';
+    grid.className = 'screening-group-grid';
+    heading.textContent = title;
+    copy.textContent = description;
+    keys.forEach((key) => {
+      const card = screeningCardMap.get(key);
+      if (card) grid.append(createScreeningCard(card));
+    });
+    head.append(heading, copy);
+    section.append(head, grid);
+    return section;
+  });
+}
+
+function ensureScreeningDisclaimer(takeTest) {
+  if (!takeTest || takeTest.querySelector('.screening-disclaimer')) return;
+  const disclaimer = document.createElement('p');
+  disclaimer.className = 'screening-disclaimer';
+  disclaimer.innerHTML = 'These tests are informational only and are not a diagnosis or a substitute for clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance. If you are interested in being connected to qualified licensed doctors or counsellors, write to <a href="mailto:support@suchawellness.com?subject=Licensed%20doctor%20or%20counsellor%20connection">support@suchawellness.com</a>.';
+  takeTest.querySelector('.section-subtitle')?.after(disclaimer);
+}
+
 function ensureScreeningMarkup() {
   const tools = document.querySelector('.screening-tools');
   if (!tools) return;
@@ -799,12 +903,14 @@ function ensureScreeningMarkup() {
   if (subtitle) {
     subtitle.textContent = 'Choose a quick, confidential Sucha-hosted screening tool. Answers stay in your browser and results are informational only, not a diagnosis or a replacement for care from a qualified clinician.';
   }
+  ensureScreeningDisclaimer(takeTest);
 
   const needsCardRefresh = tools.querySelectorAll('.screening-card[data-test]').length !== screeningCardData.length ||
+    !tools.querySelector('.screening-group') ||
     tools.querySelector('a[href*="screening.mhanational.org"], a[href*="trypsytest.com"]');
 
   if (needsCardRefresh) {
-    tools.replaceChildren(...screeningCardData.map(createScreeningCard));
+    tools.replaceChildren(...createScreeningGroups());
   }
 
   if (!document.querySelector('#screening-panel')) {
@@ -1711,6 +1817,29 @@ function getScreeningQuestions(test) {
   return test.riasec ? test.questions : test.questions.map((text) => ({ text }));
 }
 
+function resultSupportNote() {
+  return 'These results are informational only and should not be used as a diagnosis or as clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance. If you are interested in being connected to qualified licensed doctors or counsellors, write to <a href="mailto:support@suchawellness.com?subject=Licensed%20doctor%20or%20counsellor%20connection">support@suchawellness.com</a>.';
+}
+
+function getResultMeaning(band, test) {
+  if (test.survey) {
+    return 'This summary reflects your current pattern of reflection on this topic. It can help you notice what feels supportive, uncertain, or worth discussing further.';
+  }
+  if (band.includes('Low')) {
+    return 'Your answers do not show a strong current signal on this screen. That can be reassuring, but it does not rule out stress, symptoms, or the need for support if something still feels difficult.';
+  }
+  if (band.includes('Mild')) {
+    return 'Your answers suggest some signs are present. A mild signal is often worth watching over time, especially if it lasts, repeats, or begins affecting sleep, work, study, relationships, or daily routines.';
+  }
+  if (band.includes('Moderate')) {
+    return 'Your answers suggest a noticeable pattern. A moderate signal is a good reason to slow down, track what is happening, and consider sharing the pattern with a qualified professional.';
+  }
+  if (band.includes('Higher support')) {
+    return 'Your answers included one or more safety-related concerns. It would be wise to seek support promptly from a trusted person or qualified clinician, and to use emergency or crisis services if there is immediate danger.';
+  }
+  return 'Your answers suggest a stronger signal on this screen. This does not confirm a diagnosis, but it is significant enough to consider timely support from a qualified professional.';
+}
+
 function showRiasecResult() {
   const scores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
   screeningStepState.answers.forEach((answer, index) => {
@@ -1722,7 +1851,10 @@ function showRiasecResult() {
 
   screeningBand.textContent = `Your Holland Code: ${code}`;
   screeningNote.innerHTML = `
-    <p>Your strongest themes are ${ranked.slice(0, 3).map((letter) => `${letter} - ${riasecTypes[letter].title}`).join(', ')}. Use this as a starting point for career reflection, not a fixed label.</p>
+    <div class="result-summary">
+      <p>Your strongest themes are ${ranked.slice(0, 3).map((letter) => `${letter} - ${riasecTypes[letter].title}`).join(', ')}. Use this as a starting point for career reflection, not a fixed label.</p>
+      <p>This pattern can point toward environments that may feel energizing: the kind of tasks you like, the level of structure you prefer, and whether you lean toward hands-on work, investigation, creativity, helping, leading, or organizing.</p>
+    </div>
     <div class="riasec-result-grid">
       ${ranked.slice(0, 3).map((letter) => {
         const type = riasecTypes[letter];
@@ -1736,6 +1868,7 @@ function showRiasecResult() {
         `;
       }).join('')}
     </div>
+    <p class="result-support-note">Career interests can change with exposure, confidence, training, and life stage. If you want help turning this into course, college, or career decisions, consider speaking with a qualified career counsellor or licensed mental health professional.</p>
   `;
   screeningResult.hidden = false;
 }
@@ -1750,9 +1883,18 @@ function showScreeningResult(test) {
   const score = answeredValues.reduce((total, value) => total + value, 0);
   const maxScore = test.questions.length * (screeningScale.length - 1);
   const interpretation = getScreeningInterpretation(test, score, maxScore, answeredValues);
+  const answeredHigh = answeredValues.filter((value) => value >= 2).length;
+  const answeredAny = answeredValues.filter((value) => value > 0).length;
 
   screeningBand.textContent = `${interpretation.band} (${score}/${maxScore})`;
-  screeningNote.textContent = interpretation.note;
+  screeningNote.innerHTML = `
+    <div class="result-summary">
+      <p><strong>What this means:</strong> ${getResultMeaning(interpretation.band, test)}</p>
+      <p><strong>Your pattern:</strong> You endorsed ${answeredAny} of ${answeredValues.length} items at least a little, with ${answeredHigh} items in the more noticeable range. The score is best read as a snapshot of how things feel right now, not a permanent label.</p>
+      <p><strong>Suggested next step:</strong> ${interpretation.note}</p>
+      <p class="result-support-note">${resultSupportNote()}</p>
+    </div>
+  `;
   screeningResult.hidden = false;
 }
 
