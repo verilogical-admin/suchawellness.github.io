@@ -508,6 +508,49 @@ document.querySelectorAll('[data-research-toggle]').forEach((toggle) => {
   });
 });
 
+document.querySelectorAll('[data-care-toggle]').forEach((toggle) => {
+  toggle.addEventListener('click', () => {
+    const form = document.querySelector(`[data-care-form="${toggle.dataset.careToggle}"]`);
+    if (!form) return;
+    const willOpen = form.hidden;
+    form.hidden = !willOpen;
+    toggle.textContent = willOpen ? 'Hide form' : (toggle.dataset.careToggle === 'provider' ? 'Join as a provider' : 'Request a match');
+    toggle.setAttribute('aria-expanded', String(willOpen));
+    if (willOpen) form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+});
+
+document.querySelectorAll('[data-care-form]').forEach((form) => {
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const type = form.dataset.careForm;
+    const status = form.querySelector('.care-status');
+    const fields = Array.from(form.elements)
+      .filter((field) => field.name)
+      .map((field) => [field.name, field.value.trim()])
+      .filter(([, value]) => value);
+    const subject = type === 'provider'
+      ? 'Sucha provider page request'
+      : 'Sucha licensed therapist/counsellor match request';
+    const intro = type === 'provider'
+      ? 'Provider request details:'
+      : 'Care seeker matching details:';
+    const body = [
+      intro,
+      '',
+      ...fields.map(([name, value]) => `${name}: ${value}`),
+      '',
+      'Please contact me about next steps.'
+    ].join('\n');
+
+    if (status) {
+      status.textContent = 'Opening your email app with this request. Please review before sending.';
+    }
+    window.location.href = `mailto:support@suchawellness.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    trackSuchaEvent('care_request_started', { type });
+  });
+});
+
 document.addEventListener('click', (event) => {
   const subscribeLink = event.target.closest?.('[data-sucha-subscribe]');
   if (!subscribeLink) return;

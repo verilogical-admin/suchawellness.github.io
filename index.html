@@ -537,6 +537,114 @@
     line-height: 1.8;
   }
 
+  /* ── CARE PLATFORM ── */
+  #care {
+    background: var(--white);
+    scroll-margin-top: 6rem;
+  }
+
+  .care-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem;
+    margin-top: 1rem;
+  }
+
+  .care-card {
+    border: 1px solid var(--border);
+    background: rgba(245,242,235,0.45);
+    padding: 1.6rem;
+  }
+
+  .care-card-kicker {
+    color: var(--teal);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    margin-bottom: 0.8rem;
+    text-transform: uppercase;
+  }
+
+  .care-card h3 {
+    color: var(--teal-dark);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.65rem;
+    font-weight: 500;
+    line-height: 1.15;
+    margin-bottom: 0.8rem;
+  }
+
+  .care-card p,
+  .care-list,
+  .care-privacy {
+    color: var(--muted);
+    font-size: var(--body-copy);
+    line-height: 1.75;
+  }
+
+  .care-list {
+    margin: 1rem 0 1.2rem;
+    padding-left: 1.1rem;
+  }
+
+  .care-list li {
+    margin-bottom: 0.45rem;
+  }
+
+  .care-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.2rem;
+  }
+
+  .care-form {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    margin-top: 1rem;
+    padding: 1rem;
+  }
+
+  .care-form[hidden] {
+    display: none;
+  }
+
+  .care-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .care-form input,
+  .care-form select,
+  .care-form textarea {
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--text);
+    font: inherit;
+    min-width: 0;
+    padding: 0.75rem;
+    width: 100%;
+  }
+
+  .care-form textarea {
+    grid-column: 1 / -1;
+    min-height: 110px;
+    resize: vertical;
+  }
+
+  .care-privacy {
+    border-left: 3px solid var(--teal);
+    margin-top: 1rem;
+    padding-left: 1rem;
+  }
+
+  .care-status {
+    color: var(--teal-dark);
+    font-size: 0.88rem;
+    line-height: 1.6;
+    margin-top: 0.75rem;
+  }
+
   /* ── TAKE TEST ── */
   #take-test {
     background: var(--white);
@@ -1372,7 +1480,8 @@
     #take-test { padding-top: 7rem; scroll-margin-top: 7rem; }
     .stats-strip { grid-template-columns: 1fr; padding: 2rem 1.5rem; gap: 0; }
     .stat-item:not(:last-child)::after { display: none; }
-    .steps-grid, .why-grid { grid-template-columns: 1fr; }
+    .steps-grid, .why-grid, .care-grid, .care-form-grid { grid-template-columns: 1fr; }
+    .care-form textarea { grid-column: auto; }
     #about { grid-template-columns: 1fr; gap: 2.5rem; padding: 4rem 1.5rem; }
     .about-accent { display: none; }
     .screening-tools { grid-template-columns: 1fr; }
@@ -1465,6 +1574,7 @@
   <ul class="nav-links" id="main-menu">
     <li><a href="#take-test">Take Test</a></li>
     <li><a href="#journal">Journal</a></li>
+    <li><a href="#care">Care</a></li>
     <li><a href="#research">Research</a></li>
     <li><a href="#contact" class="nav-cta">Contact</a></li>
   </ul>
@@ -1802,6 +1912,96 @@
   </div>
 </section>
 
+<!-- CARE PLATFORM -->
+<section id="care">
+  <div class="section-eyebrow">Care Connections</div>
+  <h2 class="section-title">A two-way platform for care seekers and providers</h2>
+  <p class="section-subtitle">For serious visitors who want the next step after screening or journaling, Sucha can help route requests to qualified, licensed, and vetted professionals.</p>
+  <div class="care-grid">
+    <article class="care-card reveal">
+      <div class="care-card-kicker">For care seekers</div>
+      <h3>Connect me to a licensed and vetted therapist or counsellor</h3>
+      <p>Start online, and tell us if you prefer 100% online care or an in-person visit near your city, area, or preferred location.</p>
+      <ul class="care-list">
+        <li>100% online matching available.</li>
+        <li>Optional in-person preference by city, area, or geolocation.</li>
+        <li>Age, gender preference, symptoms, urgency, and language can help match specialists better.</li>
+      </ul>
+      <p class="care-privacy">Your information is treated as confidential. Sucha is designed for safe, privacy-conscious workflows, encrypted transport on HTTPS, and encrypted clinical records where secure provider workflows are enabled. Share only what you are comfortable sending until a secure intake link is provided.</p>
+      <div class="care-actions">
+        <button class="btn-primary" type="button" data-care-toggle="seeker">Request a match</button>
+      </div>
+      <form class="care-form" id="care-seeker-form" data-care-form="seeker" hidden>
+        <div class="care-form-grid">
+          <input name="name" type="text" placeholder="Name">
+          <input name="email" type="email" placeholder="Email">
+          <input name="phone" type="tel" placeholder="Phone or WhatsApp">
+          <select name="carePreference" aria-label="Care preference">
+            <option value="">Care preference</option>
+            <option>100% online</option>
+            <option>Prefer in-person</option>
+            <option>Open to both</option>
+          </select>
+          <input name="location" type="text" placeholder="City, area, or preferred location">
+          <input name="age" type="text" placeholder="Age">
+          <select name="genderPreference" aria-label="Provider gender preference">
+            <option value="">Provider gender preference</option>
+            <option>No preference</option>
+            <option>Female provider preferred</option>
+            <option>Male provider preferred</option>
+            <option>Other preference</option>
+          </select>
+          <input name="language" type="text" placeholder="Preferred language">
+          <textarea name="symptoms" placeholder="Symptoms, concerns, urgency, or anything that may help us match you"></textarea>
+        </div>
+        <div class="care-actions">
+          <button class="btn-primary" type="submit">Send request</button>
+        </div>
+        <p class="care-status" aria-live="polite"></p>
+      </form>
+    </article>
+
+    <article class="care-card reveal">
+      <div class="care-card-kicker">For therapists</div>
+      <h3>I want my own branded page, powered by Sucha Wellness</h3>
+      <p>Build a verified provider presence with bookings, payments, secure sharing, and a Sucha credential verification layer.</p>
+      <ul class="care-list">
+        <li>Branded provider page, powered by Sucha Wellness.</li>
+        <li>Customer bookings and payment collection.</li>
+        <li>Confidential journal and note sharing for clients.</li>
+        <li>HIPAA-compliant workflows where required and enabled.</li>
+        <li>Credential Verified by Sucha badge after review.</li>
+      </ul>
+      <p class="care-privacy">Provider features are intended for secure, privacy-first care workflows with encrypted storage and access controls where clinical records or confidential notes are handled.</p>
+      <div class="care-actions">
+        <button class="btn-primary" type="button" data-care-toggle="provider">Join as a provider</button>
+      </div>
+      <form class="care-form" id="care-provider-form" data-care-form="provider" hidden>
+        <div class="care-form-grid">
+          <input name="name" type="text" placeholder="Provider name">
+          <input name="email" type="email" placeholder="Email">
+          <input name="phone" type="tel" placeholder="Phone or WhatsApp">
+          <input name="credentials" type="text" placeholder="Credentials / license">
+          <input name="specialty" type="text" placeholder="Specialty areas">
+          <input name="location" type="text" placeholder="City / service area">
+          <select name="delivery" aria-label="Delivery mode">
+            <option value="">Delivery mode</option>
+            <option>Online only</option>
+            <option>In person only</option>
+            <option>Online and in person</option>
+          </select>
+          <input name="website" type="url" placeholder="Current website or profile">
+          <textarea name="needs" placeholder="Tell us what you want your Sucha-powered page to handle"></textarea>
+        </div>
+        <div class="care-actions">
+          <button class="btn-primary" type="submit">Send provider request</button>
+        </div>
+        <p class="care-status" aria-live="polite"></p>
+      </form>
+    </article>
+  </div>
+</section>
+
 
 <!-- RESEARCH -->
 <div id="research">
@@ -1955,6 +2155,6 @@
   <a href="mailto:support@suchawellness.com?subject=Sucha%20Wellness%20Support">Support: support@suchawellness.com</a>
 </footer>
 
-<script src="/site.js?v=research-copy-1" defer></script>
+<script src="/site.js?v=care-platform-1" defer></script>
 </body>
 </html>
