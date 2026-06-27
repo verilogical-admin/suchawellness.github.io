@@ -18,6 +18,7 @@ const suchaApiBases = location.protocol === 'https:' && /(^|\.)suchawellness\.co
 const verificationTokenKey = 'sucha-verification-token:v1';
 const verificationEmailKey = 'sucha-verification-email:v1';
 const careRequestKeysStorageKey = 'sucha-care-request-keys:v1';
+const careRequestMessagesStorageKey = 'sucha-care-request-messages:v1';
 
 function setStatus(message) {
   if (statusEl) statusEl.textContent = message;
@@ -47,6 +48,18 @@ function readCareKeys() {
   } catch {
     return {};
   }
+}
+
+function readCareMessages() {
+  try {
+    return JSON.parse(localStorage.getItem(careRequestMessagesStorageKey) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function writeCareMessages(messages) {
+  localStorage.setItem(careRequestMessagesStorageKey, JSON.stringify(messages));
 }
 
 async function readJson(response, fallback) {
@@ -124,6 +137,42 @@ async function decryptCarePayload(request, localKey) {
   return JSON.parse(new TextDecoder().decode(decrypted));
 }
 
+async function encryptMessageText(text, localKey) {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    base64ToBytes(localKey),
+    { name: 'AES-GCM' },
+    false,
+    ['encrypt']
+  );
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encrypted = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    new TextEncoder().encode(text)
+  );
+  return {
+    iv: bytesToBase64(iv),
+    data: bytesToBase64(new Uint8Array(encrypted)),
+  };
+}
+
+async function decryptMessageText(message, localKey) {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    base64ToBytes(localKey),
+    { name: 'AES-GCM' },
+    false,
+    ['decrypt']
+  );
+  const decrypted = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: base64ToBytes(message.encryptedPayload.iv) },
+    key,
+    base64ToBytes(message.encryptedPayload.data)
+  );
+  return new TextDecoder().decode(decrypted);
+}
+
 function labelFor(name) {
   return name
     .replace(/([A-Z])/g, ' $1')
@@ -138,11 +187,62 @@ function renderPayload(payload) {
     .join('\n') || 'No private details entered.';
 }
 
+function roleForRequest(request) {
+  return request.type === 'provider' ? 'Provider' : 'Care seeker';
+}
+
+function actionCountFor(requests) {
+  const messages = readCareMessages();
+  const openRequests = requests.filter((item) => item.status !== 'closed').length;
+  const localMessages = requests.reduce((count, request) => {
+    return count + (messages[request.id]?.length || 0);
+  }, 0);
+  return openRequests + localMessages;
+}
+
+async function renderMessageThread(container, request, localKey) {
+  const allMessages = readCareMessages();
+  const messages = allMessages[request.id] || [];
+  container.replaceChildren();
+
+  if (!messages.length) {
+    const empty = document.createElement('p');
+    empty.className = 'message-empty';
+    empty.textContent = 'No follow-up messages yet. Use compose to add an encrypted note to this request thread.';
+    container.append(empty);
+    return;
+  }
+
+  for (const message of messages) {
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
+
+    const meta = document.createElement('p');
+    meta.className = 'message-meta';
+    meta.textContent = `${message.author || roleForRequest(request)} · ${new Date(message.createdAt).toLocaleString()}`;
+
+    const body = document.createElement('p');
+    body.className = 'message-body';
+    if (!localKey || !crypto?.subtle) {
+      body.textContent = 'Encrypted message saved. This browser does not have the local key to open it.';
+    } else {
+      try {
+        body.textContent = await decryptMessageText(message, localKey);
+      } catch {
+        body.textContent = 'Could not decrypt this message with the local key on this browser.';
+      }
+    }
+
+    bubble.append(meta, body);
+    container.append(bubble);
+  }
+}
+
 async function renderRequests(requests) {
   const keys = readCareKeys();
   requestsList.replaceChildren();
   if (requestCountEl) requestCountEl.textContent = String(requests.length);
-  if (actionCountEl) actionCountEl.textContent = String(requests.filter((item) => item.status !== 'closed').length);
+  if (actionCountEl) actionCountEl.textContent = String(actionCountFor(requests));
 
   if (!requests.length) {
     const empty = document.createElement('p');
@@ -166,14 +266,80 @@ async function renderRequests(requests) {
     article.innerHTML = `
       <div class="request-head">
         <div>
-          <div class="eyebrow">${request.type === 'provider' ? 'Provider' : 'Care seeker'}</div>
-          <h3>${request.preview?.typeLabel || 'Care request'}</h3>
-          <p>${new Date(request.createdAt).toLocaleString()} · ${request.city || 'unknown city'}, ${request.country || 'unknown country'}</p>
+          <div class="eyebrow"></div>
+          <h3></h3>
+          <p></p>
         </div>
-        <span class="badge">${request.status || 'submitted'}</span>
+        <div class="request-actions">
+          <span class="badge"></span>
+          <button class="compose-button" type="button" aria-label="Compose message">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+            </svg>
+          </button>
+        </div>
       </div>
-      <pre>${privateDetails}</pre>
+      <pre></pre>
+      <div class="message-thread"></div>
+      <form class="message-composer" hidden>
+        <p class="message-help">This message is encrypted with this request key and saved to this account dashboard on this browser. Sharing with a matched care seeker or provider will come after the payment gate is enabled.</p>
+        <textarea name="message" placeholder="Write a follow-up message for this request" required></textarea>
+        <div class="message-composer-actions">
+          <button type="submit">Send message</button>
+          <button class="secondary" type="button" data-cancel>Cancel</button>
+        </div>
+      </form>
     `;
+    article.querySelector('.eyebrow').textContent = roleForRequest(request);
+    article.querySelector('h3').textContent = request.preview?.typeLabel || 'Care request';
+    article.querySelector('.request-head p').textContent = `${new Date(request.createdAt).toLocaleString()} · ${request.city || 'unknown city'}, ${request.country || 'unknown country'}`;
+    article.querySelector('.badge').textContent = request.status || 'submitted';
+    article.querySelector('pre').textContent = privateDetails;
+
+    const thread = article.querySelector('.message-thread');
+    const composer = article.querySelector('.message-composer');
+    const textarea = composer.querySelector('textarea');
+    const composeButton = article.querySelector('.compose-button');
+    const cancelButton = composer.querySelector('[data-cancel]');
+
+    if (!localKey || !crypto?.subtle) {
+      composeButton.disabled = true;
+      composeButton.title = 'This browser needs the local encryption key before it can compose messages for this request.';
+    }
+
+    composeButton.addEventListener('click', () => {
+      composer.hidden = !composer.hidden;
+      if (!composer.hidden) textarea.focus();
+    });
+
+    cancelButton.addEventListener('click', () => {
+      composer.hidden = true;
+      textarea.value = '';
+    });
+
+    composer.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const messageText = textarea.value.trim();
+      if (!messageText || !localKey || !crypto?.subtle) return;
+      const allMessages = readCareMessages();
+      const encryptedPayload = await encryptMessageText(messageText, localKey);
+      const nextMessage = {
+        id: `${request.id}-${Date.now()}`,
+        author: roleForRequest(request),
+        createdAt: new Date().toISOString(),
+        encryptedPayload,
+      };
+      allMessages[request.id] = [...(allMessages[request.id] || []), nextMessage];
+      writeCareMessages(allMessages);
+      textarea.value = '';
+      composer.hidden = true;
+      await renderMessageThread(thread, request, localKey);
+      if (actionCountEl) actionCountEl.textContent = String(actionCountFor(requests));
+      setStatus('Encrypted message added to this request thread.');
+    });
+
+    await renderMessageThread(thread, request, localKey);
     requestsList.append(article);
   }
 }

@@ -71,7 +71,9 @@ Current endpoints:
 
 The `/account` page is separate from the public site and shows submitted requests,
 settings, billing/wallet placeholders, and security notes. Request contents decrypt only
-on browsers that still have the local request key.
+on browsers that still have the local request key. Follow-up messages can be composed
+inside each request card and are encrypted with that same local request key; cross-user
+sharing should wait for the payment-gated matching flow.
 
 Do not put PHI into email, analytics, logs, URLs, Razorpay notes, or support tickets.
 Razorpay wallet/payment support should use non-PHI metadata only. A public HIPAA
