@@ -126,6 +126,10 @@ function careRequestKey(id) {
   return `care:request:${id}`;
 }
 
+function feedbackKey(date, id) {
+  return `feedback:${date}:${id}`;
+}
+
 function walletKey(ownerHash) {
   return `wallet:${ownerHash}`;
 }
@@ -489,6 +493,35 @@ async function trackAnalytics(request, env) {
   return json({ ok: true, stored: true });
 }
 
+async function createFeedback(request, env) {
+  const kv = getKv(env);
+  if (!kv) return json({ error: 'Feedback storage is not configured.' }, { status: 501 });
+  const body = await readJson(request);
+  const message = cleanText(body.message, 5000);
+  if (!message) return json({ error: 'Message is required.' }, { status: 400 });
+  const now = new Date();
+  const id = `fb_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`;
+  const item = {
+    id,
+    type: cleanText(body.type || 'Feedback', 60),
+    message,
+    contact: cleanText(body.contact, 240),
+    product: cleanText(body.product || 'Sucha Mama', 120),
+    brand: cleanText(body.brand || 'Sucha Wellness', 120),
+    page: cleanText(body.page, 160),
+    url: cleanText(body.url, 500),
+    timezone: cleanText(body.timezone, 80),
+    country: request.headers.get('CF-IPCountry') || 'unknown',
+    region: cleanText(request.cf?.region || 'unknown', 80),
+    city: cleanText(request.cf?.city || 'unknown', 80),
+    createdAt: now.toISOString(),
+    status: 'open',
+  };
+  const date = now.toISOString().slice(0, 10);
+  await kv.put(feedbackKey(date, id), JSON.stringify(item), { expirationTtl: 60 * 60 * 24 * 365 });
+  return json({ ok: true, id });
+}
+
 async function createCareRequest(request, env) {
   const kv = getKv(env);
   if (!kv) return json({ error: 'Care request storage is not configured.' }, { status: 501 });
@@ -583,7 +616,14 @@ async function adminSummary(request, env) {
     if (item) careRequests.push(carePublicRecord(item));
   }
   careRequests.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
-  return json({ coupons: couponStates, analytics, verifiedVisitors, careRequests });
+  const feedbackList = await kv.list({ prefix: 'feedback:', limit: 500 });
+  const feedback = [];
+  for (const key of feedbackList.keys) {
+    const item = await kv.get(key.name, { type: 'json' });
+    if (item) feedback.push(item);
+  }
+  feedback.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  return json({ coupons: couponStates, analytics, verifiedVisitors, careRequests, feedback });
 }
 
 async function adminRevokeCoupon(request, env) {
@@ -935,6 +975,10 @@ export default {
 
     if (request.method === 'POST' && url.pathname === '/api/analytics/track') {
       return trackAnalytics(request, env);
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/feedback') {
+      return createFeedback(request, env);
     }
 
     if (request.method === 'POST' && url.pathname === '/api/care/requests') {

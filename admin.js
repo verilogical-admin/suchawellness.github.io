@@ -6,11 +6,13 @@ const couponsEl = document.querySelector('#coupons');
 const totalsEl = document.querySelector('#totals');
 const analyticsEl = document.querySelector('#analytics');
 const careRequestsEl = document.querySelector('#care-requests');
+const feedbackEl = document.querySelector('#feedback');
 const adminApiBase = location.protocol === 'https:' && /(^|\.)suchawellness\.com$/i.test(location.hostname)
   ? location.origin
-  : 'https://praivasipdf-api.verilogical.com';
+  : 'https://www.suchawellness.com';
+const adminApiLegacyBase = 'https://praivasipdf-api.verilogical.com';
 const adminApiFallbackBase = 'https://payment-worker.verilogical.com';
-const adminApiBases = [adminApiBase, adminApiFallbackBase];
+const adminApiBases = [adminApiBase, adminApiLegacyBase, adminApiFallbackBase];
 
 tokenInput.value = sessionStorage.getItem('sucha-admin-token') || '';
 
@@ -164,6 +166,28 @@ function renderCareRequests(requests = []) {
   });
 }
 
+function renderFeedback(items = []) {
+  if (!feedbackEl) return;
+  feedbackEl.replaceChildren();
+  if (!items.length) {
+    feedbackEl.innerHTML = '<tr><td colspan="6">No Sucha Mama feedback yet.</td></tr>';
+    return;
+  }
+  items.slice(0, 200).forEach((item) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${fmt(item.createdAt)}</td>
+      <td>${item.type || 'Feedback'}<br><span class="label">${item.product || 'Sucha Mama'}</span></td>
+      <td style="max-width:360px;white-space:pre-wrap"></td>
+      <td>${item.contact || '-'}</td>
+      <td><code>${item.page || '-'}</code><br><span class="label">${item.url || ''}</span></td>
+      <td>${item.city || 'unknown'}, ${item.region || 'unknown'}, ${item.country || 'unknown'}</td>
+    `;
+    row.children[2].textContent = item.message || '';
+    feedbackEl.append(row);
+  });
+}
+
 async function loadDashboard() {
   const token = tokenInput.value.trim();
   if (!token) {
@@ -177,6 +201,7 @@ async function loadDashboard() {
   renderAnalytics(data.analytics || []);
   renderVerifiedVisitors(data.verifiedVisitors || []);
   renderCareRequests(data.careRequests || []);
+  renderFeedback(data.feedback || []);
   setStatus('Dashboard loaded.');
 }
 
