@@ -741,6 +741,11 @@ function addScreeningStyles() {
       font-weight: 600;
       text-decoration: none;
     }
+    .screening-disclaimer .care-disclaimer-button,
+    .result-support-note .care-disclaimer-button {
+      color: white;
+      margin-top: 0.8rem;
+    }
     .screening-group-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1025,7 +1030,7 @@ function ensureScreeningDisclaimer(takeTest) {
   if (!takeTest || takeTest.querySelector('.screening-disclaimer')) return;
   const disclaimer = document.createElement('p');
   disclaimer.className = 'screening-disclaimer';
-  disclaimer.innerHTML = 'These tests are informational only and are not a diagnosis or a substitute for clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance. If you are interested in being connected to qualified licensed doctors or counsellors, write to <a href="mailto:support@suchawellness.com?subject=Licensed%20doctor%20or%20counsellor%20connection">support@suchawellness.com</a>.';
+  disclaimer.innerHTML = 'These tests are informational only and are not a diagnosis or a substitute for clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance. If you are interested in being connected to qualified licensed doctors or counsellors, or if you are a care provider looking to connect to care seekers, click here.<br><a class="btn-primary care-disclaimer-button" href="#care">Open care connection forms</a>';
   takeTest.querySelector('.section-subtitle')?.after(disclaimer);
 }
 
@@ -1979,7 +1984,7 @@ function getScreeningQuestions(test) {
 }
 
 function resultSupportNote() {
-  return 'These results are informational only and should not be used as a diagnosis or as clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance. If you are interested in being connected to qualified licensed doctors or counsellors, write to <a href="mailto:support@suchawellness.com?subject=Licensed%20doctor%20or%20counsellor%20connection">support@suchawellness.com</a>.';
+  return 'These results are informational only and should not be used as a diagnosis or as clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance. If you are interested in being connected to qualified licensed doctors or counsellors, or if you are a care provider looking to connect to care seekers, click here.<br><a class="btn-primary care-disclaimer-button" href="#care">Open care connection forms</a>';
 }
 
 function getResultMeaning(band, test) {
