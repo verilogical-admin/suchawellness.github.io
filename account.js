@@ -280,7 +280,10 @@ async function renderRequests(requests) {
           </button>
         </div>
       </div>
-      <pre></pre>
+      <details class="intake-info">
+        <summary>Show submitted intake details</summary>
+        <pre></pre>
+      </details>
       <div class="message-thread"></div>
       <form class="message-composer" hidden>
         <details class="message-info">
@@ -413,5 +416,5 @@ loadButton?.addEventListener('click', () => {
 emailInput.value = localStorage.getItem(verificationEmailKey) || '';
 
 loadAccount().catch(() => {
-  setStatus('Verify your email above to load your account dashboard.');
+  setStatus('Open Settings > Email verify to verify this browser and load your account dashboard.');
 });

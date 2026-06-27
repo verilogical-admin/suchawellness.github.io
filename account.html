@@ -201,6 +201,20 @@
     text-transform: uppercase;
     white-space: nowrap;
   }
+  .intake-info {
+    border: 1px solid var(--line);
+    background: rgba(245,242,235,0.55);
+    margin-top: 0.8rem;
+  }
+  .intake-info summary {
+    color: var(--teal);
+    cursor: pointer;
+    font-weight: 500;
+    padding: 0.75rem 0.85rem;
+  }
+  .intake-info[open] summary {
+    border-bottom: 1px solid var(--line);
+  }
   .compose-button {
     align-items: center;
     background: transparent;
@@ -283,8 +297,9 @@
   }
   pre {
     background: var(--cream);
-    border: 1px solid var(--line);
+    border: 0;
     color: var(--text);
+    margin: 0;
     overflow: auto;
     padding: 0.8rem;
     white-space: pre-wrap;
@@ -314,6 +329,8 @@
       </button>
       <div class="settings-menu" id="settings-menu" hidden>
         <button type="button" data-panel="account">Account info</button>
+        <button type="button" data-panel="login">Email verify</button>
+        <button type="button" data-panel="info">Info</button>
         <button type="button" data-panel="billing">Billing</button>
         <button type="button" data-panel="security">Security</button>
       </div>
@@ -328,27 +345,13 @@
       <h1>Care account</h1>
       <p>Care requests are stored separately from the public website. Private details are encrypted on your device before upload.</p>
     </div>
-    <div class="login-box">
-      <div class="login-step"><span class="step-dot">1</span><strong>Verify your email</strong></div>
-      <p>Use the same email you used for care requests. We will send a 6-digit code and a sign-in link.</p>
-      <form class="login-form" id="account-login-form">
-        <input id="account-email" type="email" autocomplete="email" placeholder="Email address" required>
-        <button type="submit">Send login code</button>
-      </form>
-      <div class="login-step" style="margin-top:1rem"><span class="step-dot">2</span><strong>Enter the code</strong></div>
-      <form class="login-form" id="account-code-form">
-        <input id="account-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code" required>
-        <button type="submit">Verify and load dashboard</button>
-      </form>
-      <p class="login-status" id="login-status">Email verification is your account login for now. Password/passkey login and reset can be added in the next account phase.</p>
-    </div>
     <div class="stats">
       <div class="stat"><span>Submitted queries</span><strong id="request-count">0</strong></div>
       <div class="stat"><span>Wallet loaded</span><strong id="wallet-balance">$0</strong></div>
       <div class="stat"><span>Actions</span><strong id="action-count">0</strong></div>
     </div>
     <button id="load-account" type="button">Load my dashboard</button>
-    <p class="notice" id="account-status">Use the same verified email/browser you used for care requests.</p>
+    <p class="notice" id="account-status">Use the same verified email/browser you used for care requests. To verify or switch email, open Settings > Email verify.</p>
   </aside>
 
   <section class="stack">
@@ -359,11 +362,38 @@
       <div class="stack" id="requests-list"></div>
     </div>
 
+    <div class="panel hidden" id="panel-login">
+      <div class="eyebrow">Email verify</div>
+      <h2>Account login</h2>
+      <p>Use this only when you need to verify this browser, switch email, or reload your private dashboard on a new device.</p>
+      <div class="login-box">
+        <div class="login-step"><span class="step-dot">1</span><strong>Verify your email</strong></div>
+        <p>Use the same email you used for care requests. We will send a 6-digit code and a sign-in link.</p>
+        <form class="login-form" id="account-login-form">
+          <input id="account-email" type="email" autocomplete="email" placeholder="Email address" required>
+          <button type="submit">Send login code</button>
+        </form>
+        <div class="login-step" style="margin-top:1rem"><span class="step-dot">2</span><strong>Enter the code</strong></div>
+        <form class="login-form" id="account-code-form">
+          <input id="account-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code" required>
+          <button type="submit">Verify and load dashboard</button>
+        </form>
+        <p class="login-status" id="login-status">Email verification is your account login for now. Password/passkey login and reset can be added in the next account phase.</p>
+      </div>
+    </div>
+
     <div class="panel hidden" id="panel-billing">
       <div class="eyebrow">Billing</div>
       <h2>Wallet and payments</h2>
       <p>Wallet loading and provider payments should run through Razorpay with no PHI in payment notes or receipts. This panel is reserved for the Razorpay wallet flow after payment products and compliance review are configured.</p>
       <button class="secondary" type="button" disabled>Add funds with Razorpay</button>
+    </div>
+
+    <div class="panel hidden" id="panel-info">
+      <div class="eyebrow">Info</div>
+      <h2>Submitted intake details</h2>
+      <p>The bio/intake details from the first care or provider form are kept inside each request card under “Show submitted intake details.” They stay hidden by default so the dashboard does not expose sensitive details at a glance.</p>
+      <p class="notice">Those details decrypt only on browsers that still have the local request key.</p>
     </div>
 
     <div class="panel hidden" id="panel-security">
@@ -375,6 +405,6 @@
   </section>
 </main>
 
-<script src="/account.js?v=care-messages-2" defer></script>
+<script src="/account.js?v=intake-info-toggle-1" defer></script>
 </body>
 </html>
