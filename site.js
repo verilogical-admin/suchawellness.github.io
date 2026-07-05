@@ -975,12 +975,27 @@ function addScreeningStyles() {
       margin: 1.2rem 0 1.5rem;
       padding: 1.1rem;
     }
+    .empathy-visual.result-visual {
+      background:
+        radial-gradient(circle at 34% 24%, rgba(201,151,26,0.15), transparent 33%),
+        radial-gradient(circle at 76% 34%, rgba(92,148,87,0.16), transparent 34%),
+        linear-gradient(135deg, rgba(255,255,255,0.95), rgba(245,242,235,0.82));
+      border-color: rgba(45,122,107,0.22);
+      box-shadow: 0 18px 40px rgba(45,122,107,0.13), inset 0 1px 0 rgba(255,255,255,0.9);
+      grid-template-columns: minmax(220px, 310px) minmax(0, 1fr);
+      padding: 1.35rem;
+    }
     .empathy-visual[hidden] {
       display: none;
     }
     .empathy-compass {
       aspect-ratio: 1;
       width: 100%;
+    }
+    .empathy-visual.result-visual .empathy-compass {
+      filter: drop-shadow(0 18px 18px rgba(45,122,107,0.16));
+      transform-origin: 50% 50%;
+      animation: empathyFloat 5.5s ease-in-out infinite;
     }
     .empathy-legend {
       display: grid;
@@ -1013,6 +1028,16 @@ function addScreeningStyles() {
       line-height: 1.55;
       margin-top: 0.16rem;
     }
+    .report-download-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    @keyframes empathyFloat {
+      0%, 100% { transform: translateY(0) rotateX(0deg); }
+      50% { transform: translateY(-5px) rotateX(2deg); }
+    }
     @media (max-width: 900px) {
       .inline-test-head { display: grid; }
       .inline-options { grid-template-columns: 1fr; }
@@ -1029,9 +1054,13 @@ function addScreeningStyles() {
       .empathy-visual {
         grid-template-columns: 1fr;
       }
+      .empathy-visual.result-visual {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+      }
       .empathy-compass {
         margin: 0 auto;
-        max-width: 240px;
+        max-width: 300px;
       }
     }
   `;
@@ -2122,9 +2151,11 @@ function resultSupportNote() {
 
 function empathyVisualMarkup(scores = null) {
   const safeScores = scores || { C: 1, E: 1, S: 1, Y: 1 };
+  const isResult = Boolean(scores);
+  const idSuffix = isResult ? 'result' : 'intro';
   const max = Math.max(...Object.values(safeScores), 1);
   const pointFor = (type, angle) => {
-    const radius = 28 + (safeScores[type] / max) * 42;
+    const radius = 34 + (safeScores[type] / max) * 52;
     const radians = angle * Math.PI / 180;
     return `${100 + Math.cos(radians) * radius},${100 + Math.sin(radians) * radius}`;
   };
@@ -2136,30 +2167,43 @@ function empathyVisualMarkup(scores = null) {
   ].join(' ');
 
   return `
-    <svg class="empathy-compass" viewBox="0 0 200 200" role="img" aria-label="Colored empathy compass showing clarity, emotion, support, and synchrony">
+    <svg class="empathy-compass" viewBox="-36 -26 272 252" role="img" aria-label="Colored empathy compass showing clarity, emotion, support, and synchrony">
       <defs>
-        <filter id="empathy-soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#2D7A6B" flood-opacity="0.12"></feDropShadow>
+        <radialGradient id="empathy-plate-${idSuffix}" cx="34%" cy="28%" r="76%">
+          <stop offset="0%" stop-color="#FFFFFF"></stop>
+          <stop offset="58%" stop-color="#FFF8E9"></stop>
+          <stop offset="100%" stop-color="#EDE5D8"></stop>
+        </radialGradient>
+        <linearGradient id="empathy-score-fill-${idSuffix}" x1="38" y1="26" x2="170" y2="176" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#C9971A" stop-opacity="0.62"></stop>
+          <stop offset="42%" stop-color="#5C9457" stop-opacity="0.5"></stop>
+          <stop offset="100%" stop-color="#2D7A6B" stop-opacity="0.62"></stop>
+        </linearGradient>
+        <filter id="empathy-soft-shadow-${idSuffix}" x="-35%" y="-35%" width="170%" height="170%">
+          <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#1F4F45" flood-opacity="${isResult ? '0.24' : '0.12'}"></feDropShadow>
         </filter>
       </defs>
-      <circle cx="100" cy="100" r="78" fill="#FFF8E9" stroke="#E4DDD0"></circle>
-      <path d="M100 22 A78 78 0 0 1 178 100 L100 100 Z" fill="${empathyTypes.E.color}" opacity="0.18"></path>
-      <path d="M178 100 A78 78 0 0 1 100 178 L100 100 Z" fill="${empathyTypes.S.color}" opacity="0.18"></path>
-      <path d="M100 178 A78 78 0 0 1 22 100 L100 100 Z" fill="${empathyTypes.Y.color}" opacity="0.18"></path>
-      <path d="M22 100 A78 78 0 0 1 100 22 L100 100 Z" fill="${empathyTypes.C.color}" opacity="0.22"></path>
-      <circle cx="100" cy="100" r="52" fill="none" stroke="#E4DDD0"></circle>
-      <circle cx="100" cy="100" r="26" fill="none" stroke="#E4DDD0"></circle>
-      <line x1="100" y1="22" x2="100" y2="178" stroke="#E4DDD0"></line>
-      <line x1="22" y1="100" x2="178" y2="100" stroke="#E4DDD0"></line>
-      <polygon points="${scoreShape}" fill="#2D7A6B" opacity="${scores ? '0.2' : '0.08'}" stroke="#2D7A6B" stroke-width="${scores ? '2' : '1'}" filter="url(#empathy-soft-shadow)"></polygon>
-      <circle cx="100" cy="22" r="7" fill="${empathyTypes.C.color}"></circle>
-      <circle cx="178" cy="100" r="7" fill="${empathyTypes.E.color}"></circle>
-      <circle cx="100" cy="178" r="7" fill="${empathyTypes.S.color}"></circle>
-      <circle cx="22" cy="100" r="7" fill="${empathyTypes.Y.color}"></circle>
-      <text x="100" y="15" text-anchor="middle" fill="${empathyTypes.C.color}" font-size="10" font-weight="700">Clarity</text>
-      <text x="185" y="104" text-anchor="start" fill="${empathyTypes.E.color}" font-size="10" font-weight="700">Emotion</text>
-      <text x="100" y="195" text-anchor="middle" fill="${empathyTypes.S.color}" font-size="10" font-weight="700">Support</text>
-      <text x="15" y="104" text-anchor="end" fill="${empathyTypes.Y.color}" font-size="10" font-weight="700">Synchrony</text>
+      <ellipse cx="100" cy="188" rx="82" ry="14" fill="#1F4F45" opacity="0.11"></ellipse>
+      <circle cx="100" cy="100" r="90" fill="url(#empathy-plate-${idSuffix})" stroke="#E4DDD0" stroke-width="1.5"></circle>
+      <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="6"></circle>
+      <path d="M100 10 A90 90 0 0 1 190 100 L100 100 Z" fill="${empathyTypes.E.color}" opacity="0.24"></path>
+      <path d="M190 100 A90 90 0 0 1 100 190 L100 100 Z" fill="${empathyTypes.S.color}" opacity="0.24"></path>
+      <path d="M100 190 A90 90 0 0 1 10 100 L100 100 Z" fill="${empathyTypes.Y.color}" opacity="0.22"></path>
+      <path d="M10 100 A90 90 0 0 1 100 10 L100 100 Z" fill="${empathyTypes.C.color}" opacity="0.28"></path>
+      <circle cx="100" cy="100" r="60" fill="none" stroke="#E4DDD0" stroke-width="1.2"></circle>
+      <circle cx="100" cy="100" r="30" fill="none" stroke="#E4DDD0" stroke-width="1.2"></circle>
+      <line x1="100" y1="10" x2="100" y2="190" stroke="#D8D0C3" stroke-width="1.2"></line>
+      <line x1="10" y1="100" x2="190" y2="100" stroke="#D8D0C3" stroke-width="1.2"></line>
+      <polygon points="${scoreShape}" fill="url(#empathy-score-fill-${idSuffix})" opacity="${isResult ? '0.72' : '0.12'}" stroke="#2D7A6B" stroke-width="${isResult ? '2.8' : '1.4'}" filter="url(#empathy-soft-shadow-${idSuffix})"></polygon>
+      <circle cx="100" cy="100" r="6" fill="#2D7A6B"></circle>
+      <circle cx="100" cy="10" r="8" fill="${empathyTypes.C.color}" stroke="#FFF8E9" stroke-width="2"></circle>
+      <circle cx="190" cy="100" r="8" fill="${empathyTypes.E.color}" stroke="#FFF8E9" stroke-width="2"></circle>
+      <circle cx="100" cy="190" r="8" fill="${empathyTypes.S.color}" stroke="#FFF8E9" stroke-width="2"></circle>
+      <circle cx="10" cy="100" r="8" fill="${empathyTypes.Y.color}" stroke="#FFF8E9" stroke-width="2"></circle>
+      <text x="100" y="-8" text-anchor="middle" fill="${empathyTypes.C.color}" font-size="12" font-weight="800">Clarity</text>
+      <text x="208" y="104" text-anchor="start" fill="${empathyTypes.E.color}" font-size="12" font-weight="800">Emotion</text>
+      <text x="100" y="217" text-anchor="middle" fill="${empathyTypes.S.color}" font-size="12" font-weight="800">Support</text>
+      <text x="-8" y="104" text-anchor="end" fill="${empathyTypes.Y.color}" font-size="12" font-weight="800">Synchrony</text>
     </svg>
     <div class="empathy-legend">
       ${['C', 'E', 'S', 'Y'].map((type) => {
@@ -2177,6 +2221,97 @@ function empathyVisualMarkup(scores = null) {
       }).join('')}
     </div>
   `;
+}
+
+function escapeReportText(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[char]));
+}
+
+function downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest) {
+  const generatedAt = new Date().toLocaleString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  const scoreRows = order.map((type) => {
+    const meta = empathyTypes[type];
+    const score = scores[type];
+    return `
+      <tr>
+        <td><span class="dot" style="background:${meta.color}"></span>${escapeReportText(meta.title)}</td>
+        <td>${escapeReportText(meta.full)}</td>
+        <td>${score}</td>
+        <td>${escapeReportText(meta.description)}</td>
+      </tr>
+    `;
+  }).join('');
+  const reportHtml = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sucha Wellness Empathy Type Report</title>
+  <style>
+    body{background:#FFF8E9;color:#263B34;font-family:Arial,Helvetica,sans-serif;line-height:1.6;margin:0;padding:32px}
+    main{background:#FFFEF9;border:1px solid #E4DDD0;margin:0 auto;max-width:900px;padding:34px}
+    .brand{align-items:center;display:flex;gap:12px;margin-bottom:26px}
+    .mark{background:#2D7A6B;color:#FFF8E9;display:grid;font-family:Georgia,serif;font-size:24px;height:48px;place-items:center;width:48px}
+    h1{color:#163F35;font-family:Georgia,serif;font-size:34px;line-height:1.15;margin:0 0 8px}
+    h2{color:#163F35;font-family:Georgia,serif;font-size:24px;margin:28px 0 10px}
+    .meta,.note{color:#65736C;font-size:14px}
+    .summary{background:#F5F2EB;border-left:4px solid #2D7A6B;margin:24px 0;padding:18px}
+    table{border-collapse:collapse;margin-top:18px;width:100%}
+    th,td{border-bottom:1px solid #E4DDD0;padding:12px;text-align:left;vertical-align:top}
+    th{color:#163F35;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+    .dot{border-radius:50%;display:inline-block;height:10px;margin-right:8px;width:10px}
+    footer{border-top:1px solid #E4DDD0;color:#65736C;font-size:13px;margin-top:34px;padding-top:18px}
+    @media print{body{padding:0}main{border:0}}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand">
+      <div class="mark">S</div>
+      <div>
+        <strong>Sucha&trade; Wellness</strong>
+        <div class="meta">Empathy Type Test Report | ${escapeReportText(generatedAt)}</div>
+      </div>
+    </div>
+    <h1>Empathy Type Test Report</h1>
+    <p class="meta">A Sucha-hosted reflection on how you tend to understand people through thinking, feeling, helping, or bodily attuning.</p>
+    <div class="summary">
+      <p><strong>Leading pattern:</strong> ${escapeReportText(empathyTypes[dominant].title)} (${escapeReportText(empathyTypes[dominant].full)}) with ${scores[dominant]} points.</p>
+      <p><strong>Next strongest style:</strong> ${escapeReportText(empathyTypes[nextStrongest].title)} with ${scores[nextStrongest]} points.</p>
+      <p><strong>Growth focus:</strong> ${escapeReportText(empathySuggestions[quietest])}</p>
+    </div>
+    <h2>Score Details</h2>
+    <table>
+      <thead><tr><th>Style</th><th>Type</th><th>Score</th><th>Meaning</th></tr></thead>
+      <tbody>${scoreRows}</tbody>
+    </table>
+    <h2>Important Note</h2>
+    <p class="note">These results are informational only and should not be used as a diagnosis or as clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance.</p>
+    <footer>Sucha&trade; Wellness | https://www.suchawellness.com</footer>
+  </main>
+</body>
+</html>`;
+  const blob = new Blob([reportHtml], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `sucha-empathy-report-${new Date().toISOString().slice(0, 10)}.html`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function getResultMeaning(band, test) {
@@ -2289,7 +2424,7 @@ function showEmpathyResult(test) {
 
   screeningBand.textContent = `${empathyTypes[dominant].full}: ${scores[dominant]} points`;
   screeningNote.innerHTML = `
-    <div class="empathy-visual">
+    <div class="empathy-visual result-visual">
       ${empathyVisualMarkup(scores)}
     </div>
     <div class="result-summary">
@@ -2313,8 +2448,15 @@ function showEmpathyResult(test) {
     <div class="result-summary">
       <p><strong>Growth focus:</strong> ${empathySuggestions[quietest]}</p>
       <p class="result-support-note">${resultSupportNote()}</p>
+      <div class="report-download-row">
+        <button class="test-submit" type="button" id="empathy-report-download">Download report</button>
+      </div>
     </div>
   `;
+  screeningNote.querySelector('#empathy-report-download')?.addEventListener('click', () => {
+    downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest);
+    trackSuchaEvent('test_report_downloaded', { test: 'empathy' });
+  });
   screeningResult.hidden = false;
 }
 
