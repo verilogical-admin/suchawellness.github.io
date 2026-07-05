@@ -965,6 +965,54 @@ function addScreeningStyles() {
     .riasec-result-card ul {
       padding-left: 1rem;
     }
+    .empathy-visual {
+      align-items: center;
+      background: rgba(255,255,255,0.72);
+      border: 1px solid var(--border);
+      display: grid;
+      gap: 1.2rem;
+      grid-template-columns: minmax(160px, 220px) minmax(0, 1fr);
+      margin: 1.2rem 0 1.5rem;
+      padding: 1.1rem;
+    }
+    .empathy-visual[hidden] {
+      display: none;
+    }
+    .empathy-compass {
+      aspect-ratio: 1;
+      width: 100%;
+    }
+    .empathy-legend {
+      display: grid;
+      gap: 0.65rem;
+    }
+    .empathy-legend-item {
+      align-items: start;
+      display: grid;
+      gap: 0.55rem;
+      grid-template-columns: 0.75rem minmax(0, 1fr);
+    }
+    .empathy-legend-dot {
+      border-radius: 999px;
+      height: 0.75rem;
+      margin-top: 0.3rem;
+      width: 0.75rem;
+    }
+    .empathy-legend-title {
+      color: var(--teal-dark);
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .empathy-legend-copy {
+      color: var(--muted);
+      display: block;
+      font-size: 0.84rem;
+      line-height: 1.55;
+      margin-top: 0.16rem;
+    }
     @media (max-width: 900px) {
       .inline-test-head { display: grid; }
       .inline-options { grid-template-columns: 1fr; }
@@ -977,6 +1025,13 @@ function addScreeningStyles() {
       }
       .riasec-options.empathy-options {
         grid-template-columns: 1fr;
+      }
+      .empathy-visual {
+        grid-template-columns: 1fr;
+      }
+      .empathy-compass {
+        margin: 0 auto;
+        max-width: 240px;
       }
     }
   `;
@@ -1073,6 +1128,7 @@ function ensureScreeningMarkup() {
           <div class="section-eyebrow">Sucha-hosted screen</div>
           <h3 class="inline-test-title" id="screening-title">Choose a test</h3>
           <p class="inline-test-desc" id="screening-desc">Select a screening tool above to begin.</p>
+          <div class="empathy-visual" id="screening-visual" hidden></div>
         </div>
         <button class="test-reset" type="button" id="screening-close">Close</button>
       </div>
@@ -1993,6 +2049,7 @@ const screeningResult = document.querySelector('#screening-result');
 const screeningBand = document.querySelector('#screening-band');
 const screeningNote = document.querySelector('#screening-note');
 const screeningClose = document.querySelector('#screening-close');
+const screeningVisual = document.querySelector('#screening-visual');
 let activeScreeningKey = null;
 const screeningStepState = { index: 0, answers: [] };
 
@@ -2061,6 +2118,65 @@ function getScreeningQuestions(test) {
 
 function resultSupportNote() {
   return 'These results are informational only and should not be used as a diagnosis or as clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance. If you are interested in being connected to qualified licensed doctors or counsellors, or if you are a care provider looking to connect to care seekers, click here.<br><a class="btn-primary care-disclaimer-button" href="#care">Open care connection forms</a>';
+}
+
+function empathyVisualMarkup(scores = null) {
+  const safeScores = scores || { C: 1, E: 1, S: 1, Y: 1 };
+  const max = Math.max(...Object.values(safeScores), 1);
+  const pointFor = (type, angle) => {
+    const radius = 28 + (safeScores[type] / max) * 42;
+    const radians = angle * Math.PI / 180;
+    return `${100 + Math.cos(radians) * radius},${100 + Math.sin(radians) * radius}`;
+  };
+  const scoreShape = [
+    pointFor('C', -90),
+    pointFor('E', 0),
+    pointFor('S', 90),
+    pointFor('Y', 180)
+  ].join(' ');
+
+  return `
+    <svg class="empathy-compass" viewBox="0 0 200 200" role="img" aria-label="Colored empathy compass showing clarity, emotion, support, and synchrony">
+      <defs>
+        <filter id="empathy-soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#2D7A6B" flood-opacity="0.12"></feDropShadow>
+        </filter>
+      </defs>
+      <circle cx="100" cy="100" r="78" fill="#FFF8E9" stroke="#E4DDD0"></circle>
+      <path d="M100 22 A78 78 0 0 1 178 100 L100 100 Z" fill="${empathyTypes.E.color}" opacity="0.18"></path>
+      <path d="M178 100 A78 78 0 0 1 100 178 L100 100 Z" fill="${empathyTypes.S.color}" opacity="0.18"></path>
+      <path d="M100 178 A78 78 0 0 1 22 100 L100 100 Z" fill="${empathyTypes.Y.color}" opacity="0.18"></path>
+      <path d="M22 100 A78 78 0 0 1 100 22 L100 100 Z" fill="${empathyTypes.C.color}" opacity="0.22"></path>
+      <circle cx="100" cy="100" r="52" fill="none" stroke="#E4DDD0"></circle>
+      <circle cx="100" cy="100" r="26" fill="none" stroke="#E4DDD0"></circle>
+      <line x1="100" y1="22" x2="100" y2="178" stroke="#E4DDD0"></line>
+      <line x1="22" y1="100" x2="178" y2="100" stroke="#E4DDD0"></line>
+      <polygon points="${scoreShape}" fill="#2D7A6B" opacity="${scores ? '0.2' : '0.08'}" stroke="#2D7A6B" stroke-width="${scores ? '2' : '1'}" filter="url(#empathy-soft-shadow)"></polygon>
+      <circle cx="100" cy="22" r="7" fill="${empathyTypes.C.color}"></circle>
+      <circle cx="178" cy="100" r="7" fill="${empathyTypes.E.color}"></circle>
+      <circle cx="100" cy="178" r="7" fill="${empathyTypes.S.color}"></circle>
+      <circle cx="22" cy="100" r="7" fill="${empathyTypes.Y.color}"></circle>
+      <text x="100" y="15" text-anchor="middle" fill="${empathyTypes.C.color}" font-size="10" font-weight="700">Clarity</text>
+      <text x="185" y="104" text-anchor="start" fill="${empathyTypes.E.color}" font-size="10" font-weight="700">Emotion</text>
+      <text x="100" y="195" text-anchor="middle" fill="${empathyTypes.S.color}" font-size="10" font-weight="700">Support</text>
+      <text x="15" y="104" text-anchor="end" fill="${empathyTypes.Y.color}" font-size="10" font-weight="700">Synchrony</text>
+    </svg>
+    <div class="empathy-legend">
+      ${['C', 'E', 'S', 'Y'].map((type) => {
+        const meta = empathyTypes[type];
+        const scoreText = scores ? ` (${safeScores[type]} points)` : '';
+        return `
+          <div class="empathy-legend-item">
+            <span class="empathy-legend-dot" style="background:${meta.color}"></span>
+            <span>
+              <span class="empathy-legend-title">${meta.title}${scoreText}</span>
+              <span class="empathy-legend-copy">${meta.description}</span>
+            </span>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
 }
 
 function getResultMeaning(band, test) {
@@ -2173,6 +2289,9 @@ function showEmpathyResult(test) {
 
   screeningBand.textContent = `${empathyTypes[dominant].full}: ${scores[dominant]} points`;
   screeningNote.innerHTML = `
+    <div class="empathy-visual">
+      ${empathyVisualMarkup(scores)}
+    </div>
     <div class="result-summary">
       <p><strong>Your leading pattern:</strong> Your strongest empathy signal was ${empathyTypes[dominant].title}, which points toward ${empathyTypes[dominant].description.toLowerCase()} Your next strongest style was ${empathyTypes[nextStrongest].title} (${scores[nextStrongest]} points).</p>
       <p><strong>How to read this:</strong> Empathy is not one single trait. Some people understand others mostly through perspective-taking, some through shared feeling, some through practical support, and some through physical attunement. Your result is a reflection of today's self-report, not a fixed personality label.</p>
@@ -2324,6 +2443,10 @@ function renderScreeningTest(key) {
   screeningStepState.answers = [];
   screeningTitle.textContent = test.title;
   screeningDesc.textContent = test.description;
+  if (screeningVisual) {
+    screeningVisual.hidden = !test.empathy;
+    screeningVisual.innerHTML = test.empathy ? empathyVisualMarkup() : '';
+  }
   screeningResult.hidden = true;
   renderScreeningStep();
 
