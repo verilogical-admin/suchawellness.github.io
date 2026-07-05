@@ -1008,6 +1008,7 @@ function addScreeningStyles() {
       grid-template-columns: 0.75rem minmax(0, 1fr);
     }
     .empathy-legend-dot {
+      border: 1px solid rgba(22,63,53,0.34);
       border-radius: 999px;
       height: 0.75rem;
       margin-top: 0.3rem;
@@ -2023,25 +2024,25 @@ const empathyTypes = {
   C: {
     title: 'Clarity',
     full: 'Cognitive empathy',
-    color: '#C9971A',
+    color: '#FFD21F',
     description: 'You tend to understand people by reconstructing their perspective, beliefs, reasoning, and intent.'
   },
   E: {
     title: 'Emotion',
     full: 'Emotional empathy',
-    color: '#5C9457',
+    color: '#00C853',
     description: 'You tend to understand people by feeling with them; their emotional state registers strongly in your own body.'
   },
   S: {
     title: 'Support',
     full: 'Compassionate empathy',
-    color: '#2D7A6B',
+    color: '#1E88FF',
     description: 'You tend to turn concern into action, practical help, protection, follow-up, or concrete care.'
   },
   Y: {
     title: 'Synchrony',
     full: 'Motor empathy',
-    color: '#6B7C86',
+    color: '#FFFFFF',
     description: 'You tend to attune through body rhythm: posture, tone, pace, breathing, and moment-to-moment energy.'
   }
 };
@@ -2175,9 +2176,9 @@ function empathyVisualMarkup(scores = null) {
           <stop offset="100%" stop-color="#EDE5D8"></stop>
         </radialGradient>
         <linearGradient id="empathy-score-fill-${idSuffix}" x1="38" y1="26" x2="170" y2="176" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stop-color="#C9971A" stop-opacity="0.62"></stop>
-          <stop offset="42%" stop-color="#5C9457" stop-opacity="0.5"></stop>
-          <stop offset="100%" stop-color="#2D7A6B" stop-opacity="0.62"></stop>
+          <stop offset="0%" stop-color="${empathyTypes.C.color}" stop-opacity="0.72"></stop>
+          <stop offset="42%" stop-color="${empathyTypes.E.color}" stop-opacity="0.58"></stop>
+          <stop offset="100%" stop-color="${empathyTypes.S.color}" stop-opacity="0.66"></stop>
         </linearGradient>
         <filter id="empathy-soft-shadow-${idSuffix}" x="-35%" y="-35%" width="170%" height="170%">
           <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#1F4F45" flood-opacity="${isResult ? '0.24' : '0.12'}"></feDropShadow>
@@ -2199,11 +2200,11 @@ function empathyVisualMarkup(scores = null) {
       <circle cx="100" cy="10" r="8" fill="${empathyTypes.C.color}" stroke="#FFF8E9" stroke-width="2"></circle>
       <circle cx="190" cy="100" r="8" fill="${empathyTypes.E.color}" stroke="#FFF8E9" stroke-width="2"></circle>
       <circle cx="100" cy="190" r="8" fill="${empathyTypes.S.color}" stroke="#FFF8E9" stroke-width="2"></circle>
-      <circle cx="10" cy="100" r="8" fill="${empathyTypes.Y.color}" stroke="#FFF8E9" stroke-width="2"></circle>
+      <circle cx="10" cy="100" r="8" fill="${empathyTypes.Y.color}" stroke="#163F35" stroke-width="2"></circle>
       <text x="100" y="-8" text-anchor="middle" fill="${empathyTypes.C.color}" font-size="12" font-weight="800">Clarity</text>
       <text x="208" y="104" text-anchor="start" fill="${empathyTypes.E.color}" font-size="12" font-weight="800">Emotion</text>
       <text x="100" y="217" text-anchor="middle" fill="${empathyTypes.S.color}" font-size="12" font-weight="800">Support</text>
-      <text x="-8" y="104" text-anchor="end" fill="${empathyTypes.Y.color}" font-size="12" font-weight="800">Synchrony</text>
+      <text x="-8" y="104" text-anchor="end" fill="#163F35" font-size="12" font-weight="800">Synchrony</text>
     </svg>
     <div class="empathy-legend">
       ${['C', 'E', 'S', 'Y'].map((type) => {
@@ -2326,7 +2327,7 @@ Q
 ${pdfLine('Clarity', x - 22, y + 105, 10, empathyTypes.C.color)}
 ${pdfLine('Emotion', x + 100, y - 3, 10, empathyTypes.E.color)}
 ${pdfLine('Support', x - 22, y - 116, 10, empathyTypes.S.color)}
-${pdfLine('Synchrony', x - 132, y - 3, 10, empathyTypes.Y.color)}
+${pdfLine('Synchrony', x - 132, y - 3, 10, '#163F35')}
 `;
 }
 
