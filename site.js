@@ -2223,14 +2223,111 @@ function empathyVisualMarkup(scores = null) {
   `;
 }
 
-function escapeReportText(value) {
-  return String(value).replace(/[&<>"']/g, (char) => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;'
-  }[char]));
+function pdfText(value) {
+  return String(value)
+    .replace(/[^\x20-\x7E]/g, '')
+    .replace(/\\/g, '\\\\')
+    .replace(/\(/g, '\\(')
+    .replace(/\)/g, '\\)');
+}
+
+function wrapReportText(text, maxChars) {
+  const words = String(text).replace(/\s+/g, ' ').trim().split(' ');
+  const lines = [];
+  let line = '';
+  words.forEach((word) => {
+    const next = line ? `${line} ${word}` : word;
+    if (next.length > maxChars && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = next;
+    }
+  });
+  if (line) lines.push(line);
+  return lines;
+}
+
+function hexToRgb01(hex) {
+  const value = hex.replace('#', '');
+  return [
+    parseInt(value.slice(0, 2), 16) / 255,
+    parseInt(value.slice(2, 4), 16) / 255,
+    parseInt(value.slice(4, 6), 16) / 255
+  ];
+}
+
+function pdfColor(hex) {
+  return hexToRgb01(hex).map((value) => value.toFixed(3)).join(' ');
+}
+
+function pdfLine(text, x, y, size = 10, color = '#263B34', font = 'F1') {
+  return `BT /${font} ${size} Tf ${pdfColor(color)} rg ${x} ${y} Td (${pdfText(text)}) Tj ET\n`;
+}
+
+function drawPdfEmpathyDiagram(scores, x, y) {
+  const max = Math.max(...Object.values(scores), 1);
+  const pointFor = (type, angle) => {
+    const radius = 30 + (scores[type] / max) * 50;
+    const radians = angle * Math.PI / 180;
+    return [x + Math.cos(radians) * radius, y + Math.sin(radians) * radius];
+  };
+  const points = [
+    pointFor('C', 90),
+    pointFor('E', 0),
+    pointFor('S', -90),
+    pointFor('Y', 180)
+  ];
+  const [c, e, s, sync] = points;
+
+  return `
+q
+0.121 0.310 0.271 rg
+${x - 66} ${y - 100} 132 18 re f
+Q
+q
+${pdfColor('#FFF8E9')} rg
+1 0 0 RG
+${x - 90} ${y - 90} 180 180 re f
+Q
+q
+${pdfColor(empathyTypes.C.color)} rg
+${x - 90} ${y} m ${x} ${y + 90} l ${x} ${y} l f
+Q
+q
+${pdfColor(empathyTypes.E.color)} rg
+${x} ${y + 90} m ${x + 90} ${y} l ${x} ${y} l f
+Q
+q
+${pdfColor(empathyTypes.S.color)} rg
+${x + 90} ${y} m ${x} ${y - 90} l ${x} ${y} l f
+Q
+q
+${pdfColor(empathyTypes.Y.color)} rg
+${x} ${y - 90} m ${x - 90} ${y} l ${x} ${y} l f
+Q
+q
+0.820 0.790 0.730 RG
+1.2 w
+${x - 90} ${y} m ${x + 90} ${y} l S
+${x} ${y - 90} m ${x} ${y + 90} l S
+${x - 45} ${y} m ${x} ${y + 45} l ${x + 45} ${y} l ${x} ${y - 45} l h S
+${x - 70} ${y} m ${x} ${y + 70} l ${x + 70} ${y} l ${x} ${y - 70} l h S
+Q
+q
+${pdfColor('#2D7A6B')} rg
+${c[0].toFixed(1)} ${c[1].toFixed(1)} m ${e[0].toFixed(1)} ${e[1].toFixed(1)} l ${s[0].toFixed(1)} ${s[1].toFixed(1)} l ${sync[0].toFixed(1)} ${sync[1].toFixed(1)} l h f
+Q
+q
+${pdfColor('#163F35')} RG
+2 w
+${c[0].toFixed(1)} ${c[1].toFixed(1)} m ${e[0].toFixed(1)} ${e[1].toFixed(1)} l ${s[0].toFixed(1)} ${s[1].toFixed(1)} l ${sync[0].toFixed(1)} ${sync[1].toFixed(1)} l h S
+Q
+${pdfLine('Clarity', x - 22, y + 105, 10, empathyTypes.C.color)}
+${pdfLine('Emotion', x + 100, y - 3, 10, empathyTypes.E.color)}
+${pdfLine('Support', x - 22, y - 116, 10, empathyTypes.S.color)}
+${pdfLine('Synchrony', x - 132, y - 3, 10, empathyTypes.Y.color)}
+`;
 }
 
 function downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest) {
@@ -2241,73 +2338,76 @@ function downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest)
     hour: '2-digit',
     minute: '2-digit'
   });
-  const scoreRows = order.map((type) => {
+
+  let stream = '';
+  stream += 'q 1 0.973 0.914 rg 0 0 612 792 re f Q\n';
+  stream += 'q 1 0.996 0.976 rg 36 42 540 708 re f Q\n';
+  stream += 'q 0.176 0.478 0.420 rg 52 696 44 44 re f Q\n';
+  stream += pdfLine('S', 66, 711, 22, '#FFF8E9', 'F2');
+  stream += pdfLine('Sucha Wellness', 108, 724, 16, '#163F35', 'F2');
+  stream += pdfLine(`Empathy Type Test Report | ${generatedAt}`, 108, 706, 9, '#65736C');
+  stream += pdfLine('Empathy Type Test Report', 52, 662, 25, '#163F35', 'F2');
+  stream += pdfLine('A Sucha-hosted reflection on thinking, feeling, helping, and bodily attuning.', 52, 640, 10, '#65736C');
+  stream += drawPdfEmpathyDiagram(scores, 178, 488);
+
+  stream += 'q 0.961 0.949 0.922 rg 330 406 206 164 re f Q\n';
+  stream += 'q 0.176 0.478 0.420 rg 330 406 4 164 re f Q\n';
+  stream += pdfLine('Summary', 348, 548, 16, '#163F35', 'F2');
+  [
+    `Leading pattern: ${empathyTypes[dominant].title} (${empathyTypes[dominant].full}) with ${scores[dominant]} points.`,
+    `Next strongest: ${empathyTypes[nextStrongest].title} with ${scores[nextStrongest]} points.`,
+    `Growth focus: ${empathySuggestions[quietest]}`
+  ].flatMap((text) => wrapReportText(text, 44)).forEach((line, index) => {
+    stream += pdfLine(line, 348, 526 - (index * 14), 9, '#263B34');
+  });
+
+  stream += pdfLine('Score Details', 52, 342, 17, '#163F35', 'F2');
+  stream += 'q 0.176 0.478 0.420 RG 1 w 52 330 m 536 330 l S Q\n';
+  let y = 312;
+  order.forEach((type) => {
     const meta = empathyTypes[type];
-    const score = scores[type];
-    return `
-      <tr>
-        <td><span class="dot" style="background:${meta.color}"></span>${escapeReportText(meta.title)}</td>
-        <td>${escapeReportText(meta.full)}</td>
-        <td>${score}</td>
-        <td>${escapeReportText(meta.description)}</td>
-      </tr>
-    `;
-  }).join('');
-  const reportHtml = `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sucha Wellness Empathy Type Report</title>
-  <style>
-    body{background:#FFF8E9;color:#263B34;font-family:Arial,Helvetica,sans-serif;line-height:1.6;margin:0;padding:32px}
-    main{background:#FFFEF9;border:1px solid #E4DDD0;margin:0 auto;max-width:900px;padding:34px}
-    .brand{align-items:center;display:flex;gap:12px;margin-bottom:26px}
-    .mark{background:#2D7A6B;color:#FFF8E9;display:grid;font-family:Georgia,serif;font-size:24px;height:48px;place-items:center;width:48px}
-    h1{color:#163F35;font-family:Georgia,serif;font-size:34px;line-height:1.15;margin:0 0 8px}
-    h2{color:#163F35;font-family:Georgia,serif;font-size:24px;margin:28px 0 10px}
-    .meta,.note{color:#65736C;font-size:14px}
-    .summary{background:#F5F2EB;border-left:4px solid #2D7A6B;margin:24px 0;padding:18px}
-    table{border-collapse:collapse;margin-top:18px;width:100%}
-    th,td{border-bottom:1px solid #E4DDD0;padding:12px;text-align:left;vertical-align:top}
-    th{color:#163F35;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
-    .dot{border-radius:50%;display:inline-block;height:10px;margin-right:8px;width:10px}
-    footer{border-top:1px solid #E4DDD0;color:#65736C;font-size:13px;margin-top:34px;padding-top:18px}
-    @media print{body{padding:0}main{border:0}}
-  </style>
-</head>
-<body>
-  <main>
-    <div class="brand">
-      <div class="mark">S</div>
-      <div>
-        <strong>Sucha&trade; Wellness</strong>
-        <div class="meta">Empathy Type Test Report | ${escapeReportText(generatedAt)}</div>
-      </div>
-    </div>
-    <h1>Empathy Type Test Report</h1>
-    <p class="meta">A Sucha-hosted reflection on how you tend to understand people through thinking, feeling, helping, or bodily attuning.</p>
-    <div class="summary">
-      <p><strong>Leading pattern:</strong> ${escapeReportText(empathyTypes[dominant].title)} (${escapeReportText(empathyTypes[dominant].full)}) with ${scores[dominant]} points.</p>
-      <p><strong>Next strongest style:</strong> ${escapeReportText(empathyTypes[nextStrongest].title)} with ${scores[nextStrongest]} points.</p>
-      <p><strong>Growth focus:</strong> ${escapeReportText(empathySuggestions[quietest])}</p>
-    </div>
-    <h2>Score Details</h2>
-    <table>
-      <thead><tr><th>Style</th><th>Type</th><th>Score</th><th>Meaning</th></tr></thead>
-      <tbody>${scoreRows}</tbody>
-    </table>
-    <h2>Important Note</h2>
-    <p class="note">These results are informational only and should not be used as a diagnosis or as clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance.</p>
-    <footer>Sucha&trade; Wellness | https://www.suchawellness.com</footer>
-  </main>
-</body>
-</html>`;
-  const blob = new Blob([reportHtml], { type: 'text/html;charset=utf-8' });
+    stream += `q ${pdfColor(meta.color)} rg 54 ${y - 3} 9 9 re f Q\n`;
+    stream += pdfLine(`${meta.title} - ${meta.full}`, 70, y, 10, '#163F35', 'F2');
+    stream += pdfLine(`${scores[type]} points`, 260, y, 10, '#263B34');
+    wrapReportText(meta.description, 72).forEach((line, index) => {
+      stream += pdfLine(line, 70, y - 14 - (index * 11), 8, '#65736C');
+    });
+    y -= 52;
+  });
+
+  stream += pdfLine('Important note', 52, 86, 12, '#163F35', 'F2');
+  wrapReportText('These results are informational only and should not be used as a diagnosis or as clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance.', 102).forEach((line, index) => {
+    stream += pdfLine(line, 52, 70 - (index * 11), 8, '#65736C');
+  });
+  stream += 'q 0.820 0.790 0.730 RG 1 w 52 34 m 560 34 l S Q\n';
+  stream += pdfLine('Sucha Wellness | https://www.suchawellness.com', 52, 20, 8, '#65736C');
+
+  const objects = [
+    '<< /Type /Catalog /Pages 2 0 R >>',
+    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>',
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>',
+    `<< /Length ${stream.length} >>\nstream\n${stream}endstream`
+  ];
+  let pdf = '%PDF-1.4\n';
+  const offsets = [0];
+  objects.forEach((object, index) => {
+    offsets.push(pdf.length);
+    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
+  });
+  const xrefOffset = pdf.length;
+  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  offsets.slice(1).forEach((offset) => {
+    pdf += `${String(offset).padStart(10, '0')} 00000 n \n`;
+  });
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+
+  const blob = new Blob([pdf], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `sucha-empathy-report-${new Date().toISOString().slice(0, 10)}.html`;
+  link.download = `sucha-empathy-report-${new Date().toISOString().slice(0, 10)}.pdf`;
   document.body.append(link);
   link.click();
   link.remove();
@@ -2449,7 +2549,7 @@ function showEmpathyResult(test) {
       <p><strong>Growth focus:</strong> ${empathySuggestions[quietest]}</p>
       <p class="result-support-note">${resultSupportNote()}</p>
       <div class="report-download-row">
-        <button class="test-submit" type="button" id="empathy-report-download">Download report</button>
+        <button class="test-submit" type="button" id="empathy-report-download">Download PDF report</button>
       </div>
     </div>
   `;
