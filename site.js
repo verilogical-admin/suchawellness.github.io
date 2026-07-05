@@ -977,11 +977,8 @@ function addScreeningStyles() {
     }
     .empathy-visual.result-visual {
       background:
-        radial-gradient(circle at 34% 24%, rgba(201,151,26,0.15), transparent 33%),
-        radial-gradient(circle at 76% 34%, rgba(92,148,87,0.16), transparent 34%),
-        linear-gradient(135deg, rgba(255,255,255,0.95), rgba(245,242,235,0.82));
+        linear-gradient(135deg, rgba(255,255,255,0.96), rgba(245,242,235,0.86));
       border-color: rgba(45,122,107,0.22);
-      box-shadow: 0 18px 40px rgba(45,122,107,0.13), inset 0 1px 0 rgba(255,255,255,0.9);
       grid-template-columns: minmax(220px, 310px) minmax(0, 1fr);
       padding: 1.35rem;
     }
@@ -993,9 +990,7 @@ function addScreeningStyles() {
       width: 100%;
     }
     .empathy-visual.result-visual .empathy-compass {
-      filter: drop-shadow(0 18px 18px rgba(45,122,107,0.16));
-      transform-origin: 50% 50%;
-      animation: empathyFloat 5.5s ease-in-out infinite;
+      filter: none;
     }
     .empathy-legend {
       display: grid;
@@ -1034,10 +1029,6 @@ function addScreeningStyles() {
       flex-wrap: wrap;
       gap: 0.75rem;
       margin-top: 1rem;
-    }
-    @keyframes empathyFloat {
-      0%, 100% { transform: translateY(0) rotateX(0deg); }
-      50% { transform: translateY(-5px) rotateX(2deg); }
     }
     @media (max-width: 900px) {
       .inline-test-head { display: grid; }
@@ -2042,7 +2033,7 @@ const empathyTypes = {
   Y: {
     title: 'Synchrony',
     full: 'Motor empathy',
-    color: '#FFFFFF',
+    color: '#111111',
     description: 'You tend to attune through body rhythm: posture, tone, pace, breathing, and moment-to-moment energy.'
   }
 };
@@ -2153,63 +2144,61 @@ function resultSupportNote() {
 function empathyVisualMarkup(scores = null) {
   const safeScores = scores || { C: 1, E: 1, S: 1, Y: 1 };
   const isResult = Boolean(scores);
-  const idSuffix = isResult ? 'result' : 'intro';
-  const max = Math.max(...Object.values(safeScores), 1);
-  const pointFor = (type, angle) => {
-    const radius = 34 + (safeScores[type] / max) * 52;
-    const radians = angle * Math.PI / 180;
-    return `${100 + Math.cos(radians) * radius},${100 + Math.sin(radians) * radius}`;
+  const order = ['C', 'E', 'S', 'Y'];
+  const total = order.reduce((sum, type) => sum + safeScores[type], 0) || 1;
+  const center = { x: 128, y: 128 };
+  const radius = 92;
+  const innerRadius = 42;
+  const polarPoint = (angle, r = radius) => {
+    const radians = (angle - 90) * Math.PI / 180;
+    return [center.x + Math.cos(radians) * r, center.y + Math.sin(radians) * r];
   };
-  const scoreShape = [
-    pointFor('C', -90),
-    pointFor('E', 0),
-    pointFor('S', 90),
-    pointFor('Y', 180)
-  ].join(' ');
+  const slicePath = (startAngle, endAngle) => {
+    const largeArc = endAngle - startAngle > 180 ? 1 : 0;
+    const [outerStartX, outerStartY] = polarPoint(startAngle, radius);
+    const [outerEndX, outerEndY] = polarPoint(endAngle, radius);
+    const [innerEndX, innerEndY] = polarPoint(endAngle, innerRadius);
+    const [innerStartX, innerStartY] = polarPoint(startAngle, innerRadius);
+    return [
+      `M ${outerStartX.toFixed(2)} ${outerStartY.toFixed(2)}`,
+      `A ${radius} ${radius} 0 ${largeArc} 1 ${outerEndX.toFixed(2)} ${outerEndY.toFixed(2)}`,
+      `L ${innerEndX.toFixed(2)} ${innerEndY.toFixed(2)}`,
+      `A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${innerStartX.toFixed(2)} ${innerStartY.toFixed(2)}`,
+      'Z'
+    ].join(' ');
+  };
+  let currentAngle = 0;
+  const slices = order.map((type) => {
+    const percent = safeScores[type] / total;
+    const startAngle = currentAngle;
+    const endAngle = currentAngle + percent * 360;
+    const midAngle = startAngle + ((endAngle - startAngle) / 2);
+    currentAngle = endAngle;
+    const [labelX, labelY] = polarPoint(midAngle, 67);
+    return { type, percent, startAngle, endAngle, labelX, labelY };
+  });
+  const sliceMarkup = slices.map(({ type, percent, startAngle, endAngle, labelX, labelY }) => {
+    const meta = empathyTypes[type];
+    const label = `${Math.round(percent * 100)}%`;
+    return `
+      <path d="${slicePath(startAngle, endAngle)}" fill="${meta.color}" stroke="#FFF8E9" stroke-width="3"></path>
+      ${percent >= 0.08 ? `<text x="${labelX.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" fill="${type === 'C' || type === 'E' ? '#163F35' : '#FFFFFF'}" font-size="13" font-weight="800">${label}</text>` : ''}
+    `;
+  }).join('');
 
   return `
-    <svg class="empathy-compass" viewBox="-36 -26 272 252" role="img" aria-label="Colored empathy compass showing clarity, emotion, support, and synchrony">
-      <defs>
-        <radialGradient id="empathy-plate-${idSuffix}" cx="34%" cy="28%" r="76%">
-          <stop offset="0%" stop-color="#FFFFFF"></stop>
-          <stop offset="58%" stop-color="#FFF8E9"></stop>
-          <stop offset="100%" stop-color="#EDE5D8"></stop>
-        </radialGradient>
-        <linearGradient id="empathy-score-fill-${idSuffix}" x1="38" y1="26" x2="170" y2="176" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stop-color="${empathyTypes.C.color}" stop-opacity="0.72"></stop>
-          <stop offset="42%" stop-color="${empathyTypes.E.color}" stop-opacity="0.58"></stop>
-          <stop offset="100%" stop-color="${empathyTypes.S.color}" stop-opacity="0.66"></stop>
-        </linearGradient>
-        <filter id="empathy-soft-shadow-${idSuffix}" x="-35%" y="-35%" width="170%" height="170%">
-          <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#1F4F45" flood-opacity="${isResult ? '0.24' : '0.12'}"></feDropShadow>
-        </filter>
-      </defs>
-      <ellipse cx="100" cy="188" rx="82" ry="14" fill="#1F4F45" opacity="0.11"></ellipse>
-      <circle cx="100" cy="100" r="90" fill="url(#empathy-plate-${idSuffix})" stroke="#E4DDD0" stroke-width="1.5"></circle>
-      <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="6"></circle>
-      <path d="M100 10 A90 90 0 0 1 190 100 L100 100 Z" fill="${empathyTypes.E.color}" opacity="0.24"></path>
-      <path d="M190 100 A90 90 0 0 1 100 190 L100 100 Z" fill="${empathyTypes.S.color}" opacity="0.24"></path>
-      <path d="M100 190 A90 90 0 0 1 10 100 L100 100 Z" fill="${empathyTypes.Y.color}" opacity="0.22"></path>
-      <path d="M10 100 A90 90 0 0 1 100 10 L100 100 Z" fill="${empathyTypes.C.color}" opacity="0.28"></path>
-      <circle cx="100" cy="100" r="60" fill="none" stroke="#E4DDD0" stroke-width="1.2"></circle>
-      <circle cx="100" cy="100" r="30" fill="none" stroke="#E4DDD0" stroke-width="1.2"></circle>
-      <line x1="100" y1="10" x2="100" y2="190" stroke="#D8D0C3" stroke-width="1.2"></line>
-      <line x1="10" y1="100" x2="190" y2="100" stroke="#D8D0C3" stroke-width="1.2"></line>
-      <polygon points="${scoreShape}" fill="url(#empathy-score-fill-${idSuffix})" opacity="${isResult ? '0.72' : '0.12'}" stroke="#2D7A6B" stroke-width="${isResult ? '2.8' : '1.4'}" filter="url(#empathy-soft-shadow-${idSuffix})"></polygon>
-      <circle cx="100" cy="100" r="6" fill="#2D7A6B"></circle>
-      <circle cx="100" cy="10" r="8" fill="${empathyTypes.C.color}" stroke="#FFF8E9" stroke-width="2"></circle>
-      <circle cx="190" cy="100" r="8" fill="${empathyTypes.E.color}" stroke="#FFF8E9" stroke-width="2"></circle>
-      <circle cx="100" cy="190" r="8" fill="${empathyTypes.S.color}" stroke="#FFF8E9" stroke-width="2"></circle>
-      <circle cx="10" cy="100" r="8" fill="${empathyTypes.Y.color}" stroke="#163F35" stroke-width="2"></circle>
-      <text x="100" y="-8" text-anchor="middle" fill="${empathyTypes.C.color}" font-size="12" font-weight="800">Clarity</text>
-      <text x="208" y="104" text-anchor="start" fill="${empathyTypes.E.color}" font-size="12" font-weight="800">Emotion</text>
-      <text x="100" y="217" text-anchor="middle" fill="${empathyTypes.S.color}" font-size="12" font-weight="800">Support</text>
-      <text x="-8" y="104" text-anchor="end" fill="#163F35" font-size="12" font-weight="800">Synchrony</text>
+    <svg class="empathy-compass" viewBox="0 0 256 256" role="img" aria-label="${isResult ? 'Empathy score wheel with slice sizes proportional to each style score' : 'Equal empathy style color wheel'}">
+      <circle cx="${center.x}" cy="${center.y}" r="108" fill="#FFF8E9" stroke="#E4DDD0" stroke-width="1.5"></circle>
+      ${sliceMarkup}
+      <circle cx="${center.x}" cy="${center.y}" r="${innerRadius - 2}" fill="#FFFDF6" stroke="#E4DDD0" stroke-width="1.5"></circle>
+      <text x="${center.x}" y="${center.y - 4}" text-anchor="middle" fill="#163F35" font-size="13" font-weight="800">${isResult ? 'Score' : 'Styles'}</text>
+      <text x="${center.x}" y="${center.y + 13}" text-anchor="middle" fill="#65736C" font-size="10">${isResult ? 'share' : 'guide'}</text>
     </svg>
     <div class="empathy-legend">
       ${['C', 'E', 'S', 'Y'].map((type) => {
         const meta = empathyTypes[type];
-        const scoreText = scores ? ` (${safeScores[type]} points)` : '';
+        const pct = Math.round((safeScores[type] / total) * 100);
+        const scoreText = scores ? ` (${safeScores[type]} points, ${pct}%)` : '';
         return `
           <div class="empathy-legend-item">
             <span class="empathy-legend-dot" style="background:${meta.color}"></span>
@@ -2267,67 +2256,37 @@ function pdfLine(text, x, y, size = 10, color = '#263B34', font = 'F1') {
 }
 
 function drawPdfEmpathyDiagram(scores, x, y) {
-  const max = Math.max(...Object.values(scores), 1);
-  const pointFor = (type, angle) => {
-    const radius = 30 + (scores[type] / max) * 50;
-    const radians = angle * Math.PI / 180;
-    return [x + Math.cos(radians) * radius, y + Math.sin(radians) * radius];
-  };
-  const points = [
-    pointFor('C', 90),
-    pointFor('E', 0),
-    pointFor('S', -90),
-    pointFor('Y', 180)
-  ];
-  const [c, e, s, sync] = points;
+  const order = ['C', 'E', 'S', 'Y'];
+  const total = order.reduce((sum, type) => sum + scores[type], 0) || 1;
+  const barWidth = 248;
+  let currentX = x - (barWidth / 2);
+  let chart = '';
+  order.forEach((type) => {
+    const width = (scores[type] / total) * barWidth;
+    chart += `q ${pdfColor(empathyTypes[type].color)} rg ${currentX.toFixed(1)} ${y} ${width.toFixed(1)} 34 re f Q\n`;
+    currentX += width;
+  });
+  let legendY = y - 26;
+  order.forEach((type) => {
+    const pct = Math.round((scores[type] / total) * 100);
+    const meta = empathyTypes[type];
+    chart += `q ${pdfColor(meta.color)} rg ${x - 124} ${legendY - 4} 9 9 re f Q\n`;
+    chart += pdfLine(`${meta.title}: ${scores[type]} points (${pct}%)`, x - 108, legendY, 9, '#263B34');
+    legendY -= 16;
+  });
 
   return `
 q
-0.121 0.310 0.271 rg
-${x - 66} ${y - 100} 132 18 re f
+0.961 0.949 0.922 rg
+${x - 140} ${y - 120} 280 180 re f
 Q
-q
-${pdfColor('#FFF8E9')} rg
-1 0 0 RG
-${x - 90} ${y - 90} 180 180 re f
-Q
-q
-${pdfColor(empathyTypes.C.color)} rg
-${x - 90} ${y} m ${x} ${y + 90} l ${x} ${y} l f
-Q
-q
-${pdfColor(empathyTypes.E.color)} rg
-${x} ${y + 90} m ${x + 90} ${y} l ${x} ${y} l f
-Q
-q
-${pdfColor(empathyTypes.S.color)} rg
-${x + 90} ${y} m ${x} ${y - 90} l ${x} ${y} l f
-Q
-q
-${pdfColor(empathyTypes.Y.color)} rg
-${x} ${y - 90} m ${x - 90} ${y} l ${x} ${y} l f
-Q
+${pdfLine('Score share by empathy style', x - 124, y + 42, 12, '#163F35', 'F2')}
+${chart}
 q
 0.820 0.790 0.730 RG
-1.2 w
-${x - 90} ${y} m ${x + 90} ${y} l S
-${x} ${y - 90} m ${x} ${y + 90} l S
-${x - 45} ${y} m ${x} ${y + 45} l ${x + 45} ${y} l ${x} ${y - 45} l h S
-${x - 70} ${y} m ${x} ${y + 70} l ${x + 70} ${y} l ${x} ${y - 70} l h S
+1 w
+${x - 124} ${y} ${barWidth} 34 re S
 Q
-q
-${pdfColor('#2D7A6B')} rg
-${c[0].toFixed(1)} ${c[1].toFixed(1)} m ${e[0].toFixed(1)} ${e[1].toFixed(1)} l ${s[0].toFixed(1)} ${s[1].toFixed(1)} l ${sync[0].toFixed(1)} ${sync[1].toFixed(1)} l h f
-Q
-q
-${pdfColor('#163F35')} RG
-2 w
-${c[0].toFixed(1)} ${c[1].toFixed(1)} m ${e[0].toFixed(1)} ${e[1].toFixed(1)} l ${s[0].toFixed(1)} ${s[1].toFixed(1)} l ${sync[0].toFixed(1)} ${sync[1].toFixed(1)} l h S
-Q
-${pdfLine('Clarity', x - 22, y + 105, 10, empathyTypes.C.color)}
-${pdfLine('Emotion', x + 100, y - 3, 10, empathyTypes.E.color)}
-${pdfLine('Support', x - 22, y - 116, 10, empathyTypes.S.color)}
-${pdfLine('Synchrony', x - 132, y - 3, 10, '#163F35')}
 `;
 }
 
