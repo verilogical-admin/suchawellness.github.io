@@ -658,6 +658,7 @@ document.querySelectorAll('.step-card, .why-card, .screening-card').forEach((ele
 const screeningCardData = [
   ['depression', 'BDI-style screen', 'BDI Depression Quick Screen', 'For overwhelming sadness, despair, low energy, or negative self-image.', 'Start test'],
   ['bai', 'Sucha screen', 'Beck Anxiety Inventory (BAI) Quick Screen', 'A BAI-informed anxiety symptom check for recent physical and panic-like symptoms.', 'Start test'],
+  ['empathy', 'Free reflection', 'Empathy Type Test', 'A short reflection on whether you tend to understand people through thinking, feeling, helping, or attuning.', 'Start test'],
   ['careerRiasec', 'Career guidance', 'Career Pathway RIASEC Quiz', 'A one-question-at-a-time interest quiz to identify your top Holland Code career themes.', 'Start quiz'],
   ['selfEsteem', 'Self-esteem scale', 'Rosenberg Self-Esteem Scale (RSE)', 'A 10-item self-esteem scale for reflecting on self-worth, self-respect, and overall self-attitude.', 'Start test'],
   ['universal', 'Universal screen', 'Universal Mental Health Screen', 'A broader Sucha-hosted screen for common mental health signals.', 'Start test'],
@@ -681,7 +682,7 @@ const screeningCardData = [
 ];
 
 const screeningGroups = [
-  ['Start here', 'Open first-step screens for visitors who want to begin quickly.', ['depression', 'bai']],
+  ['Start here', 'Open first-step screens and reflections for visitors who want to begin quickly.', ['depression', 'bai', 'empathy']],
   ['Career interests', 'Career and vocational reflection tools.', ['careerRiasec']],
   ['Self-esteem and identity', 'Reflection tools for self-worth, self-respect, and personal confidence.', ['selfEsteem']],
   ['Common mental health screens', 'Focused screens for mood, anxiety, attention, and related concerns.', ['universal', 'adhd', 'anxiety', 'ocd', 'bipolar', 'psychosis']],
@@ -904,6 +905,9 @@ function addScreeningStyles() {
       grid-template-columns: repeat(5, minmax(0, 1fr));
       margin-top: 1rem;
     }
+    .riasec-options.empathy-options {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
     .riasec-option {
       background: var(--white);
       border: 1px solid var(--border);
@@ -969,6 +973,9 @@ function addScreeningStyles() {
       }
       .riasec-options,
       .riasec-result-grid {
+        grid-template-columns: 1fr;
+      }
+      .riasec-options.empathy-options {
         grid-template-columns: 1fr;
       }
     }
@@ -1899,6 +1906,68 @@ const rseScale = [
   ['Strongly agree', 3]
 ];
 
+const empathyScale = [
+  ['Yes', 'yes'],
+  ['No', 'no']
+];
+
+const empathyQuestions = [
+  { text: "When someone reacts strongly, do you try to figure out what belief led them there?", yes: { type: 'C', points: 2 }, no: { type: 'E', points: 1 } },
+  { text: "When someone cries, do your eyes sometimes tear up too?", yes: { type: 'E', points: 2 }, no: { type: 'C', points: 1 } },
+  { text: "When a friend is struggling, is your first instinct to offer to help fix it?", yes: { type: 'S', points: 2 }, no: { type: 'C', points: 1 } },
+  { text: "Do you find yourself mirroring other people's posture or gestures without meaning to?", yes: { type: 'Y', points: 2 }, no: { type: 'C', points: 1 } },
+  { text: "If a person disagrees with you, do you attempt to reconstruct their reasoning step by step?", yes: { type: 'C', points: 2 }, no: { type: 'S', points: 1 } },
+  { text: "Do you feel physically uncomfortable when you see someone in pain?", yes: { type: 'E', points: 2 }, no: { type: 'C', points: 1 } },
+  { text: "Do you often show up with practical help (food, money, errands) rather than words?", yes: { type: 'S', points: 2 }, no: { type: 'E', points: 1 } },
+  { text: "When someone yawns near you, do you yawn too almost immediately?", yes: { type: 'Y', points: 2 }, no: { type: 'C', points: 1 } },
+  { text: "When watching a movie, do you analyze characters' motivations beyond what's shown?", yes: { type: 'C', points: 2 }, no: { type: 'E', points: 1 } },
+  { text: "Does a sad movie scene make you feel genuinely sad, not just understand the sadness?", yes: { type: 'E', points: 2 }, no: { type: 'C', points: 1 } },
+  { text: "When someone is grieving, do you prefer doing something for them over just sitting with them?", yes: { type: 'S', points: 2 }, no: { type: 'Y', points: 1 } },
+  { text: "Do you naturally match your speaking pace and tone to the person you're talking to?", yes: { type: 'Y', points: 2 }, no: { type: 'C', points: 1 } },
+  { text: "Before responding to someone upset, do you first try to understand their perspective logically?", yes: { type: 'C', points: 2 }, no: { type: 'E', points: 1 } },
+  { text: "When a friend is anxious, do you start to feel anxious too?", yes: { type: 'E', points: 2 }, no: { type: 'S', points: 1 } },
+  { text: "Do you feel restless until you've actually done something to help someone in distress?", yes: { type: 'S', points: 2 }, no: { type: 'E', points: 1 } },
+  { text: "When walking with someone, do you unconsciously fall into step with them?", yes: { type: 'Y', points: 2 }, no: { type: 'S', points: 1 } },
+  { text: "Do you often predict how someone will react before they do?", yes: { type: 'C', points: 2 }, no: { type: 'Y', points: 1 } },
+  { text: "Do you often 'catch' the mood of a room within minutes of entering it?", yes: { type: 'E', points: 2 }, no: { type: 'Y', points: 1 } },
+  { text: "When a coworker is overwhelmed, do you offer to take some of their work?", yes: { type: 'S', points: 2 }, no: { type: 'C', points: 1 } },
+  { text: "Do you find your breathing slows or quickens to match someone else's during conversation?", yes: { type: 'Y', points: 2 }, no: { type: 'E', points: 1 } }
+];
+
+const empathyTypes = {
+  C: {
+    title: 'Clarity',
+    full: 'Cognitive empathy',
+    color: '#C9971A',
+    description: 'You tend to understand people by reconstructing their perspective, beliefs, reasoning, and intent.'
+  },
+  E: {
+    title: 'Emotion',
+    full: 'Emotional empathy',
+    color: '#5C9457',
+    description: 'You tend to understand people by feeling with them; their emotional state registers strongly in your own body.'
+  },
+  S: {
+    title: 'Support',
+    full: 'Compassionate empathy',
+    color: '#2D7A6B',
+    description: 'You tend to turn concern into action, practical help, protection, follow-up, or concrete care.'
+  },
+  Y: {
+    title: 'Synchrony',
+    full: 'Motor empathy',
+    color: '#6B7C86',
+    description: 'You tend to attune through body rhythm: posture, tone, pace, breathing, and moment-to-moment energy.'
+  }
+};
+
+const empathySuggestions = {
+  C: "Clarity was the quieter style here. Try pausing before reacting and asking, 'What might this person believe, fear, need, or assume right now?' Writing the other person's side of a disagreement can strengthen cognitive empathy.",
+  E: 'Emotion was the quieter style here. Practice noticing what happens in your body when someone shares something difficult before jumping to explain or fix it. A few seconds of honest feeling can deepen connection.',
+  S: 'Support was the quieter style here. You may understand or feel for people but stop short of visible action. Try turning one moment of concern into a small practical gesture: a follow-up, an offer, a ride, a meal, or help with one task.',
+  Y: 'Synchrony was the quieter style here. Practice gently matching pace, tone, or breathing in conversation for a short moment, while staying natural and respectful. This can make interactions feel more grounded.'
+};
+
 screeningTests.careerRiasec = {
   title: 'Career Pathway RIASEC Quiz',
   description: 'A one-question-at-a-time Holland Code interest quiz based on the attached RIASEC career pathway worksheet.',
@@ -1906,9 +1975,16 @@ screeningTests.careerRiasec = {
   questions: riasecQuestions.map(([code, text]) => ({ code, text }))
 };
 
+screeningTests.empathy = {
+  title: 'Empathy Type Test',
+  description: 'A short Sucha-hosted reflection on how you tend to understand other people: through thinking, feeling, helping, or bodily attuning. Answers stay in your browser.',
+  empathy: true,
+  questions: empathyQuestions
+};
+
 const screeningScale = ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'];
 const screeningCards = document.querySelectorAll('.screening-card[data-test]');
-const publicScreeningTests = new Set(['depression', 'bai']);
+const publicScreeningTests = new Set(['depression', 'bai', 'empathy']);
 const screeningPanel = document.querySelector('#screening-panel');
 const screeningTitle = document.querySelector('#screening-title');
 const screeningDesc = document.querySelector('#screening-desc');
@@ -1980,7 +2056,7 @@ function getScreeningInterpretation(test, score, maxScore, answeredValues) {
 }
 
 function getScreeningQuestions(test) {
-  return test.riasec || test.rse ? test.questions : test.questions.map((text) => ({ text }));
+  return test.riasec || test.rse || test.empathy ? test.questions : test.questions.map((text) => ({ text }));
 }
 
 function resultSupportNote() {
@@ -2081,6 +2157,48 @@ function showRseResult(test) {
   screeningResult.hidden = false;
 }
 
+function showEmpathyResult(test) {
+  const scores = { C: 0, E: 0, S: 0, Y: 0 };
+  screeningStepState.answers.forEach((answer, index) => {
+    const question = test.questions[index];
+    const outcome = question?.[answer];
+    if (outcome) scores[outcome.type] += outcome.points;
+  });
+
+  const order = Object.keys(scores).sort((a, b) => scores[b] - scores[a] || a.localeCompare(b));
+  const dominant = order[0];
+  const nextStrongest = order[1];
+  const quietest = order[order.length - 1];
+  const total = Object.values(scores).reduce((sum, value) => sum + value, 0) || 1;
+
+  screeningBand.textContent = `${empathyTypes[dominant].full}: ${scores[dominant]} points`;
+  screeningNote.innerHTML = `
+    <div class="result-summary">
+      <p><strong>Your leading pattern:</strong> Your strongest empathy signal was ${empathyTypes[dominant].title}, which points toward ${empathyTypes[dominant].description.toLowerCase()} Your next strongest style was ${empathyTypes[nextStrongest].title} (${scores[nextStrongest]} points).</p>
+      <p><strong>How to read this:</strong> Empathy is not one single trait. Some people understand others mostly through perspective-taking, some through shared feeling, some through practical support, and some through physical attunement. Your result is a reflection of today's self-report, not a fixed personality label.</p>
+    </div>
+    <div class="riasec-result-grid">
+      ${order.map((type) => {
+        const meta = empathyTypes[type];
+        const pct = Math.round((scores[type] / total) * 100);
+        return `
+          <div class="riasec-result-card">
+            <div class="riasec-result-code" style="color:${meta.color}">${meta.title}</div>
+            <div class="riasec-result-title">${meta.full} (${scores[type]})</div>
+            <p>${meta.description}</p>
+            <p>${pct}% of your scored empathy pattern in this short screen.</p>
+          </div>
+        `;
+      }).join('')}
+    </div>
+    <div class="result-summary">
+      <p><strong>Growth focus:</strong> ${empathySuggestions[quietest]}</p>
+      <p class="result-support-note">${resultSupportNote()}</p>
+    </div>
+  `;
+  screeningResult.hidden = false;
+}
+
 function showScreeningResult(test) {
   if (test.riasec) {
     showRiasecResult();
@@ -2089,6 +2207,11 @@ function showScreeningResult(test) {
 
   if (test.rse) {
     showRseResult(test);
+    return;
+  }
+
+  if (test.empathy) {
+    showEmpathyResult(test);
     return;
   }
 
@@ -2117,7 +2240,7 @@ function renderScreeningStep() {
   const questions = getScreeningQuestions(test);
   const question = questions[screeningStepState.index];
   const isFinalQuestion = screeningStepState.index === questions.length - 1;
-  const scale = test.riasec ? riasecScale : test.rse ? rseScale : screeningScale.map((label, value) => [label, value]);
+  const scale = test.riasec ? riasecScale : test.rse ? rseScale : test.empathy ? empathyScale : screeningScale.map((label, value) => [label, value]);
 
   screeningForm.innerHTML = '';
   screeningResult.hidden = true;
@@ -2144,6 +2267,7 @@ function renderScreeningStep() {
   heading.className = 'inline-question-title';
   heading.textContent = question.text;
   options.className = 'riasec-options';
+  if (test.empathy) options.classList.add('empathy-options');
   options.setAttribute('role', 'group');
   options.setAttribute('aria-label', question.text);
 
