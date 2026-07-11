@@ -283,12 +283,13 @@
   }
 
   .hero-human-photo {
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 2 / 3;
+    background: #FDFCF8;
     border: 1px solid rgba(45,122,107,0.18);
     box-shadow: 0 24px 60px rgba(45,122,107,0.18);
     display: block;
     max-width: min(420px, 100%);
-    object-fit: cover;
+    object-fit: contain;
     object-position: center;
     position: relative;
     width: 100%;
@@ -677,6 +678,10 @@
     margin-bottom: 0;
   }
 
+  .screening-hero-copy {
+    min-width: 0;
+  }
+
   .screening-hero-media {
     align-items: center;
     display: flex;
@@ -694,12 +699,13 @@
   }
 
   .screening-hero-photo {
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 2 / 3;
+    background: #FDFCF8;
     border: 1px solid rgba(45,122,107,0.18);
     box-shadow: 0 24px 60px rgba(45,122,107,0.18);
     display: block;
     max-width: min(360px, 100%);
-    object-fit: cover;
+    object-fit: contain;
     object-position: center;
     position: relative;
     width: 100%;
@@ -1638,7 +1644,9 @@
     #about { grid-template-columns: 1fr; gap: 2.5rem; padding: 4rem 1.5rem; }
     .about-accent { display: none; }
     .screening-hero { grid-template-columns: 1fr; gap: 1.75rem; }
+    .screening-hero-copy { order: 2; }
     .screening-hero-media { justify-content: center; }
+    .screening-hero-media { order: 1; }
     .screening-hero-photo { max-width: 300px; }
     .screening-tools { grid-template-columns: 1fr; }
     .inline-test-head { display: grid; }
@@ -1755,9 +1763,9 @@
 
 <!-- TAKE TEST -->
 <section id="take-test">
+  <div class="section-eyebrow">Take Test</div>
   <div class="screening-hero">
-    <div>
-      <div class="section-eyebrow">Take Test</div>
+    <div class="screening-hero-copy">
       <h2 class="section-title">Premium screening tests</h2>
       <p class="section-subtitle">Choose a quick, confidential Sucha-hosted screening tool. Answers stay in your browser and results are informational only, not a diagnosis or a replacement for care from a qualified clinician. On-screen results are available after completion; downloadable PDF reports are included for premium account holders or can be unlocked with a one-time premium payment for that test. Premium empathy 20Q and 50Q tests are separate paid products.</p>
       <p class="screening-disclaimer">These tests are informational only and are not a diagnosis or a substitute for clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance. If you are interested in being connected to qualified licensed doctors or counsellors, or if you are a care provider looking to connect to care seekers, click here.<br><a class="btn-primary care-disclaimer-button" href="#care-seeker-match">Connect with an Expert Licensed Therapist that Sucha Recommends</a></p>
