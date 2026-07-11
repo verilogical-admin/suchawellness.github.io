@@ -13,6 +13,8 @@ const SECURITY_HEADERS = {
 
 const JOURNAL_PLAN_ID = 'journal_monthly_5';
 const JOURNAL_PRODUCT = 'SuchaJournal';
+const EMPATHY_REPORT_PLAN_ID = 'empathy_report_10';
+const EMPATHY_REPORT_PRODUCT = 'SuchaEmpathyReport';
 const GUARANTEE_DAYS = 30;
 const VERIFICATION_COOKIE = 'sucha_verified_visitor';
 const WALLET_PRODUCT = 'SuchaCareWallet';
@@ -88,6 +90,14 @@ function validateJournalCheckoutRequest(body) {
   const email = String(body.email || '').trim().toLowerCase();
   if (body.planId && body.planId !== JOURNAL_PLAN_ID) throw new Error('Unknown journal plan.');
   if (body.product && body.product !== JOURNAL_PRODUCT) throw new Error('Unknown product.');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('A valid billing email is required.');
+  return email;
+}
+
+function validateEmpathyReportCheckoutRequest(body) {
+  const email = String(body.email || '').trim().toLowerCase();
+  if (body.planId && body.planId !== EMPATHY_REPORT_PLAN_ID) throw new Error('Unknown empathy report plan.');
+  if (body.product && body.product !== EMPATHY_REPORT_PRODUCT) throw new Error('Unknown product.');
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('A valid billing email is required.');
   return email;
 }
@@ -643,6 +653,49 @@ async function createSuchaJournalCheckout(request, env) {
   if (!auth) return json({ error: 'Razorpay Worker secrets are not configured.' }, { status: 501 });
 
   const body = await readJson(request);
+  if (body.product === EMPATHY_REPORT_PRODUCT || body.planId === EMPATHY_REPORT_PLAN_ID) {
+    let email;
+    try {
+      email = validateEmpathyReportCheckoutRequest(body);
+    } catch (error) {
+      return json({ error: error.message }, { status: 400 });
+    }
+
+    const now = Date.now();
+    const amount = Number(env.SUCHA_EMPATHY_REPORT_AMOUNT_MINOR || 1000);
+    const currency = env.SUCHA_EMPATHY_REPORT_CURRENCY || 'USD';
+    const response = await fetch('https://api.razorpay.com/v1/orders', {
+      method: 'POST',
+      headers: {
+        Authorization: auth,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount,
+        currency,
+        receipt: `sucha_empathy_${now}`,
+        notes: {
+          product: EMPATHY_REPORT_PRODUCT,
+          planId: EMPATHY_REPORT_PLAN_ID,
+          email,
+          price: '$10 one-time PDF report',
+          supportEmail: 'support@suchawellness.com',
+        },
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) return json({ error: data.error?.description || 'Could not create Razorpay order.' }, { status: 502 });
+    return json({
+      mode: 'order',
+      keyId: env.RAZORPAY_KEY_ID,
+      orderId: data.id,
+      amount: data.amount,
+      currency: data.currency,
+      planId: EMPATHY_REPORT_PLAN_ID,
+      product: EMPATHY_REPORT_PRODUCT,
+    });
+  }
+
   let email;
   try {
     email = validateJournalCheckoutRequest(body);
@@ -726,9 +779,10 @@ async function verifySuchaJournalCheckout(request, env) {
   if (!env.RAZORPAY_KEY_SECRET) return json({ error: 'Razorpay Worker secrets are not configured.' }, { status: 501 });
 
   const body = await readJson(request);
+  const isEmpathyReport = body.product === EMPATHY_REPORT_PRODUCT || body.planId === EMPATHY_REPORT_PLAN_ID;
   let email;
   try {
-    email = validateJournalCheckoutRequest(body);
+    email = isEmpathyReport ? validateEmpathyReportCheckoutRequest(body) : validateJournalCheckoutRequest(body);
   } catch (error) {
     return json({ error: error.message }, { status: 400 });
   }
@@ -742,6 +796,20 @@ async function verifySuchaJournalCheckout(request, env) {
 
   if (!signature || signature !== expected) {
     return json({ ok: false, error: 'Razorpay signature verification failed.' }, { status: 400 });
+  }
+
+  if (isEmpathyReport) {
+    return json({
+      ok: true,
+      source: 'razorpay_order',
+      planId: EMPATHY_REPORT_PLAN_ID,
+      product: EMPATHY_REPORT_PRODUCT,
+      email,
+      razorpayPaymentId: body.razorpay_payment_id,
+      razorpayOrderId: body.razorpay_order_id,
+      purchasedAt: Date.now(),
+      price: '$10',
+    });
   }
 
   const now = Date.now();

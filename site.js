@@ -196,6 +196,10 @@ trackSuchaEvent('page_view');
 
 const suchaVerificationTokenKey = 'sucha-verification-token:v1';
 const suchaVerificationEmailKey = 'sucha-verification-email:v1';
+const empathyReportAccessStorageKey = 'sucha-empathy-report-access:v1';
+const empathyReportPlanId = 'empathy_report_10';
+const empathyReportProduct = 'SuchaEmpathyReport';
+const empathyReportPrice = '$10';
 let suchaVerificationPending = null;
 
 function addVerificationStyles() {
@@ -658,7 +662,7 @@ document.querySelectorAll('.step-card, .why-card, .screening-card').forEach((ele
 const screeningCardData = [
   ['depression', 'BDI-style screen', 'BDI Depression Quick Screen', 'For overwhelming sadness, despair, low energy, or negative self-image.', 'Start test'],
   ['bai', 'Sucha screen', 'Beck Anxiety Inventory (BAI) Quick Screen', 'A BAI-informed anxiety symptom check for recent physical and panic-like symptoms.', 'Start test'],
-  ['empathy', 'Free reflection', 'Empathy Type Test', 'A short reflection on whether you tend to understand people through thinking, feeling, helping, or attuning.', 'Start test'],
+  ['empathy', 'Free 5-question reflection', 'Empathy Type Test', 'A quick 5-question reflection on whether you tend to understand people through thinking, feeling, helping, or attuning.', 'Start test'],
   ['careerRiasec', 'Career guidance', 'Career Pathway RIASEC Quiz', 'A one-question-at-a-time interest quiz to identify your top Holland Code career themes.', 'Start quiz'],
   ['selfEsteem', 'Self-esteem scale', 'Rosenberg Self-Esteem Scale (RSE)', 'A 10-item self-esteem scale for reflecting on self-worth, self-respect, and overall self-attitude.', 'Start test'],
   ['universal', 'Universal screen', 'Universal Mental Health Screen', 'A broader Sucha-hosted screen for common mental health signals.', 'Start test'],
@@ -2045,6 +2049,29 @@ const empathySuggestions = {
   Y: 'Synchrony was the quieter style here. Practice gently matching pace, tone, or breathing in conversation for a short moment, while staying natural and respectful. This can make interactions feel more grounded.'
 };
 
+const empathyReportGuidance = {
+  C: {
+    strength: 'You may be good at understanding motives, context, assumptions, and the story behind someone’s reaction.',
+    watch: 'Clarity can become too analytical if you move into explanation before the other person feels heard.',
+    practice: 'Before responding, name both the logic and the feeling: "I can see why this made sense to you, and why it felt heavy."'
+  },
+  E: {
+    strength: 'You may quickly register another person’s emotional state and create a sense of warmth, validation, and shared feeling.',
+    watch: 'Emotion can become draining if you absorb distress without boundaries or move too quickly into the other person’s mood.',
+    practice: 'Try a grounding breath and ask, "Is this my feeling, their feeling, or both?" before deciding what to do next.'
+  },
+  S: {
+    strength: 'You may naturally convert care into useful action: practical help, follow-through, protection, advocacy, or problem solving.',
+    watch: 'Support can feel intrusive if action comes before consent, or if fixing replaces listening.',
+    practice: 'Ask, "Would help, listening, or space feel best right now?" before stepping in.'
+  },
+  Y: {
+    strength: 'You may attune through pace, posture, tone, timing, and nonverbal rhythm, which can make people feel quietly met.',
+    watch: 'Synchrony can make tense environments affect your body quickly, especially when you mirror stress without noticing.',
+    practice: 'Use gentle posture and breathing awareness to stay connected without automatically matching every signal around you.'
+  }
+};
+
 screeningTests.careerRiasec = {
   title: 'Career Pathway RIASEC Quiz',
   description: 'A one-question-at-a-time Holland Code interest quiz based on the attached RIASEC career pathway worksheet.',
@@ -2054,9 +2081,9 @@ screeningTests.careerRiasec = {
 
 screeningTests.empathy = {
   title: 'Empathy Type Test',
-  description: 'A short Sucha-hosted reflection on how you tend to understand other people: through thinking, feeling, helping, or bodily attuning. Answers stay in your browser.',
+  description: 'A 5-question Sucha-hosted reflection on how you tend to understand other people: through thinking, feeling, helping, or bodily attuning. Answers stay in your browser.',
   empathy: true,
-  questions: empathyQuestions
+  questions: empathyQuestions.slice(0, 5)
 };
 
 const screeningScale = ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'];
@@ -2326,13 +2353,18 @@ function downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest)
   let y = 312;
   order.forEach((type) => {
     const meta = empathyTypes[type];
+    const guidance = empathyReportGuidance[type];
     stream += `q ${pdfColor(meta.color)} rg 54 ${y - 3} 9 9 re f Q\n`;
     stream += pdfLine(`${meta.title} - ${meta.full}`, 70, y, 10, '#163F35', 'F2');
     stream += pdfLine(`${scores[type]} points`, 260, y, 10, '#263B34');
-    wrapReportText(meta.description, 72).forEach((line, index) => {
-      stream += pdfLine(line, 70, y - 14 - (index * 11), 8, '#65736C');
+    [
+      `Meaning: ${meta.description}`,
+      `Strength: ${guidance.strength}`,
+      `Practice: ${guidance.practice}`
+    ].flatMap((text) => wrapReportText(text, 84)).slice(0, 5).forEach((line, index) => {
+      stream += pdfLine(line, 70, y - 13 - (index * 9), 7, '#65736C');
     });
-    y -= 52;
+    y -= 58;
   });
 
   stream += pdfLine('Important note', 52, 86, 12, '#163F35', 'F2');
@@ -2372,6 +2404,152 @@ function downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest)
   link.click();
   link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function readEmpathyReportAccess() {
+  try {
+    return JSON.parse(localStorage.getItem(empathyReportAccessStorageKey) || 'null');
+  } catch {
+    return null;
+  }
+}
+
+function hasEmpathyReportAccess() {
+  const access = readEmpathyReportAccess();
+  return Boolean(access?.paymentId && access?.planId === empathyReportPlanId);
+}
+
+function saveEmpathyReportAccess(access) {
+  localStorage.setItem(empathyReportAccessStorageKey, JSON.stringify({
+    ...access,
+    planId: empathyReportPlanId,
+    product: empathyReportProduct,
+    price: empathyReportPrice,
+    purchasedAt: access.purchasedAt || Date.now(),
+  }));
+}
+
+function empathyCheckoutBases() {
+  return location.protocol === 'https:' && /(^|\.)suchawellness\.com$/i.test(location.hostname)
+    ? [location.origin, ...suchaApiBases]
+    : suchaApiBases;
+}
+
+async function createEmpathyReportCheckout(email) {
+  const payload = {
+    planId: empathyReportPlanId,
+    product: empathyReportProduct,
+    email,
+    amountUsd: 10,
+  };
+  let lastError = null;
+  for (const base of empathyCheckoutBases()) {
+    try {
+      const response = await fetch(`${base}/api/create-order`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: base === location.origin ? 'same-origin' : 'omit',
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) return data;
+      lastError = new Error(data.error || 'Could not create report checkout.');
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error('Could not create report checkout.');
+}
+
+async function verifyEmpathyReportCheckout(email, checkout, response) {
+  const payload = {
+    planId: empathyReportPlanId,
+    product: empathyReportProduct,
+    email,
+    checkoutMode: 'order',
+    razorpay_order_id: response.razorpay_order_id,
+    razorpay_payment_id: response.razorpay_payment_id,
+    razorpay_signature: response.razorpay_signature,
+  };
+  let lastError = null;
+  for (const base of empathyCheckoutBases()) {
+    try {
+      const verifyResponse = await fetch(`${base}/api/verify-payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: base === location.origin ? 'same-origin' : 'omit',
+        body: JSON.stringify(payload),
+      });
+      const data = await verifyResponse.json().catch(() => ({}));
+      if (verifyResponse.ok && data.ok !== false) return data;
+      lastError = new Error(data.error || 'Could not verify report payment.');
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error('Could not verify report payment.');
+}
+
+async function unlockAndDownloadEmpathyReport(scores, order, dominant, nextStrongest, quietest, button) {
+  if (hasEmpathyReportAccess()) {
+    downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest);
+    trackSuchaEvent('test_report_downloaded', { test: 'empathy', paid: true, restored: true });
+    return;
+  }
+
+  if (location.protocol === 'file:') throw new Error('Open the live site to buy the PDF report.');
+  const verified = await requireSuchaVerification({ mode: 'tool', tool: 'Empathy Type PDF Report', toolType: 'paid-report' });
+  if (!verified) return;
+  const email = localStorage.getItem(suchaVerificationEmailKey) || '';
+  if (!email) throw new Error('Verify your email before buying the PDF report.');
+  const ready = await ensureRazorpayLoaded();
+  if (!ready) throw new Error('Razorpay Checkout could not load. Check the connection and try again.');
+
+  button.disabled = true;
+  button.textContent = 'Opening payment...';
+  const checkout = await createEmpathyReportCheckout(email);
+  const options = {
+    key: checkout.keyId,
+    name: 'Sucha Wellness',
+    description: `Empathy Type PDF Report - ${empathyReportPrice}`,
+    amount: checkout.amount,
+    currency: checkout.currency || 'USD',
+    order_id: checkout.orderId,
+    prefill: { email },
+    theme: { color: '#2D7A6B' },
+    handler: async (response) => {
+      try {
+        button.textContent = 'Preparing PDF...';
+        const verifiedPayment = await verifyEmpathyReportCheckout(email, checkout, response);
+        saveEmpathyReportAccess({
+          email,
+          paymentId: verifiedPayment.razorpayPaymentId || response.razorpay_payment_id,
+          orderId: verifiedPayment.razorpayOrderId || response.razorpay_order_id,
+          purchasedAt: verifiedPayment.purchasedAt || Date.now(),
+        });
+        downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest);
+        trackSuchaEvent('test_report_downloaded', { test: 'empathy', paid: true });
+      } catch (error) {
+        alert(error.message || 'Could not verify payment.');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Download PDF report';
+      }
+    },
+    modal: {
+      ondismiss: () => {
+        button.disabled = false;
+        button.textContent = 'Unlock PDF report - $10';
+      },
+    },
+  };
+  const rz = new Razorpay(options);
+  rz.on('payment.failed', (event) => {
+    button.disabled = false;
+    button.textContent = 'Unlock PDF report - $10';
+    alert(`Razorpay payment failed: ${event.error?.description || 'Try again.'}`);
+  });
+  rz.open();
 }
 
 function getResultMeaning(band, test) {
@@ -2509,13 +2687,13 @@ function showEmpathyResult(test) {
       <p><strong>Growth focus:</strong> ${empathySuggestions[quietest]}</p>
       <p class="result-support-note">${resultSupportNote()}</p>
       <div class="report-download-row">
-        <button class="test-submit" type="button" id="empathy-report-download">Download PDF report</button>
+        <button class="test-submit" type="button" id="empathy-report-download">${hasEmpathyReportAccess() ? 'Download PDF report' : 'Unlock PDF report - $10'}</button>
       </div>
     </div>
   `;
-  screeningNote.querySelector('#empathy-report-download')?.addEventListener('click', () => {
-    downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest);
-    trackSuchaEvent('test_report_downloaded', { test: 'empathy' });
+  screeningNote.querySelector('#empathy-report-download')?.addEventListener('click', (event) => {
+    unlockAndDownloadEmpathyReport(scores, order, dominant, nextStrongest, quietest, event.currentTarget)
+      .catch((error) => alert(error.message || 'Could not unlock the PDF report.'));
   });
   screeningResult.hidden = false;
 }
