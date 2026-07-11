@@ -666,7 +666,7 @@ document.querySelectorAll('.step-card, .why-card, .screening-card').forEach((ele
 const screeningCardData = [
   ['depression', 'BDI-style screen', 'BDI Depression Quick Screen', 'For overwhelming sadness, despair, low energy, or negative self-image.', 'Start test'],
   ['bai', 'Sucha screen', 'Beck Anxiety Inventory (BAI) Quick Screen', 'A BAI-informed anxiety symptom check for recent physical and panic-like symptoms.', 'Start test'],
-  ['empathy', 'Free 5-question reflection', 'Empathy Type Test', 'A quick 5-question reflection on whether you tend to understand people through thinking, feeling, helping, or attuning.', 'Start test'],
+  ['empathy', 'Highly recommended', 'Empathy Type Test', 'A special 5-question reflection on how you tend to understand people through thinking, feeling, helping, or attuning.', 'Start test'],
   ['careerRiasec', 'Career guidance', 'Career Pathway RIASEC Quiz', 'A one-question-at-a-time interest quiz to identify your top Holland Code career themes.', 'Start quiz'],
   ['selfEsteem', 'Self-esteem scale', 'Rosenberg Self-Esteem Scale (RSE)', 'A 10-item self-esteem scale for reflecting on self-worth, self-respect, and overall self-attitude.', 'Start test'],
   ['universal', 'Universal screen', 'Universal Mental Health Screen', 'A broader Sucha-hosted screen for common mental health signals.', 'Start test'],
@@ -1194,6 +1194,9 @@ function createScreeningCard([key, tag, title, description, action]) {
   card.className = 'screening-card reveal visible';
   card.type = 'button';
   card.dataset.test = key;
+  if (key === 'empathy') {
+    card.classList.add('screening-card-featured', 'screening-card-empathy');
+  }
 
   const tagElement = document.createElement('span');
   const titleElement = document.createElement('span');

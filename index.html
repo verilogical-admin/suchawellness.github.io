@@ -709,6 +709,98 @@
     transform: translateY(-2px);
   }
 
+  .screening-card-featured {
+    background:
+      radial-gradient(circle at 88% 10%, rgba(255,221,104,0.34), transparent 30%),
+      linear-gradient(140deg, rgba(255,253,246,0.98), rgba(232,247,243,0.95) 48%, rgba(255,248,225,0.92));
+    border: 2px solid #f0c84b;
+    box-shadow:
+      0 20px 48px rgba(22,63,53,0.16),
+      0 0 0 5px rgba(240,200,75,0.16),
+      inset 0 1px 0 rgba(255,255,255,0.92);
+    min-height: 250px;
+    overflow: hidden;
+    position: relative;
+    transform: translateY(-4px);
+  }
+
+  .screening-card-featured::before {
+    background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.58) 48%, transparent 72%);
+    content: "";
+    height: 170%;
+    left: -44%;
+    opacity: 0;
+    position: absolute;
+    top: -35%;
+    transform: rotate(18deg);
+    width: 36%;
+  }
+
+  .screening-card-featured::after {
+    background: #f0c84b;
+    border: 1px solid rgba(100,74,12,0.18);
+    color: #163f35;
+    content: "Special Pick";
+    font-size: 0.58rem;
+    font-weight: 600;
+    letter-spacing: 0.13em;
+    line-height: 1;
+    padding: 0.4rem 0.55rem;
+    position: absolute;
+    right: 1rem;
+    text-transform: uppercase;
+    top: 1rem;
+  }
+
+  .screening-card-featured:hover,
+  .screening-card-featured:focus-visible {
+    border-color: #e8bb32;
+    box-shadow:
+      0 26px 58px rgba(22,63,53,0.2),
+      0 0 0 6px rgba(240,200,75,0.2),
+      inset 0 1px 0 rgba(255,255,255,0.96);
+    transform: translateY(-7px);
+  }
+
+  .screening-card-featured:hover::before,
+  .screening-card-featured:focus-visible::before {
+    animation: featuredCardShine 1.55s ease-out;
+  }
+
+  .screening-card-featured .screening-card-tag {
+    background: rgba(22,63,53,0.92);
+    color: white;
+    display: inline-flex;
+    margin-right: auto;
+    padding: 0.45rem 0.62rem;
+  }
+
+  .screening-card-featured .screening-card-title {
+    font-size: 1.7rem;
+    margin-top: 0.45rem;
+  }
+
+  .screening-card-featured .screening-card-action {
+    background: var(--teal-dark);
+    color: white;
+    display: inline-flex;
+    margin-right: auto;
+    padding: 0.62rem 0.78rem;
+  }
+
+  @keyframes featuredCardShine {
+    0% { left: -44%; opacity: 0; }
+    22% { opacity: 1; }
+    100% { left: 112%; opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .screening-card-featured:hover::before,
+    .screening-card-featured:focus-visible::before {
+      animation: none;
+    }
+  }
+
   .screening-card-tag {
     color: var(--teal);
     font-size: 0.62rem;
@@ -1546,6 +1638,22 @@
       min-height: 0;
     }
 
+    .screening-card-featured {
+      min-height: 0;
+      padding-top: 1.7rem;
+      transform: none;
+    }
+
+    .screening-card-featured::after {
+      right: 0.9rem;
+      top: 0.9rem;
+    }
+
+    .screening-card-featured .screening-card-title {
+      font-size: 1.55rem;
+      margin-top: 0.55rem;
+    }
+
     .inline-options label,
     .rating-options label {
       color: #2f3935;
@@ -2163,7 +2271,7 @@
   <a href="mailto:support@suchawellness.com?subject=Sucha%20Wellness%20Support">Support: support@suchawellness.com</a>
 </footer>
 
-<script src="/site.js?v=empathy-deep-report-gold-1" defer></script>
+<script src="/site.js?v=empathy-featured-card-1" defer></script>
 <script src="/assets/sucha-feedback-genie.js?v=sucha-mama-4" defer></script>
 </body>
 </html>
