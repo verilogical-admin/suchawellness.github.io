@@ -3,6 +3,13 @@ const tokenToggle = document.querySelector('#token-toggle');
 const loadButton = document.querySelector('#load');
 const statusEl = document.querySelector('#status');
 const couponsEl = document.querySelector('#coupons');
+const manualCouponsEl = document.querySelector('#manual-coupons');
+const freeDayRequestsEl = document.querySelector('#free-day-requests');
+const manualCouponEmail = document.querySelector('#manual-coupon-email');
+const manualCouponDays = document.querySelector('#manual-coupon-days');
+const manualCouponHours = document.querySelector('#manual-coupon-hours');
+const manualCouponNote = document.querySelector('#manual-coupon-note');
+const manualCouponCreate = document.querySelector('#manual-coupon-create');
 const totalsEl = document.querySelector('#totals');
 const analyticsEl = document.querySelector('#analytics');
 const careRequestsEl = document.querySelector('#care-requests');
@@ -74,6 +81,84 @@ function renderCoupons(coupons) {
     button.addEventListener('click', () => revokeCoupon(coupon.hash));
     row.lastElementChild.append(button);
     couponsEl.append(row);
+  });
+}
+
+async function copyText(value) {
+  try {
+    await navigator.clipboard.writeText(value);
+    setStatus('Copied coupon code.');
+  } catch {
+    setStatus(value);
+  }
+}
+
+function renderManualCoupons(coupons = []) {
+  if (!manualCouponsEl) return;
+  manualCouponsEl.replaceChildren();
+  if (!coupons.length) {
+    manualCouponsEl.innerHTML = '<tr><td colspan="6">No manual coupons yet.</td></tr>';
+    return;
+  }
+  coupons.slice(0, 200).forEach((coupon) => {
+    const row = document.createElement('tr');
+    const codeCell = document.createElement('td');
+    const code = document.createElement('code');
+    code.textContent = coupon.code || coupon.hash;
+    codeCell.append(code, document.createElement('br'), document.createTextNode(`Valid until ${fmt(coupon.validUntil)}`));
+    const emailCell = document.createElement('td');
+    emailCell.textContent = coupon.email || 'transferable';
+    const accessCell = document.createElement('td');
+    accessCell.textContent = `${coupon.accessDays || 1} day${Number(coupon.accessDays || 1) === 1 ? '' : 's'}`;
+    const statusCell = document.createElement('td');
+    statusCell.textContent = coupon.status || 'Available';
+    const noteCell = document.createElement('td');
+    noteCell.textContent = coupon.note || '-';
+    const actionCell = document.createElement('td');
+    const copy = document.createElement('button');
+    copy.type = 'button';
+    copy.className = 'secondary';
+    copy.textContent = 'Copy';
+    copy.disabled = !coupon.code;
+    copy.addEventListener('click', () => copyText(coupon.code));
+    const revoke = document.createElement('button');
+    revoke.type = 'button';
+    revoke.className = 'secondary';
+    revoke.textContent = coupon.revoked ? 'Revoked' : 'Revoke';
+    revoke.disabled = !!coupon.revoked || coupon.status === 'Used';
+    revoke.addEventListener('click', () => revokeCoupon(coupon.hash));
+    actionCell.append(copy, document.createTextNode(' '), revoke);
+    row.append(codeCell, emailCell, accessCell, statusCell, noteCell, actionCell);
+    manualCouponsEl.append(row);
+  });
+}
+
+function renderFreeDayRequests(requests = []) {
+  if (!freeDayRequestsEl) return;
+  freeDayRequestsEl.replaceChildren();
+  if (!requests.length) {
+    freeDayRequestsEl.innerHTML = '<tr><td colspan="6">No free-day requests yet.</td></tr>';
+    return;
+  }
+  requests.slice(0, 200).forEach((request) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${fmt(request.createdAt)}</td>
+      <td>${request.email || '-'}</td>
+      <td style="max-width:360px;white-space:pre-wrap"></td>
+      <td>${request.status || 'pending'}</td>
+      <td><code>${request.couponCode || '-'}</code><br>${request.couponExpiresAt ? `Expires ${fmt(request.couponExpiresAt)}` : ''}<br>${request.couponEmailed ? 'Emailed' : request.couponEmailError ? `Email failed: ${request.couponEmailError}` : ''}</td>
+      <td></td>
+    `;
+    row.children[2].textContent = request.message || '';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'secondary';
+    button.textContent = request.status === 'approved' ? 'Approved' : 'Approve 1-day coupon';
+    button.disabled = request.status === 'approved';
+    button.addEventListener('click', () => approveFreeDayRequest(request));
+    row.lastElementChild.append(button);
+    freeDayRequestsEl.append(row);
   });
 }
 
@@ -198,6 +283,8 @@ async function loadDashboard() {
   setStatus('Loading dashboard...');
   const data = await adminFetch('/api/admin/summary', { headers: authHeaders() });
   renderCoupons(data.coupons || []);
+  renderManualCoupons(data.manualCoupons || []);
+  renderFreeDayRequests(data.freeAccessRequests || []);
   renderAnalytics(data.analytics || []);
   renderVerifiedVisitors(data.verifiedVisitors || []);
   renderCareRequests(data.careRequests || []);
@@ -215,6 +302,57 @@ async function revokeCoupon(hash) {
   await loadDashboard();
 }
 
+async function createManualCoupon() {
+  if (!tokenInput.value.trim()) {
+    setStatus('Enter the admin token first.');
+    return;
+  }
+  manualCouponCreate.disabled = true;
+  setStatus('Creating coupon...');
+  try {
+    const data = await adminFetch('/api/admin/coupons/create', {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: manualCouponEmail.value.trim(),
+        accessDays: manualCouponDays.value,
+        validHours: manualCouponHours.value,
+        label: 'Manual discount coupon',
+        note: manualCouponNote.value.trim(),
+      }),
+    });
+    setStatus(`Created coupon ${data.coupon?.code || ''}${data.emailed ? ' and emailed it.' : data.emailError ? `, but email failed: ${data.emailError}` : ''}`);
+    if (data.coupon?.code) copyText(data.coupon.code);
+    manualCouponNote.value = '';
+    await loadDashboard();
+  } finally {
+    manualCouponCreate.disabled = false;
+  }
+}
+
+async function approveFreeDayRequest(request) {
+  if (!confirm(`Approve one day of access for ${request.email}?`)) return;
+  const data = await adminFetch('/api/admin/coupons/create', {
+    method: 'POST',
+    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: request.email,
+      accessDays: 1,
+      validHours: 48,
+      label: 'Good-faith 1-day access',
+      note: `Approved free-day request: ${request.id}`,
+      requestId: request.id,
+    }),
+  });
+  setStatus(`Approved. Coupon: ${data.coupon?.code || ''}${data.emailed ? ' Email sent.' : data.emailError ? ` Email failed: ${data.emailError}` : ''}`);
+  if (data.coupon?.code) copyText(data.coupon.code);
+  await loadDashboard();
+}
+
 loadButton.addEventListener('click', () => {
   loadDashboard().catch((error) => setStatus(error.message));
+});
+
+manualCouponCreate?.addEventListener('click', () => {
+  createManualCoupon().catch((error) => setStatus(error.message));
 });

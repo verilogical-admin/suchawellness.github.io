@@ -32,6 +32,7 @@
   }
   .toolbar, .grid { display: grid; gap: 0.75rem; }
   .toolbar { grid-template-columns: minmax(0, 1fr) auto; }
+  .admin-form-grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: end; }
   .password-field { position: relative; min-width: 0; }
   .password-field input { width: 100%; padding-right: 3rem; }
   .password-toggle {
@@ -75,7 +76,7 @@
   .status { color: var(--muted); min-height: 1.5rem; }
   @media (max-width: 780px) {
     main { padding: 1rem; }
-    .toolbar, .cards { grid-template-columns: 1fr; }
+    .toolbar, .cards, .admin-form-grid { grid-template-columns: 1fr; }
     table { display: block; overflow-x: auto; }
   }
 </style>
@@ -115,6 +116,53 @@
       </thead>
       <tbody id="coupons">
         <tr><td colspan="5">Load dashboard to view coupons.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Manual Discounts</h2>
+    <p class="status">Create one-use coupon codes on your discretion. Leave email blank for a transferable code, or assign it to one account.</p>
+    <div class="admin-form-grid">
+      <input id="manual-coupon-email" type="email" placeholder="Customer email">
+      <input id="manual-coupon-days" type="number" min="1" max="365" value="7" placeholder="Access days">
+      <input id="manual-coupon-hours" type="number" min="1" max="720" value="48" placeholder="Valid hours">
+      <button id="manual-coupon-create" type="button">Create coupon</button>
+    </div>
+    <input id="manual-coupon-note" type="text" placeholder="Private note, reason, or discount terms" style="width:100%;margin-top:0.75rem">
+    <table style="margin-top:1rem">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Email</th>
+          <th>Access</th>
+          <th>Status</th>
+          <th>Note</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="manual-coupons">
+        <tr><td colspan="6">Load dashboard to view manual coupons.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Free Day Requests</h2>
+    <p class="status">Approving creates a one-use 1-day coupon assigned to that email and valid for 48 hours.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Created</th>
+          <th>Email</th>
+          <th>Message</th>
+          <th>Status</th>
+          <th>Coupon</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="free-day-requests">
+        <tr><td colspan="6">Load dashboard to view requests.</td></tr>
       </tbody>
     </table>
   </section>
@@ -166,6 +214,6 @@
   </section>
 </main>
 
-<script src="/admin.js?v=sucha-mama-1" defer></script>
+<script src="/admin.js?v=manual-coupons-1" defer></script>
 </body>
 </html>

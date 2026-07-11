@@ -165,6 +165,10 @@ function feedbackKey(date, id) {
   return `feedback:${date}:${id}`;
 }
 
+function freeAccessRequestKey(id) {
+  return `free-access-request:${id}`;
+}
+
 function walletKey(ownerHash) {
   return `wallet:${ownerHash}`;
 }
@@ -474,6 +478,40 @@ async function putCouponState(kv, hash, state) {
   await kv.put(`coupon:${hash}`, JSON.stringify({ ...state, updatedAt: new Date().toISOString() }));
 }
 
+function clampNumber(value, min, max, fallback) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.min(max, Math.max(min, Math.round(number)));
+}
+
+function couponCode() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes = new Uint8Array(10);
+  crypto.getRandomValues(bytes);
+  return `SUCHA-${[...bytes].map((byte) => alphabet[byte % alphabet.length]).join('')}`;
+}
+
+function publicCoupon(hash, state = {}, fallback = {}) {
+  return {
+    hash,
+    id: fallback.id || state.id || 'Manual coupon',
+    code: state.code || '',
+    manual: Boolean(state.manual),
+    status: state.revoked ? 'Revoked' : state.usedAt ? 'Used' : state.expiresAt && Date.parse(state.expiresAt) < Date.now() ? 'Expired' : 'Available',
+    email: state.email || '',
+    accessDays: state.accessDays || JOURNAL_ACCESS_DAYS,
+    validUntil: state.expiresAt || '',
+    usedBy: state.usedBy || '',
+    usedAt: state.usedAt || '',
+    revoked: Boolean(state.revoked),
+    revokedAt: state.revokedAt || '',
+    updatedAt: state.updatedAt || '',
+    createdAt: state.createdAt || '',
+    note: state.note || '',
+    requestId: state.requestId || '',
+  };
+}
+
 async function redeemCoupon(request, env) {
   const kv = getKv(env);
   if (!kv) return json({ error: 'Coupon storage is not configured.' }, { status: 501 });
@@ -481,29 +519,57 @@ async function redeemCoupon(request, env) {
   const code = String(body.code || '').trim().toUpperCase();
   const email = String(body.email || '').trim().toLowerCase();
   if (!code) return json({ error: 'Enter a coupon code.' }, { status: 400 });
+  if (!normalizeEmail(email)) return json({ error: 'Enter a valid email for this coupon.' }, { status: 400 });
   const hash = await sha256Hex(code);
-  if (!COUPON_HASHES.includes(hash)) return json({ error: 'Coupon not found.' }, { status: 404 });
-
   const state = await getCouponState(kv, hash);
+  if (!COUPON_HASHES.includes(hash) && !state.manual) return json({ error: 'Coupon not found.' }, { status: 404 });
   if (state.revoked) return json({ error: 'Coupon has been revoked.' }, { status: 403 });
   if (state.usedAt) return json({ error: 'Coupon has already been used.' }, { status: 409 });
+  if (state.expiresAt && Date.parse(state.expiresAt) < Date.now()) return json({ error: 'Coupon has expired.' }, { status: 410 });
+  if (state.email && state.email !== email) return json({ error: 'This coupon is assigned to a different email.' }, { status: 403 });
 
   const now = Date.now();
+  const accessDays = clampNumber(state.accessDays, 1, JOURNAL_ACCESS_DAYS, JOURNAL_ACCESS_DAYS);
   const access = {
     ok: true,
-    source: 'admin_coupon',
+    source: state.source || 'admin_coupon',
     planId: JOURNAL_PLAN_ID,
     product: JOURNAL_PRODUCT,
     email,
     couponHash: hash,
     redeemedAt: now,
-    expiresAt: now + 365 * 24 * 60 * 60 * 1000,
+    expiresAt: now + accessDays * 24 * 60 * 60 * 1000,
+    accessDays,
   };
   await putCouponState(kv, hash, {
+    ...state,
     usedAt: new Date(now).toISOString(),
     usedBy: email || 'not provided',
   });
   return json(access);
+}
+
+async function createFreeAccessRequest(request, env) {
+  const kv = getKv(env);
+  if (!kv) return json({ error: 'Request storage is not configured.' }, { status: 501 });
+  const body = await readJson(request);
+  const email = normalizeEmail(body.email);
+  if (!email) return json({ error: 'Enter a valid email so the coupon can be sent if approved.' }, { status: 400 });
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
+  const record = {
+    id,
+    email,
+    message: cleanText(body.message || "I can't afford to pay now, please give me a day's access for free, I will voluntarily do some marketing for you in good faith", 360),
+    status: 'pending',
+    createdAt: now,
+    updatedAt: now,
+    country: request.headers.get('CF-IPCountry') || 'unknown',
+    region: cleanText(request.cf?.region || 'unknown', 80),
+    city: cleanText(request.cf?.city || 'unknown', 80),
+  };
+  await kv.put(freeAccessRequestKey(id), JSON.stringify(record));
+  return json({ ok: true, request: record });
 }
 
 async function trackAnalytics(request, env) {
@@ -628,10 +694,24 @@ async function adminSummary(request, env) {
   const kv = getKv(env);
   if (!kv) return json({ error: 'Admin KV storage is not configured.' }, { status: 501 });
   const couponStates = await Promise.all(COUPON_HASHES.map(async (hash, index) => ({
-    id: `Coupon ${index + 1}`,
-    hash,
-    ...(await getCouponState(kv, hash)),
+    ...publicCoupon(hash, await getCouponState(kv, hash), { id: `Coupon ${index + 1}` }),
   })));
+  const manualCouponList = await kv.list({ prefix: 'coupon:', limit: 500 });
+  const manualCoupons = [];
+  for (const key of manualCouponList.keys) {
+    const hash = key.name.replace('coupon:', '');
+    if (COUPON_HASHES.includes(hash)) continue;
+    const state = await kv.get(key.name, { type: 'json' });
+    if (state?.manual) manualCoupons.push(publicCoupon(hash, state));
+  }
+  manualCoupons.sort((a, b) => String(b.createdAt || b.updatedAt).localeCompare(String(a.createdAt || a.updatedAt)));
+  const freeRequestList = await kv.list({ prefix: 'free-access-request:', limit: 500 });
+  const freeAccessRequests = [];
+  for (const key of freeRequestList.keys) {
+    const item = await kv.get(key.name, { type: 'json' });
+    if (item) freeAccessRequests.push(item);
+  }
+  freeAccessRequests.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
   const analytics = [];
   for (let i = 0; i < 14; i += 1) {
     const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -658,7 +738,7 @@ async function adminSummary(request, env) {
     if (item) feedback.push(item);
   }
   feedback.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
-  return json({ coupons: couponStates, analytics, verifiedVisitors, careRequests, feedback });
+  return json({ coupons: couponStates, manualCoupons, freeAccessRequests, analytics, verifiedVisitors, careRequests, feedback });
 }
 
 async function adminRevokeCoupon(request, env) {
@@ -667,10 +747,97 @@ async function adminRevokeCoupon(request, env) {
   if (!kv) return json({ error: 'Admin KV storage is not configured.' }, { status: 501 });
   const body = await readJson(request);
   const hash = String(body.hash || '');
-  if (!COUPON_HASHES.includes(hash)) return json({ error: 'Coupon not found.' }, { status: 404 });
   const state = await getCouponState(kv, hash);
+  if (!COUPON_HASHES.includes(hash) && !state.manual) return json({ error: 'Coupon not found.' }, { status: 404 });
   await putCouponState(kv, hash, { ...state, revoked: true, revokedAt: new Date().toISOString() });
   return json({ ok: true });
+}
+
+async function adminCreateCoupon(request, env) {
+  if (!requireAdmin(request, env)) return json({ error: 'Unauthorized' }, { status: 401 });
+  const kv = getKv(env);
+  if (!kv) return json({ error: 'Admin KV storage is not configured.' }, { status: 501 });
+  const body = await readJson(request);
+  const email = body.email ? normalizeEmail(body.email) : '';
+  if (body.email && !email) return json({ error: 'Enter a valid email or leave email blank.' }, { status: 400 });
+  const accessDays = clampNumber(body.accessDays, 1, JOURNAL_ACCESS_DAYS, 1);
+  const validHours = clampNumber(body.validHours, 1, 24 * 30, 48);
+  const now = new Date();
+  let code = '';
+  let hash = '';
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    code = couponCode();
+    hash = await sha256Hex(code);
+    const existing = await getCouponState(kv, hash);
+    if (!existing.manual && !COUPON_HASHES.includes(hash)) break;
+  }
+  const state = {
+    manual: true,
+    id: cleanText(body.label || `${accessDays}-day access coupon`, 80),
+    code,
+    email,
+    accessDays,
+    expiresAt: new Date(now.getTime() + validHours * 60 * 60 * 1000).toISOString(),
+    createdAt: now.toISOString(),
+    createdBy: 'admin',
+    source: 'admin_manual_coupon',
+    note: cleanText(body.note || '', 240),
+    requestId: cleanText(body.requestId || '', 80),
+  };
+  await putCouponState(kv, hash, state);
+  let emailed = false;
+  let emailError = '';
+  if (email && body.emailCoupon !== false) {
+    try {
+      await sendSuchaEmail(env, {
+        to: email,
+        subject: 'Your Sucha Wellness access coupon',
+        text: `Your Sucha Wellness coupon code is ${code}.\n\nIt gives ${accessDays} day${accessDays === 1 ? '' : 's'} of premium access and must be used by ${state.expiresAt}.\n\nEnter it in the Sucha Journal premium coupon field with this email address.`,
+        html: `<!doctype html>
+<html>
+  <body style="margin:0;background:#F5F2EB;color:#171717;font-family:Jost,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F2EB;padding:28px 12px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border:1px solid #D9D2C4;border-radius:12px;overflow:hidden;">
+            <tr>
+              <td style="padding:28px;">
+                <div style="color:#2D7A6B;font-family:Georgia,serif;font-size:28px;line-height:1.1;font-weight:700;">Sucha Wellness</div>
+                <p style="font-size:17px;line-height:1.55;margin:20px 0 0;">Your premium access coupon is ready.</p>
+                <div style="display:inline-block;letter-spacing:3px;font-size:24px;font-weight:700;color:#171717;background:#F5F2EB;border:1px solid #D9D2C4;border-radius:10px;padding:12px 16px;margin:22px 0;">${code}</div>
+                <p style="font-size:15px;line-height:1.55;margin:0;color:#3F4945;">This code gives ${accessDays} day${accessDays === 1 ? '' : 's'} of premium access and must be used within the approval window. Enter it in the Sucha Journal premium coupon field with this email address.</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`,
+      });
+      emailed = true;
+    } catch (error) {
+      emailError = error.message || 'Email could not be sent.';
+    }
+  }
+  if (state.requestId) {
+    const key = freeAccessRequestKey(state.requestId);
+    const requestRecord = await kv.get(key, { type: 'json' });
+    if (requestRecord) {
+      await kv.put(key, JSON.stringify({
+        ...requestRecord,
+        status: 'approved',
+        approvedAt: now.toISOString(),
+        updatedAt: now.toISOString(),
+        couponHash: hash,
+        couponCode: code,
+        couponExpiresAt: state.expiresAt,
+        couponEmailed: emailed,
+        couponEmailError: emailError,
+      }));
+    }
+  }
+  return json({ ok: true, coupon: publicCoupon(hash, state), emailed, emailError });
 }
 
 async function createSuchaJournalCheckout(request, env) {
@@ -1114,6 +1281,10 @@ export default {
       return redeemCoupon(request, env);
     }
 
+    if (request.method === 'POST' && url.pathname === '/api/sucha-journal/free-day-request') {
+      return createFreeAccessRequest(request, env);
+    }
+
     if (request.method === 'POST' && url.pathname === '/api/analytics/track') {
       return trackAnalytics(request, env);
     }
@@ -1148,6 +1319,10 @@ export default {
 
     if (request.method === 'POST' && url.pathname === '/api/admin/coupons/revoke') {
       return adminRevokeCoupon(request, env);
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/admin/coupons/create') {
+      return adminCreateCoupon(request, env);
     }
 
     const originRequest = url.pathname === '/admin'

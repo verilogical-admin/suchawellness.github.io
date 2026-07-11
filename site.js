@@ -694,7 +694,7 @@ const screeningCardData = [
 ];
 
 const screeningGroups = [
-  ['Start here', 'Open first-step screens and reflections for visitors who want to begin quickly.', ['depression', 'bai', 'empathy']],
+  ['Start here', '', ['depression', 'bai', 'empathy']],
   ['Career interests', 'Career and vocational reflection tools.', ['careerRiasec']],
   ['Self-esteem and identity', 'Reflection tools for self-worth, self-respect, and personal confidence.', ['selfEsteem']],
   ['Common mental health screens', 'Focused screens for mood, anxiety, attention, and related concerns.', ['universal', 'adhd', 'anxiety', 'ocd', 'bipolar', 'psychosis']],
@@ -1100,9 +1100,13 @@ function addScreeningStyles() {
     }
     .premium-offer-link {
       align-items: center;
+      appearance: none;
+      background: transparent;
       border: 1px solid rgba(45,122,107,0.2);
       color: var(--teal-dark);
+      cursor: pointer;
       display: inline-flex;
+      font: inherit;
       font-size: 0.72rem;
       justify-content: center;
       letter-spacing: 0.12em;
@@ -1252,12 +1256,13 @@ function createScreeningGroups() {
     copy.className = 'screening-group-desc';
     grid.className = 'screening-group-grid';
     heading.textContent = title;
-    copy.textContent = description;
+    if (description) copy.textContent = description;
     keys.forEach((key) => {
       const card = screeningCardMap.get(key);
       if (card) grid.append(createScreeningCard(card));
     });
-    head.append(heading, copy);
+    head.append(heading);
+    if (description) head.append(copy);
     section.append(head, grid);
     return section;
   });
@@ -1497,6 +1502,11 @@ function addJournalStyles() {
       flex-wrap: wrap;
       gap: 0.55rem;
     }
+    .journal-good-faith-button {
+      line-height: 1.35;
+      text-align: left;
+      width: 100%;
+    }
     .journal-lock {
       background: rgba(245,242,235,0.82);
       margin: 0 0 1rem;
@@ -1658,6 +1668,8 @@ function ensureJournalMarkup() {
             <button class="journal-premium-button secondary" type="button" id="journal-coupon-button">Redeem coupon</button>
             <button class="journal-premium-button secondary" type="button" id="journal-unlock-button">Unlock</button>
           </div>
+          <button class="journal-premium-button secondary journal-good-faith-button" type="button" id="journal-free-day-request">I can't afford to pay now, please give me a day's access for free, I will voluntarily do some marketing for you in good faith</button>
+          <p class="journal-note" id="journal-free-day-status">Free-day requests wait for admin approval. If approved, you will receive a one-use coupon valid for 48 hours.</p>
           <p class="journal-note" id="journal-premium-status">Free journal stays easy to use. Upgrade only if you want password protection and encryption.</p>
         </div>
       </aside>
@@ -1741,6 +1753,8 @@ function ensureJournalPremiumMarkup() {
         <button class="journal-premium-button secondary" type="button" id="journal-coupon-button">Redeem coupon</button>
         <button class="journal-premium-button secondary" type="button" id="journal-unlock-button">Unlock</button>
       </div>
+      <button class="journal-premium-button secondary journal-good-faith-button" type="button" id="journal-free-day-request">I can't afford to pay now, please give me a day's access for free, I will voluntarily do some marketing for you in good faith</button>
+      <p class="journal-note" id="journal-free-day-status">Free-day requests wait for admin approval. If approved, you will receive a one-use coupon valid for 48 hours.</p>
       <p class="journal-note" id="journal-premium-status">Free journal stays easy to use. Upgrade only if you want password protection and encryption.</p>
     `;
     sidebar.append(premium);
@@ -2554,7 +2568,7 @@ function testReportOfferMarkup(testKey, testTitle) {
       <p class="premium-offer-copy">${testReportAccessCopy(testTitle)}</p>
       <div class="premium-offer-actions">
         <button class="test-submit" type="button" data-test-report-unlock="${testKey}" data-label="Unlock this PDF report - ${testReportPrice}">Unlock this PDF report - ${testReportPrice}</button>
-        <a class="premium-offer-link" href="#journal">Premium account</a>
+        <button class="premium-offer-link" type="button" data-journal-premium-checkout>Premium account - ${journalPremiumPrice}</button>
       </div>
     </div>
   `;
@@ -2756,6 +2770,23 @@ function attachTestReportActions(report, root = screeningNote) {
       if (refreshed) refreshed.outerHTML = testReportOfferMarkup(report.testKey, report.title);
       attachTestReportActions(report, root);
     }).catch((error) => alert(error.message || 'Could not unlock this PDF report.'));
+  });
+  root.querySelector('[data-journal-premium-checkout]')?.addEventListener('click', (event) => {
+    const button = event.currentTarget;
+    const verifiedEmail = localStorage.getItem(suchaVerificationEmailKey) || '';
+    if (journalBillingEmail && !journalBillingEmail.value && verifiedEmail) {
+      journalBillingEmail.value = verifiedEmail;
+    }
+    button.disabled = true;
+    trackSuchaEvent('premium_upgrade_click', { source: 'screening_result', test: report.testKey });
+    startJournalPremiumTrial().catch((error) => {
+      setJournalPremiumStatus(error.message || 'Could not start premium.');
+      document.querySelector('#journal')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const focusTarget = journalBillingEmail?.value ? journalPremiumPassword : journalBillingEmail;
+      focusTarget?.focus();
+    }).finally(() => {
+      button.disabled = false;
+    });
   });
 }
 
@@ -3711,6 +3742,8 @@ const journalCouponButton = document.querySelector('#journal-coupon-button');
 const journalUnlockButton = document.querySelector('#journal-unlock-button');
 const journalLockUnlockButton = document.querySelector('#journal-lock-unlock-button');
 const journalPremiumStatus = document.querySelector('#journal-premium-status');
+const journalFreeDayButton = document.querySelector('#journal-free-day-request');
+const journalFreeDayStatus = document.querySelector('#journal-free-day-status');
 
 addPasswordVisibilityToggle(journalPremiumPassword, 'journal password');
 addPasswordVisibilityToggle(journalUnlockPassword, 'journal password');
@@ -3728,6 +3761,10 @@ function setJournalStatus(message) {
 
 function setJournalPremiumStatus(message) {
   if (journalPremiumStatus) journalPremiumStatus.textContent = message;
+}
+
+function setJournalFreeDayStatus(message) {
+  if (journalFreeDayStatus) journalFreeDayStatus.textContent = message;
 }
 
 function todayKey() {
@@ -4262,6 +4299,43 @@ async function redeemJournalCoupon() {
   }
 }
 
+async function requestJournalFreeDayAccess() {
+  const verifiedEmail = localStorage.getItem(suchaVerificationEmailKey) || '';
+  if (journalBillingEmail && !journalBillingEmail.value && verifiedEmail) {
+    journalBillingEmail.value = verifiedEmail;
+  }
+  const email = normalizeJournalEmail(journalBillingEmail?.value || '');
+  if (!email) throw new Error('Enter your email first so an approved coupon can be sent to you.');
+
+  const message = "I can't afford to pay now, please give me a day's access for free, I will voluntarily do some marketing for you in good faith";
+  journalFreeDayButton.disabled = true;
+  setJournalFreeDayStatus('Sending your request for admin approval...');
+  trackSuchaEvent('free_day_access_requested');
+  try {
+    let lastError = null;
+    for (const base of suchaApiBases) {
+      try {
+        const response = await fetch(`${base}/api/sucha-journal/free-day-request`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, message }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (response.ok && data.ok !== false) {
+          setJournalFreeDayStatus('Request sent. Please wait for admin approval. If approved, you will receive a one-use coupon valid for 48 hours.');
+          return;
+        }
+        lastError = new Error(data.error || 'Could not send request.');
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    throw lastError || new Error('Could not send request.');
+  } finally {
+    journalFreeDayButton.disabled = false;
+  }
+}
+
 async function unlockJournalFromInput(input) {
   const password = input?.value || '';
   await openJournalVault(password, { createIfMissing: false });
@@ -4321,6 +4395,10 @@ journalTrialButton?.addEventListener('click', () => {
 
 journalCouponButton?.addEventListener('click', () => {
   redeemJournalCoupon().catch((error) => setJournalPremiumStatus(error.message || 'Could not redeem coupon.'));
+});
+
+journalFreeDayButton?.addEventListener('click', () => {
+  requestJournalFreeDayAccess().catch((error) => setJournalFreeDayStatus(error.message || 'Could not send request.'));
 });
 
 journalUnlockButton?.addEventListener('click', () => {
