@@ -1100,9 +1100,62 @@ function addScreeningStyles() {
       padding: 0.9rem 1rem;
       white-space: normal;
     }
-    .report-download-row .test-submit:nth-of-type(2) {
-      background: #163F35;
-      border-color: #163F35;
+    .report-download-row .premium-deep-report {
+      background:
+        linear-gradient(135deg, #163F35 0%, #245C4F 48%, #14372F 100%),
+        linear-gradient(135deg, rgba(255,223,107,0.26), transparent 52%);
+      border: 2px solid #F4C84A;
+      box-shadow:
+        0 18px 36px rgba(22,63,53,0.24),
+        0 0 0 4px rgba(244,200,74,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.28);
+      color: white;
+      min-height: 76px;
+      overflow: hidden;
+      position: relative;
+    }
+    .report-download-row .premium-deep-report::before {
+      animation: premiumDeepShine 3.4s ease-in-out infinite;
+      background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.46) 45%, transparent 70%);
+      content: "";
+      height: 160%;
+      left: -38%;
+      position: absolute;
+      top: -30%;
+      transform: rotate(18deg);
+      width: 34%;
+    }
+    .report-download-row .premium-deep-report::after {
+      background: #F4C84A;
+      border: 1px solid rgba(96,70,8,0.22);
+      color: #17382F;
+      content: "Recommended Deep Report";
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      line-height: 1;
+      padding: 0.36rem 0.5rem;
+      position: absolute;
+      right: 0.62rem;
+      text-transform: uppercase;
+      top: 0.56rem;
+    }
+    @keyframes premiumDeepShine {
+      0%, 42% { left: -42%; opacity: 0; }
+      56% { opacity: 1; }
+      76%, 100% { left: 112%; opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .report-download-row .premium-deep-report::before {
+        animation: none;
+        opacity: 0;
+      }
+    }
+    .premium-deep-copy {
+      display: block;
+      padding-top: 1.2rem;
+      position: relative;
+      z-index: 1;
     }
     @media (max-width: 900px) {
       .inline-test-head { display: grid; }
@@ -2823,7 +2876,7 @@ function showEmpathyResult(test) {
           </div>
           <div class="premium-offer-actions">
             <button class="test-submit" type="button" data-empathy-length="20" data-label="Take 20-question comprehensive test + PDF report - $10">Take 20-question comprehensive test + PDF report - $10</button>
-            <button class="test-submit" type="button" data-empathy-length="50" data-label="Take 50-question deep empathy test + expanded PDF report - $30">Take 50-question deep empathy test + expanded PDF report - $30</button>
+            <button class="test-submit premium-deep-report" type="button" data-empathy-length="50" data-label="Take 50-question deep empathy test + expanded PDF report - $30"><span class="premium-deep-copy">Take 50-question deep empathy test + expanded PDF report - $30</span></button>
           </div>
         `}
       </div>
