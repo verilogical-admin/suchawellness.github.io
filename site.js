@@ -1029,10 +1029,14 @@ function addScreeningStyles() {
       margin-top: 0.16rem;
     }
     .report-download-row {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
       gap: 0.75rem;
       margin-top: 1rem;
+    }
+    .report-download-row .test-submit {
+      line-height: 1.35;
+      max-width: 100%;
+      white-space: normal;
     }
     @media (max-width: 900px) {
       .inline-test-head { display: grid; }
@@ -2497,11 +2501,11 @@ async function unlockAndDownloadEmpathyReport(scores, order, dominant, nextStron
     return;
   }
 
-  if (location.protocol === 'file:') throw new Error('Open the live site to buy the PDF report.');
-  const verified = await requireSuchaVerification({ mode: 'tool', tool: 'Empathy Type PDF Report', toolType: 'paid-report' });
+  if (location.protocol === 'file:') throw new Error('Open the live site to buy the comprehensive empathy test and PDF report.');
+  const verified = await requireSuchaVerification({ mode: 'tool', tool: 'Comprehensive Empathy Type Test and PDF Report', toolType: 'paid-report' });
   if (!verified) return;
   const email = localStorage.getItem(suchaVerificationEmailKey) || '';
-  if (!email) throw new Error('Verify your email before buying the PDF report.');
+  if (!email) throw new Error('Verify your email before buying the comprehensive empathy test and PDF report.');
   const ready = await ensureRazorpayLoaded();
   if (!ready) throw new Error('Razorpay Checkout could not load. Check the connection and try again.');
 
@@ -2511,7 +2515,7 @@ async function unlockAndDownloadEmpathyReport(scores, order, dominant, nextStron
   const options = {
     key: checkout.keyId,
     name: 'Sucha Wellness',
-    description: `Empathy Type PDF Report - ${empathyReportPrice}`,
+    description: `Comprehensive Empathy Type Test + PDF Report - ${empathyReportPrice}`,
     amount: checkout.amount,
     currency: checkout.currency || 'USD',
     order_id: checkout.orderId,
@@ -2539,14 +2543,14 @@ async function unlockAndDownloadEmpathyReport(scores, order, dominant, nextStron
     modal: {
       ondismiss: () => {
         button.disabled = false;
-        button.textContent = 'Unlock PDF report - $10';
+        button.textContent = 'Unlock larger comprehensive 20 or 50 question test with downloadable PDF report - $10';
       },
     },
   };
   const rz = new Razorpay(options);
   rz.on('payment.failed', (event) => {
     button.disabled = false;
-    button.textContent = 'Unlock PDF report - $10';
+    button.textContent = 'Unlock larger comprehensive 20 or 50 question test with downloadable PDF report - $10';
     alert(`Razorpay payment failed: ${event.error?.description || 'Try again.'}`);
   });
   rz.open();
@@ -2687,7 +2691,8 @@ function showEmpathyResult(test) {
       <p><strong>Growth focus:</strong> ${empathySuggestions[quietest]}</p>
       <p class="result-support-note">${resultSupportNote()}</p>
       <div class="report-download-row">
-        <button class="test-submit" type="button" id="empathy-report-download">${hasEmpathyReportAccess() ? 'Download PDF report' : 'Unlock PDF report - $10'}</button>
+        <p class="inline-test-desc">For a fuller read, unlock the larger comprehensive 20 or 50 question test with a downloadable Sucha-branded PDF report.</p>
+        <button class="test-submit" type="button" id="empathy-report-download">${hasEmpathyReportAccess() ? 'Download PDF report' : 'Unlock larger comprehensive 20 or 50 question test with downloadable PDF report - $10'}</button>
       </div>
     </div>
   `;
