@@ -197,9 +197,13 @@ trackSuchaEvent('page_view');
 const suchaVerificationTokenKey = 'sucha-verification-token:v1';
 const suchaVerificationEmailKey = 'sucha-verification-email:v1';
 const empathyReportAccessStorageKey = 'sucha-empathy-report-access:v1';
+const testReportAccessStorageKey = 'sucha-test-report-access:v1';
 const empathyReportPlanId = 'empathy_report_10';
 const empathyDeepReportPlanId = 'empathy_deep_report_30';
 const empathyReportProduct = 'SuchaEmpathyReport';
+const testReportPlanId = 'test_report_5';
+const testReportProduct = 'SuchaTestReport';
+const testReportPrice = '$5';
 const empathyReportPlans = {
   20: { planId: empathyReportPlanId, price: '$10', label: '20-question comprehensive test + PDF report' },
   50: { planId: empathyDeepReportPlanId, price: '$30', label: '50-question deep empathy test + expanded PDF report' },
@@ -1090,6 +1094,23 @@ function addScreeningStyles() {
       display: grid;
       gap: 0.65rem;
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .premium-offer-actions.single {
+      grid-template-columns: 1fr;
+    }
+    .premium-offer-link {
+      align-items: center;
+      border: 1px solid rgba(45,122,107,0.2);
+      color: var(--teal-dark);
+      display: inline-flex;
+      font-size: 0.72rem;
+      justify-content: center;
+      letter-spacing: 0.12em;
+      min-height: 58px;
+      padding: 0.9rem 1rem;
+      text-align: center;
+      text-decoration: none;
+      text-transform: uppercase;
     }
     .report-download-row .test-submit {
       box-shadow: 0 12px 26px rgba(45,122,107,0.16);
@@ -2442,6 +2463,300 @@ function pdfLine(text, x, y, size = 10, color = '#263B34', font = 'F1') {
   return `BT /${font} ${size} Tf ${pdfColor(color)} rg ${x} ${y} Td (${pdfText(text)}) Tj ET\n`;
 }
 
+function savePdfStream(stream, filename) {
+  const objects = [
+    '<< /Type /Catalog /Pages 2 0 R >>',
+    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>',
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>',
+    `<< /Length ${stream.length} >>\nstream\n${stream}endstream`
+  ];
+  let pdf = '%PDF-1.4\n';
+  const offsets = [0];
+  objects.forEach((object, index) => {
+    offsets.push(pdf.length);
+    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
+  });
+  const xrefOffset = pdf.length;
+  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  offsets.slice(1).forEach((offset) => {
+    pdf += `${String(offset).padStart(10, '0')} 00000 n \n`;
+  });
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+
+  const blob = new Blob([pdf], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function slugReportName(value) {
+  return String(value || 'test-report').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 64) || 'test-report';
+}
+
+function readTestReportAccess() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(testReportAccessStorageKey) || '{}');
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveTestReportAccess(testKey, access) {
+  const allAccess = readTestReportAccess();
+  allAccess[testKey] = {
+    ...access,
+    planId: access.planId || testReportPlanId,
+    product: testReportProduct,
+    testKey,
+    purchasedAt: access.purchasedAt || Date.now(),
+  };
+  localStorage.setItem(testReportAccessStorageKey, JSON.stringify(allAccess));
+}
+
+function hasTestReportAccess(testKey) {
+  if (typeof hasActiveJournalAccess === 'function' && hasActiveJournalAccess()) return true;
+  const access = readTestReportAccess()[testKey];
+  return Boolean(access?.paymentId || access?.razorpayPaymentId);
+}
+
+function testReportAccessCopy(testTitle) {
+  return `PDF reports are a premium feature. Premium account holders can download this ${testTitle} report, or you can unlock this one report with a one-time ${testReportPrice} payment.`;
+}
+
+function testReportOfferMarkup(testKey, testTitle) {
+  if (hasTestReportAccess(testKey)) {
+    return `
+      <div class="report-download-row">
+        <span class="premium-offer-badge">PDF report ready</span>
+        <h4 class="premium-offer-title">Download your Sucha PDF report.</h4>
+        <p class="premium-offer-copy">Your premium access is active for this report. The PDF is generated in this browser with your current test result and Sucha Wellness branding.</p>
+        <div class="premium-offer-actions single">
+          <button class="test-submit" type="button" data-test-report-download="${testKey}">Download PDF report</button>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="report-download-row">
+      <span class="premium-offer-badge">Premium report</span>
+      <h4 class="premium-offer-title">Save this result as a PDF report.</h4>
+      <p class="premium-offer-copy">${testReportAccessCopy(testTitle)}</p>
+      <div class="premium-offer-actions">
+        <button class="test-submit" type="button" data-test-report-unlock="${testKey}" data-label="Unlock this PDF report - ${testReportPrice}">Unlock this PDF report - ${testReportPrice}</button>
+        <a class="premium-offer-link" href="#journal">Premium account</a>
+      </div>
+    </div>
+  `;
+}
+
+function downloadGenericTestReport(report) {
+  const generatedAt = new Date().toLocaleString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  let stream = '';
+  stream += 'q 1 0.973 0.914 rg 0 0 612 792 re f Q\n';
+  stream += 'q 1 0.996 0.976 rg 36 42 540 708 re f Q\n';
+  stream += 'q 0.176 0.478 0.420 rg 52 696 44 44 re f Q\n';
+  stream += pdfLine('S', 66, 711, 22, '#FFF8E9', 'F2');
+  stream += pdfLine('Sucha Wellness', 108, 724, 16, '#163F35', 'F2');
+  stream += pdfLine(`${report.title} | ${generatedAt}`, 108, 706, 9, '#65736C');
+  stream += pdfLine(report.title, 52, 662, 23, '#163F35', 'F2');
+  stream += pdfLine(report.subtitle || 'Sucha informational test report', 52, 640, 10, '#65736C');
+
+  stream += 'q 0.961 0.949 0.922 rg 52 582 508 42 re f Q\n';
+  stream += 'q 0.176 0.478 0.420 rg 52 582 4 42 re f Q\n';
+  stream += pdfLine(report.band || 'Result summary', 70, 606, 15, '#163F35', 'F2');
+  if (report.scoreText) stream += pdfLine(report.scoreText, 70, 590, 9, '#263B34');
+
+  let y = 548;
+  (report.sections || []).forEach((section) => {
+    if (y < 140) return;
+    stream += pdfLine(section.heading, 52, y, 13, '#163F35', 'F2');
+    y -= 16;
+    wrapReportText(section.body, 100).slice(0, 8).forEach((line) => {
+      stream += pdfLine(line, 52, y, 8, '#65736C');
+      y -= 11;
+    });
+    y -= 9;
+  });
+
+  if (report.answers?.length && y > 170) {
+    stream += pdfLine('Selected answers', 52, y, 13, '#163F35', 'F2');
+    y -= 16;
+    report.answers.slice(0, 12).forEach((answer, index) => {
+      if (y < 118) return;
+      wrapReportText(`${index + 1}. ${answer.question} - ${answer.answer}`, 98).slice(0, 2).forEach((line) => {
+        stream += pdfLine(line, 52, y, 7, '#65736C');
+        y -= 9;
+      });
+    });
+  }
+
+  stream += pdfLine('Important note', 52, 86, 12, '#163F35', 'F2');
+  wrapReportText('These results are informational only and should not be used as a diagnosis or as clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance.', 102).forEach((line, index) => {
+    stream += pdfLine(line, 52, 70 - (index * 11), 8, '#65736C');
+  });
+  stream += 'q 0.820 0.790 0.730 RG 1 w 52 34 m 560 34 l S Q\n';
+  stream += pdfLine('Sucha Wellness | https://www.suchawellness.com', 52, 20, 8, '#65736C');
+  savePdfStream(stream, `sucha-${slugReportName(report.title)}-${new Date().toISOString().slice(0, 10)}.pdf`);
+}
+
+function answerLabelFor(test, answer, index) {
+  if (test.riasec) return `${answer} point${Number(answer) === 1 ? '' : 's'}`;
+  if (test.rse) return rseScale.find(([, value]) => Number(value) === Number(answer))?.[0] || String(answer);
+  if (test.empathy) return empathyScale.find(([, value]) => String(value) === String(answer))?.[0] || String(answer);
+  return screeningScale[Number(answer)] || String(answer);
+}
+
+async function createTestReportCheckout(email, testKey, testTitle) {
+  const payload = {
+    planId: testReportPlanId,
+    product: testReportProduct,
+    email,
+    testKey,
+    testTitle,
+    amountUsd: Number(testReportPrice.replace('$', '')),
+  };
+  let lastError = null;
+  for (const base of empathyCheckoutBases()) {
+    try {
+      const response = await fetch(`${base}/api/create-order`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: base === location.origin ? 'same-origin' : 'omit',
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) return data;
+      lastError = new Error(data.error || 'Could not create report checkout.');
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error('Could not create report checkout.');
+}
+
+async function verifyTestReportCheckout(email, testKey, testTitle, checkout, response) {
+  const payload = {
+    planId: testReportPlanId,
+    product: testReportProduct,
+    email,
+    testKey,
+    testTitle,
+    checkoutMode: 'order',
+    razorpay_order_id: response.razorpay_order_id,
+    razorpay_payment_id: response.razorpay_payment_id,
+    razorpay_signature: response.razorpay_signature,
+  };
+  let lastError = null;
+  for (const base of empathyCheckoutBases()) {
+    try {
+      const verifyResponse = await fetch(`${base}/api/verify-payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: base === location.origin ? 'same-origin' : 'omit',
+        body: JSON.stringify(payload),
+      });
+      const data = await verifyResponse.json().catch(() => ({}));
+      if (verifyResponse.ok && data.ok !== false) return data;
+      lastError = new Error(data.error || 'Could not verify report payment.');
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error('Could not verify report payment.');
+}
+
+async function unlockTestReport(testKey, testTitle, button, onUnlocked) {
+  if (hasTestReportAccess(testKey)) {
+    onUnlocked();
+    return;
+  }
+  if (location.protocol === 'file:') throw new Error('Open the live site to buy PDF reports.');
+  const verified = await requireSuchaVerification({ mode: 'tool', tool: `${testTitle} PDF Report`, toolType: 'paid-report' });
+  if (!verified) return;
+  const email = localStorage.getItem(suchaVerificationEmailKey) || '';
+  if (!email) throw new Error('Verify your email before buying this PDF report.');
+  const ready = await ensureRazorpayLoaded();
+  if (!ready) throw new Error('Razorpay Checkout could not load. Check the connection and try again.');
+
+  button.disabled = true;
+  button.textContent = 'Opening payment...';
+  const checkout = await createTestReportCheckout(email, testKey, testTitle);
+  const options = {
+    key: checkout.keyId,
+    name: 'Sucha Wellness',
+    description: `${testTitle} PDF Report - ${testReportPrice}`,
+    amount: checkout.amount,
+    currency: checkout.currency || 'USD',
+    order_id: checkout.orderId,
+    prefill: { email },
+    theme: { color: '#2D7A6B' },
+    handler: async (response) => {
+      try {
+        button.textContent = 'Preparing report...';
+        const verifiedPayment = await verifyTestReportCheckout(email, testKey, testTitle, checkout, response);
+        saveTestReportAccess(testKey, {
+          email,
+          planId: verifiedPayment.planId || testReportPlanId,
+          price: verifiedPayment.price || testReportPrice,
+          paymentId: verifiedPayment.razorpayPaymentId || response.razorpay_payment_id,
+          orderId: verifiedPayment.razorpayOrderId || response.razorpay_order_id,
+          purchasedAt: verifiedPayment.purchasedAt || Date.now(),
+        });
+        onUnlocked();
+        trackSuchaEvent('test_report_unlocked', { test: testKey });
+      } catch (error) {
+        alert(error.message || 'Could not verify payment.');
+      } finally {
+        button.disabled = false;
+        button.textContent = button.dataset.label || `Unlock this PDF report - ${testReportPrice}`;
+      }
+    },
+    modal: {
+      ondismiss: () => {
+        button.disabled = false;
+        button.textContent = button.dataset.label || `Unlock this PDF report - ${testReportPrice}`;
+      },
+    },
+  };
+  const rz = new Razorpay(options);
+  rz.on('payment.failed', (event) => {
+    button.disabled = false;
+    button.textContent = button.dataset.label || `Unlock this PDF report - ${testReportPrice}`;
+    alert(`Razorpay payment failed: ${event.error?.description || 'Try again.'}`);
+  });
+  rz.open();
+}
+
+function attachTestReportActions(report, root = screeningNote) {
+  root.querySelector('[data-test-report-download]')?.addEventListener('click', () => {
+    downloadGenericTestReport(report);
+    trackSuchaEvent('test_report_downloaded', { test: report.testKey, premium: hasActiveJournalAccess() });
+  });
+  root.querySelector('[data-test-report-unlock]')?.addEventListener('click', (event) => {
+    unlockTestReport(report.testKey, report.title, event.currentTarget, () => {
+      downloadGenericTestReport(report);
+      const refreshed = root.querySelector('.report-download-row');
+      if (refreshed) refreshed.outerHTML = testReportOfferMarkup(report.testKey, report.title);
+      attachTestReportActions(report, root);
+    }).catch((error) => alert(error.message || 'Could not unlock this PDF report.'));
+  });
+}
+
 function drawPdfEmpathyDiagram(scores, x, y) {
   const order = ['C', 'E', 'S', 'Y'];
   const total = order.reduce((sum, type) => sum + scores[type], 0) || 1;
@@ -2769,6 +3084,31 @@ function showRiasecResult() {
   });
   const ranked = Object.keys(scores).sort((a, b) => scores[b] - scores[a] || a.localeCompare(b));
   const code = ranked.slice(0, 3).join('');
+  const report = {
+    testKey: activeScreeningKey,
+    title: screeningTests.careerRiasec.title,
+    subtitle: 'Career interest reflection report',
+    band: `Your Holland Code: ${code}`,
+    scoreText: ranked.map((letter) => `${letter}: ${scores[letter]}`).join(' | '),
+    sections: [
+      {
+        heading: 'What this means',
+        body: `Your strongest themes are ${ranked.slice(0, 3).map((letter) => `${letter} - ${riasecTypes[letter].title}`).join(', ')}. Use this as a starting point for career reflection, not a fixed label.`
+      },
+      {
+        heading: 'How to use it',
+        body: 'This pattern can point toward environments that may feel energizing: the kind of tasks you like, the level of structure you prefer, and whether you lean toward hands-on work, investigation, creativity, helping, leading, or organizing.'
+      },
+      {
+        heading: 'Suggested next step',
+        body: 'Career interests can change with exposure, confidence, training, and life stage. Consider speaking with a qualified career counsellor if you want help turning this into course, college, or career decisions.'
+      }
+    ],
+    answers: screeningStepState.answers.map((answer, index) => ({
+      question: screeningTests.careerRiasec.questions[index].text,
+      answer: answerLabelFor(screeningTests.careerRiasec, answer, index),
+    })),
+  };
 
   screeningBand.textContent = `Your Holland Code: ${code}`;
   screeningNote.innerHTML = `
@@ -2790,7 +3130,9 @@ function showRiasecResult() {
       }).join('')}
     </div>
     <p class="result-support-note">Career interests can change with exposure, confidence, training, and life stage. If you want help turning this into course, college, or career decisions, consider speaking with a qualified career counsellor or licensed mental health professional.</p>
+    ${testReportOfferMarkup(report.testKey, report.title)}
   `;
+  attachTestReportActions(report);
   screeningResult.hidden = false;
 }
 
@@ -2823,6 +3165,31 @@ function showRseResult(test) {
   const score = scoredValues.reduce((total, value) => total + value, 0);
   const positiveItems = scoredValues.filter((value) => value >= 2).length;
   const interpretation = getRseBand(score);
+  const report = {
+    testKey: activeScreeningKey,
+    title: test.title,
+    subtitle: 'Self-esteem reflection report',
+    band: `${interpretation.band} (${score}/30)`,
+    scoreText: `${positiveItems} of ${scoredValues.length} answers leaned toward a stronger self-esteem response after reverse scoring.`,
+    sections: [
+      {
+        heading: 'What this means',
+        body: `${interpretation.note} The Rosenberg Self-Esteem Scale is best read as a snapshot of how you are relating to yourself today, not as a fixed label.`
+      },
+      {
+        heading: 'Your pattern',
+        body: `After reverse scoring the negatively worded items, ${positiveItems} of ${scoredValues.length} answers leaned toward a stronger self-esteem response. Scores are commonly read with lower scores suggesting more self-esteem strain and higher scores suggesting stronger self-regard.`
+      },
+      {
+        heading: 'Suggested next step',
+        body: 'If this score feels low, painful, or very different from how you usually feel, consider journaling about the situations that affect your self-respect and discussing the pattern with a qualified counsellor, therapist, psychologist, or doctor.'
+      }
+    ],
+    answers: test.questions.map((question, index) => ({
+      question: question.text,
+      answer: answerLabelFor(test, screeningStepState.answers[index], index),
+    })),
+  };
 
   screeningBand.textContent = `${interpretation.band} (${score}/30)`;
   screeningNote.innerHTML = `
@@ -2832,7 +3199,9 @@ function showRseResult(test) {
       <p><strong>Suggested next step:</strong> If this score feels low, painful, or very different from how you usually feel, consider journaling about the situations that affect your self-respect and discussing the pattern with a qualified counsellor, therapist, psychologist, or doctor.</p>
       <p class="result-support-note">${resultSupportNote()}</p>
     </div>
+    ${testReportOfferMarkup(report.testKey, report.title)}
   `;
+  attachTestReportActions(report);
   screeningResult.hidden = false;
 }
 
@@ -2850,6 +3219,7 @@ function showEmpathyResult(test) {
   const quietest = order[order.length - 1];
   const total = Object.values(scores).reduce((sum, value) => sum + value, 0) || 1;
   const isPaidEmpathyRun = Boolean(screeningStepState.empathyPaid);
+  const canDownloadEmpathyReport = isPaidEmpathyRun || hasActiveJournalAccess();
 
   screeningBand.textContent = `${empathyTypes[dominant].full}: ${scores[dominant]} points`;
   screeningNote.innerHTML = `
@@ -2860,17 +3230,17 @@ function showEmpathyResult(test) {
       <p><strong>Your leading pattern:</strong> Your strongest empathy signal was ${empathyTypes[dominant].title}, which points toward ${empathyTypes[dominant].description.toLowerCase()} Your next strongest style was ${empathyTypes[nextStrongest].title} (${scores[nextStrongest]} points).</p>
       <p><strong>How to read this:</strong> Empathy is not one single trait. Some people understand others mostly through perspective-taking, some through shared feeling, some through practical support, and some through physical attunement. Your result is a reflection of today's self-report, not a fixed personality label.</p>
       <div class="report-download-row">
-        ${isPaidEmpathyRun ? `
+        ${canDownloadEmpathyReport ? `
           <span class="premium-offer-badge">Report ready</span>
-          <h4 class="premium-offer-title">Your comprehensive ${screeningStepState.empathyLength}-question result is ready.</h4>
-          <p class="premium-offer-copy">Download your Sucha-branded PDF report with your score map, style descriptions, strengths, watch-outs, and practice suggestions${screeningStepState.empathyLength >= 50 ? ', plus deep reflection prompts' : ''}.</p>
+          <h4 class="premium-offer-title">${isPaidEmpathyRun ? `Your comprehensive ${screeningStepState.empathyLength}-question result is ready.` : 'Your premium PDF snapshot is ready.'}</h4>
+          <p class="premium-offer-copy">Download your Sucha-branded PDF report with your score map, style descriptions, strengths, watch-outs, and practice suggestions${screeningStepState.empathyLength >= 50 ? ', plus deep reflection prompts' : ''}. PDF downloads are included for premium account holders and for one-time paid report unlocks.</p>
           <div class="premium-offer-actions">
             <button class="test-submit" type="button" id="empathy-report-download">Download PDF report</button>
           </div>
         ` : `
           <span class="premium-offer-badge">Premium insight</span>
           <h4 class="premium-offer-title">Go beyond this 5-question snapshot.</h4>
-          <p class="premium-offer-copy">Unlock a larger empathy test and a downloadable Sucha-branded PDF report you can save, reflect on, or share with a counsellor or coach. The 50-question version adds deeper reflection prompts for a more complete read.</p>
+          <p class="premium-offer-copy">PDF reports are premium. Premium account holders can download test reports, or you can unlock a larger empathy test with a downloadable Sucha-branded PDF report you can save, reflect on, or share with a counsellor or coach. The 50-question version adds deeper reflection prompts for a more complete read.</p>
           <div class="premium-offer-points">
             <span>More questions for a steadier pattern</span>
             <span>Score-share visual map</span>
@@ -2907,7 +3277,7 @@ function showEmpathyResult(test) {
   `;
   screeningNote.querySelector('#empathy-report-download')?.addEventListener('click', () => {
     downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest, screeningStepState.empathyLength);
-    trackSuchaEvent('test_report_downloaded', { test: 'empathy', paid: true, length: screeningStepState.empathyLength });
+    trackSuchaEvent('test_report_downloaded', { test: 'empathy', paid: isPaidEmpathyRun, premium: hasActiveJournalAccess(), length: screeningStepState.empathyLength });
   });
   screeningNote.querySelectorAll('[data-empathy-length]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -2940,6 +3310,31 @@ function showScreeningResult(test) {
   const interpretation = getScreeningInterpretation(test, score, maxScore, answeredValues);
   const answeredHigh = answeredValues.filter((value) => value >= 2).length;
   const answeredAny = answeredValues.filter((value) => value > 0).length;
+  const report = {
+    testKey: activeScreeningKey,
+    title: test.title,
+    subtitle: 'Sucha informational screening report',
+    band: `${interpretation.band} (${score}/${maxScore})`,
+    scoreText: `${answeredAny} of ${answeredValues.length} items endorsed at least a little; ${answeredHigh} were in the more noticeable range.`,
+    sections: [
+      {
+        heading: 'What this means',
+        body: getResultMeaning(interpretation.band, test),
+      },
+      {
+        heading: 'Your pattern',
+        body: `You endorsed ${answeredAny} of ${answeredValues.length} items at least a little, with ${answeredHigh} items in the more noticeable range. The score is best read as a snapshot of how things feel right now, not a permanent label.`,
+      },
+      {
+        heading: 'Suggested next step',
+        body: interpretation.note,
+      }
+    ],
+    answers: test.questions.map((question, index) => ({
+      question: question.text,
+      answer: answerLabelFor(test, screeningStepState.answers[index], index),
+    })),
+  };
 
   screeningBand.textContent = `${interpretation.band} (${score}/${maxScore})`;
   screeningNote.innerHTML = `
@@ -2949,7 +3344,9 @@ function showScreeningResult(test) {
       <p><strong>Suggested next step:</strong> ${interpretation.note}</p>
       <p class="result-support-note">${resultSupportNote()}</p>
     </div>
+    ${testReportOfferMarkup(report.testKey, report.title)}
   `;
+  attachTestReportActions(report);
   screeningResult.hidden = false;
 }
 
@@ -3093,6 +3490,7 @@ const hamaScore = document.querySelector('#hama-score');
 const hamaBand = document.querySelector('#hama-band');
 const hamaNote = document.querySelector('#hama-note');
 const hamaReset = document.querySelector('#hama-reset');
+const hamaReportOffer = document.querySelector('#hama-report-offer');
 const ratingLabels = ['None', 'Mild', 'Moderate', 'Severe', 'Very severe'];
 
 function getHamaInterpretation(score, answered) {
@@ -3140,6 +3538,43 @@ function updateHamaScore() {
   hamaScore.textContent = score;
   hamaBand.textContent = interpretation.band;
   hamaNote.textContent = interpretation.note;
+  if (hamaReportOffer) {
+    if (checkedRatings.length === 0) {
+      hamaReportOffer.innerHTML = '';
+      return;
+    }
+    const items = [...hamaForm.querySelectorAll('.test-item')];
+    const report = {
+      testKey: 'hama',
+      title: 'Hamilton Anxiety Rating Scale',
+      subtitle: 'HAM-A informational score report',
+      band: `${interpretation.band} (${score}/56)`,
+      scoreText: `${checkedRatings.length} of ${items.length} items answered.`,
+      sections: [
+        {
+          heading: 'What this means',
+          body: interpretation.note,
+        },
+        {
+          heading: 'How to read it',
+          body: 'The HAM-A total is a clinical-style severity scale. On Sucha, this result is informational only and should be interpreted with a qualified clinician if symptoms are affecting daily life.',
+        },
+        {
+          heading: 'Suggested next step',
+          body: 'If this result feels concerning, persistent, or connected to panic, sleep disruption, physical symptoms, or safety concerns, consider discussing it with a licensed therapist, counsellor, psychologist, or doctor.',
+        }
+      ],
+      answers: items.map((item, index) => {
+        const input = hamaForm.querySelector(`input[name="hama-${index + 1}"]:checked`);
+        return {
+          question: item.querySelector('.test-item-title')?.textContent || `Item ${index + 1}`,
+          answer: input ? `${ratingLabels[Number(input.value)]} (${input.value})` : 'Not answered',
+        };
+      }),
+    };
+    hamaReportOffer.innerHTML = testReportOfferMarkup(report.testKey, report.title);
+    attachTestReportActions(report, hamaReportOffer);
+  }
 }
 
 if (hamaForm) {

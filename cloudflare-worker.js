@@ -16,6 +16,8 @@ const JOURNAL_PRODUCT = 'SuchaJournal';
 const EMPATHY_REPORT_PLAN_ID = 'empathy_report_10';
 const EMPATHY_DEEP_REPORT_PLAN_ID = 'empathy_deep_report_30';
 const EMPATHY_REPORT_PRODUCT = 'SuchaEmpathyReport';
+const TEST_REPORT_PLAN_ID = 'test_report_5';
+const TEST_REPORT_PRODUCT = 'SuchaTestReport';
 const GUARANTEE_DAYS = 30;
 const VERIFICATION_COOKIE = 'sucha_verified_visitor';
 const WALLET_PRODUCT = 'SuchaCareWallet';
@@ -103,11 +105,23 @@ function validateEmpathyReportCheckoutRequest(body) {
   return email;
 }
 
+function validateTestReportCheckoutRequest(body) {
+  const email = String(body.email || '').trim().toLowerCase();
+  if (body.planId && body.planId !== TEST_REPORT_PLAN_ID) throw new Error('Unknown test report plan.');
+  if (body.product && body.product !== TEST_REPORT_PRODUCT) throw new Error('Unknown product.');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('A valid billing email is required.');
+  return email;
+}
+
 function empathyReportPlan(body = {}) {
   const planId = body.planId === EMPATHY_DEEP_REPORT_PLAN_ID ? EMPATHY_DEEP_REPORT_PLAN_ID : EMPATHY_REPORT_PLAN_ID;
   return planId === EMPATHY_DEEP_REPORT_PLAN_ID
     ? { planId, label: '50-question deep empathy report', amount: 3000, price: '$30', length: 50 }
     : { planId, label: '20-question comprehensive empathy report', amount: 1000, price: '$10', length: 20 };
+}
+
+function testReportPlan() {
+  return { planId: TEST_REPORT_PLAN_ID, label: 'single test PDF report', amount: 500, price: '$5' };
 }
 
 async function hmacSha256Hex(secret, message) {
@@ -710,6 +724,57 @@ async function createSuchaJournalCheckout(request, env) {
     });
   }
 
+  if (body.product === TEST_REPORT_PRODUCT || body.planId === TEST_REPORT_PLAN_ID) {
+    let email;
+    try {
+      email = validateTestReportCheckoutRequest(body);
+    } catch (error) {
+      return json({ error: error.message }, { status: 400 });
+    }
+
+    const now = Date.now();
+    const plan = testReportPlan();
+    const amount = Number(env.SUCHA_TEST_REPORT_AMOUNT_MINOR || plan.amount);
+    const currency = env.SUCHA_TEST_REPORT_CURRENCY || 'USD';
+    const testKey = cleanText(body.testKey || 'test', 60);
+    const testTitle = cleanText(body.testTitle || 'Sucha test report', 120);
+    const response = await fetch('https://api.razorpay.com/v1/orders', {
+      method: 'POST',
+      headers: {
+        Authorization: auth,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount,
+        currency,
+        receipt: `sucha_test_report_${now}`,
+        notes: {
+          product: TEST_REPORT_PRODUCT,
+          planId: plan.planId,
+          email,
+          price: `${plan.price} ${plan.label}`,
+          testKey,
+          testTitle,
+          supportEmail: 'support@suchawellness.com',
+        },
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) return json({ error: data.error?.description || 'Could not create Razorpay order.' }, { status: 502 });
+    return json({
+      mode: 'order',
+      keyId: env.RAZORPAY_KEY_ID,
+      orderId: data.id,
+      amount: data.amount,
+      currency: data.currency,
+      planId: plan.planId,
+      product: TEST_REPORT_PRODUCT,
+      price: plan.price,
+      testKey,
+      testTitle,
+    });
+  }
+
   let email;
   try {
     email = validateJournalCheckoutRequest(body);
@@ -794,9 +859,14 @@ async function verifySuchaJournalCheckout(request, env) {
 
   const body = await readJson(request);
   const isEmpathyReport = body.product === EMPATHY_REPORT_PRODUCT || [EMPATHY_REPORT_PLAN_ID, EMPATHY_DEEP_REPORT_PLAN_ID].includes(body.planId);
+  const isTestReport = body.product === TEST_REPORT_PRODUCT || body.planId === TEST_REPORT_PLAN_ID;
   let email;
   try {
-    email = isEmpathyReport ? validateEmpathyReportCheckoutRequest(body) : validateJournalCheckoutRequest(body);
+    email = isEmpathyReport
+      ? validateEmpathyReportCheckoutRequest(body)
+      : isTestReport
+        ? validateTestReportCheckoutRequest(body)
+        : validateJournalCheckoutRequest(body);
   } catch (error) {
     return json({ error: error.message }, { status: 400 });
   }
@@ -825,6 +895,23 @@ async function verifySuchaJournalCheckout(request, env) {
       purchasedAt: Date.now(),
       price: plan.price,
       length: plan.length,
+    });
+  }
+
+  if (isTestReport) {
+    const plan = testReportPlan();
+    return json({
+      ok: true,
+      source: 'razorpay_order',
+      planId: plan.planId,
+      product: TEST_REPORT_PRODUCT,
+      email,
+      testKey: cleanText(body.testKey || 'test', 60),
+      testTitle: cleanText(body.testTitle || 'Sucha test report', 120),
+      razorpayPaymentId: body.razorpay_payment_id,
+      razorpayOrderId: body.razorpay_order_id,
+      purchasedAt: Date.now(),
+      price: plan.price,
     });
   }
 
