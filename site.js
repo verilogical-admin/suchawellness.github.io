@@ -2828,24 +2828,26 @@ function showEmpathyResult(test) {
         `}
       </div>
     </div>
-    <div class="riasec-result-grid">
-      ${order.map((type) => {
-        const meta = empathyTypes[type];
-        const pct = Math.round((scores[type] / total) * 100);
-        return `
-          <div class="riasec-result-card">
-            <div class="riasec-result-code" style="color:${meta.color}">${meta.title}</div>
-            <div class="riasec-result-title">${meta.full} (${scores[type]})</div>
-            <p>${meta.description}</p>
-            <p>${pct}% of your scored empathy pattern in this short screen.</p>
-          </div>
-        `;
-      }).join('')}
-    </div>
-    <div class="result-summary">
-      <p><strong>Growth focus:</strong> ${empathySuggestions[quietest]}</p>
-      <p class="result-support-note">${resultSupportNote()}</p>
-    </div>
+    ${isPaidEmpathyRun ? `
+      <div class="riasec-result-grid">
+        ${order.map((type) => {
+          const meta = empathyTypes[type];
+          const pct = Math.round((scores[type] / total) * 100);
+          return `
+            <div class="riasec-result-card">
+              <div class="riasec-result-code" style="color:${meta.color}">${meta.title}</div>
+              <div class="riasec-result-title">${meta.full} (${scores[type]})</div>
+              <p>${meta.description}</p>
+              <p>${pct}% of your scored empathy pattern in this screen.</p>
+            </div>
+          `;
+        }).join('')}
+      </div>
+      <div class="result-summary">
+        <p><strong>Growth focus:</strong> ${empathySuggestions[quietest]}</p>
+        <p class="result-support-note">${resultSupportNote()}</p>
+      </div>
+    ` : ''}
   `;
   screeningNote.querySelector('#empathy-report-download')?.addEventListener('click', () => {
     downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest, screeningStepState.empathyLength);
