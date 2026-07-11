@@ -1643,10 +1643,11 @@ function ensureJournalMarkup() {
         </div>
         <div class="journal-premium">
           <div class="journal-premium-badge">Optional premium vault</div>
-          <div class="journal-premium-title">$5/month with a 30-day money-back guarantee</div>
+          <div class="journal-premium-title">$60/year with a 30-day cancellation refund</div>
           <p class="journal-note">Your journal is currently stored locally only. If you want more security and privacy, premium adds a password-protected encrypted vault.</p>
+          <p class="journal-note">Premium is billed yearly. If you cancel within 30 days, the refund is reduced by $20 for each PDF report already downloaded.</p>
           <p class="journal-note">For privacy, email verification can help with premium access and support, but it cannot unlock encrypted journal contents. Keep your journal password somewhere safe.</p>
-          <p class="journal-note">Cancel anytime. For cancellation, refund, or support help, <a href="mailto:support@suchawellness.com?subject=Sucha%20Journal%20Premium%20Support">contact support</a>.</p>
+          <p class="journal-note">For cancellation, refund, or support help, <a href="mailto:support@suchawellness.com?subject=Sucha%20Journal%20Premium%20Support">contact support</a>.</p>
           <div class="journal-premium-grid">
             <input id="journal-billing-email" type="email" placeholder="Email for premium and support">
             <input id="journal-premium-password" type="password" placeholder="Journal password">
@@ -1725,10 +1726,11 @@ function ensureJournalPremiumMarkup() {
     premium.className = 'journal-premium';
     premium.innerHTML = `
       <div class="journal-premium-badge">Optional premium vault</div>
-      <div class="journal-premium-title">$5/month with a 30-day money-back guarantee</div>
+      <div class="journal-premium-title">$60/year with a 30-day cancellation refund</div>
       <p class="journal-note">Your journal is currently stored locally only. If you want more security and privacy, premium adds a password-protected encrypted vault.</p>
+      <p class="journal-note">Premium is billed yearly. If you cancel within 30 days, the refund is reduced by $20 for each PDF report already downloaded.</p>
       <p class="journal-note">For privacy, email verification can help with premium access and support, but it cannot unlock encrypted journal contents. Keep your journal password somewhere safe.</p>
-      <p class="journal-note">Cancel anytime. For cancellation, refund, or support help, <a href="mailto:support@suchawellness.com?subject=Sucha%20Journal%20Premium%20Support">contact support</a>.</p>
+      <p class="journal-note">For cancellation, refund, or support help, <a href="mailto:support@suchawellness.com?subject=Sucha%20Journal%20Premium%20Support">contact support</a>.</p>
       <div class="journal-premium-grid">
         <input id="journal-billing-email" type="email" placeholder="Email for premium and support">
         <input id="journal-premium-password" type="password" placeholder="Journal password">
@@ -3219,7 +3221,7 @@ function showEmpathyResult(test) {
   const quietest = order[order.length - 1];
   const total = Object.values(scores).reduce((sum, value) => sum + value, 0) || 1;
   const isPaidEmpathyRun = Boolean(screeningStepState.empathyPaid);
-  const canDownloadEmpathyReport = isPaidEmpathyRun || hasActiveJournalAccess();
+  const canDownloadEmpathyReport = isPaidEmpathyRun;
 
   screeningBand.textContent = `${empathyTypes[dominant].full}: ${scores[dominant]} points`;
   screeningNote.innerHTML = `
@@ -3232,15 +3234,15 @@ function showEmpathyResult(test) {
       <div class="report-download-row">
         ${canDownloadEmpathyReport ? `
           <span class="premium-offer-badge">Report ready</span>
-          <h4 class="premium-offer-title">${isPaidEmpathyRun ? `Your comprehensive ${screeningStepState.empathyLength}-question result is ready.` : 'Your premium PDF snapshot is ready.'}</h4>
-          <p class="premium-offer-copy">Download your Sucha-branded PDF report with your score map, style descriptions, strengths, watch-outs, and practice suggestions${screeningStepState.empathyLength >= 50 ? ', plus deep reflection prompts' : ''}. PDF downloads are included for premium account holders and for one-time paid report unlocks.</p>
+          <h4 class="premium-offer-title">Your comprehensive ${screeningStepState.empathyLength}-question result is ready.</h4>
+          <p class="premium-offer-copy">Download your Sucha-branded PDF report with your score map, style descriptions, strengths, watch-outs, and practice suggestions${screeningStepState.empathyLength >= 50 ? ', plus deep reflection prompts' : ''}. The premium empathy tests are separate paid products and are not included in the general premium account.</p>
           <div class="premium-offer-actions">
             <button class="test-submit" type="button" id="empathy-report-download">Download PDF report</button>
           </div>
         ` : `
           <span class="premium-offer-badge">Premium insight</span>
           <h4 class="premium-offer-title">Go beyond this 5-question snapshot.</h4>
-          <p class="premium-offer-copy">PDF reports are premium. Premium account holders can download test reports, or you can unlock a larger empathy test with a downloadable Sucha-branded PDF report you can save, reflect on, or share with a counsellor or coach. The 50-question version adds deeper reflection prompts for a more complete read.</p>
+          <p class="premium-offer-copy">The premium empathy tests are separate from the general premium account. Unlock a larger empathy test with a downloadable Sucha-branded PDF report you can save, reflect on, or share with a counsellor or coach. The 50-question version adds deeper reflection prompts for a more complete read.</p>
           <div class="premium-offer-points">
             <span>More questions for a steadier pattern</span>
             <span>Score-share visual map</span>
@@ -3277,7 +3279,7 @@ function showEmpathyResult(test) {
   `;
   screeningNote.querySelector('#empathy-report-download')?.addEventListener('click', () => {
     downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest, screeningStepState.empathyLength);
-    trackSuchaEvent('test_report_downloaded', { test: 'empathy', paid: isPaidEmpathyRun, premium: hasActiveJournalAccess(), length: screeningStepState.empathyLength });
+    trackSuchaEvent('test_report_downloaded', { test: 'empathy', paid: isPaidEmpathyRun, premium: false, length: screeningStepState.empathyLength });
   });
   screeningNote.querySelectorAll('[data-empathy-length]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -3681,10 +3683,10 @@ const journalVaultStorageKey = 'sucha-journal-vault:v1';
 const journalAccessStorageKey = 'sucha-journal-premium-access:v1';
 const journalReminderEnabledKey = 'sucha-journal-reminder-enabled:v1';
 const journalReminderLastShownKey = 'sucha-journal-reminder-last-shown:v1';
-const journalPlanId = 'journal_monthly_5';
+const journalPlanId = 'journal_yearly_60';
 const journalProduct = 'SuchaJournal';
 const journalGuaranteeDays = 30;
-const journalMonthlyPrice = '$5/month';
+const journalPremiumPrice = '$60/year';
 const journalForm = document.querySelector('#journal-form');
 const journalTitle = document.querySelector('#journal-title');
 const journalMood = document.querySelector('#journal-mood');
@@ -4008,7 +4010,7 @@ function updateJournalGate() {
     const date = access?.expiresAt ? formatJournalDate(access.expiresAt) : 'your renewal date';
     setJournalPremiumStatus(`Encrypted journal unlocked. Premium active until ${date}.`);
   } else {
-    setJournalPremiumStatus('Your journal is currently stored locally only. Upgrade for a password-protected encrypted vault, with a 30-day money-back guarantee.');
+    setJournalPremiumStatus('Your journal is currently stored locally only. Upgrade yearly for a password-protected encrypted vault. Cancel within 30 days for a refund minus $20 for each PDF report already downloaded.');
   }
 
   renderJournalEntries();
@@ -4078,7 +4080,7 @@ async function createJournalCheckout(email) {
     product: journalProduct,
     email,
     guaranteeDays: journalGuaranteeDays,
-    amountUsd: 5,
+    amountUsd: 60,
   };
 
   const endpoints = suchaApiBases.map((base) => `${base}/api/create-order`);
@@ -4151,7 +4153,7 @@ async function startJournalPremiumTrial() {
     const options = {
       key: checkout.keyId,
       name: 'Sucha Wellness',
-      description: `Encrypted Journal - ${journalMonthlyPrice}, 30-day money-back guarantee`,
+      description: `Sucha Premium - ${journalPremiumPrice}, 30-day cancellation refund minus downloaded report charges`,
       prefill: { email },
       theme: { color: '#2D7A6B' },
       handler: async (response) => {
@@ -4169,7 +4171,7 @@ async function startJournalPremiumTrial() {
             purchasedAt: now,
             expiresAt,
             guaranteeEndsAt: verified.guaranteeEndsAt || (now + journalGuaranteeDays * 24 * 60 * 60 * 1000),
-            price: journalMonthlyPrice,
+            price: journalPremiumPrice,
           });
           await openJournalVault(password, { createIfMissing: true });
           updateJournalGate();

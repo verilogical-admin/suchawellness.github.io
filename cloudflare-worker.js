@@ -11,8 +11,11 @@ const SECURITY_HEADERS = {
   'Permissions-Policy': 'accelerometer=(), autoplay=(), camera=(), clipboard-read=(), clipboard-write=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(self), usb=()',
 };
 
-const JOURNAL_PLAN_ID = 'journal_monthly_5';
+const JOURNAL_PLAN_ID = 'journal_yearly_60';
 const JOURNAL_PRODUCT = 'SuchaJournal';
+const JOURNAL_PRICE_LABEL = '$60/year';
+const JOURNAL_ACCESS_DAYS = 365;
+const JOURNAL_REFUND_REPORT_DEDUCTION = '$20';
 const EMPATHY_REPORT_PLAN_ID = 'empathy_report_10';
 const EMPATHY_DEEP_REPORT_PLAN_ID = 'empathy_deep_report_30';
 const EMPATHY_REPORT_PRODUCT = 'SuchaEmpathyReport';
@@ -784,42 +787,8 @@ async function createSuchaJournalCheckout(request, env) {
 
   const now = Date.now();
   const guaranteeEndsAt = now + GUARANTEE_DAYS * 24 * 60 * 60 * 1000;
-  const accessExpiresAt = now + 31 * 24 * 60 * 60 * 1000;
-  const subscriptionPlanId = env.RAZORPAY_SUCHA_JOURNAL_PLAN_ID;
-
-  if (subscriptionPlanId) {
-    const response = await fetch('https://api.razorpay.com/v1/subscriptions', {
-      method: 'POST',
-      headers: {
-        Authorization: auth,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        plan_id: subscriptionPlanId,
-        total_count: Number(env.SUCHA_JOURNAL_SUBSCRIPTION_COUNT || 120),
-        quantity: 1,
-        customer_notify: 1,
-        notes: {
-          product: JOURNAL_PRODUCT,
-          planId: JOURNAL_PLAN_ID,
-          email,
-          guaranteeDays: String(GUARANTEE_DAYS),
-          supportEmail: 'support@suchawellness.com',
-        },
-      }),
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) return json({ error: data.error?.description || 'Could not create Razorpay subscription.' }, { status: 502 });
-    return json({
-      mode: 'subscription',
-      keyId: env.RAZORPAY_KEY_ID,
-      subscriptionId: data.id,
-      guaranteeEndsAt,
-      expiresAt: accessExpiresAt,
-    });
-  }
-
-  const amount = Number(env.SUCHA_JOURNAL_AMOUNT_MINOR || 500);
+  const accessExpiresAt = now + JOURNAL_ACCESS_DAYS * 24 * 60 * 60 * 1000;
+  const amount = Number(env.SUCHA_JOURNAL_YEARLY_AMOUNT_MINOR || env.SUCHA_JOURNAL_AMOUNT_MINOR || 6000);
   const currency = env.SUCHA_JOURNAL_CURRENCY || 'USD';
   const response = await fetch('https://api.razorpay.com/v1/orders', {
     method: 'POST',
@@ -836,7 +805,8 @@ async function createSuchaJournalCheckout(request, env) {
         planId: JOURNAL_PLAN_ID,
         email,
         guaranteeDays: String(GUARANTEE_DAYS),
-        price: '$5/month',
+        refundPolicy: `30-day cancellation refund minus ${JOURNAL_REFUND_REPORT_DEDUCTION} for downloaded reports`,
+        price: JOURNAL_PRICE_LABEL,
         supportEmail: 'support@suchawellness.com',
       },
     }),
@@ -917,7 +887,7 @@ async function verifySuchaJournalCheckout(request, env) {
 
   const now = Date.now();
   const guaranteeEndsAt = now + GUARANTEE_DAYS * 24 * 60 * 60 * 1000;
-  const accessExpiresAt = now + 31 * 24 * 60 * 60 * 1000;
+  const accessExpiresAt = now + JOURNAL_ACCESS_DAYS * 24 * 60 * 60 * 1000;
   return json({
     ok: true,
     source: mode === 'subscription' ? 'razorpay_subscription' : 'razorpay_order',
