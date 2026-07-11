@@ -597,7 +597,7 @@
     margin-top: 1.2rem;
   }
 
-  #request-match {
+  #care-seeker-match {
     scroll-margin-top: 120px;
   }
 
@@ -1703,7 +1703,7 @@
   <div class="section-eyebrow">Take Test</div>
   <h2 class="section-title">Mental health screening tools</h2>
   <p class="section-subtitle">Choose a quick, confidential Sucha-hosted screening tool. Answers stay in your browser and results are informational only, not a diagnosis or a replacement for care from a qualified clinician.</p>
-  <p class="screening-disclaimer">These tests are informational only and are not a diagnosis or a substitute for clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance. If you are interested in being connected to qualified licensed doctors or counsellors, or if you are a care provider looking to connect to care seekers, click here.<br><a class="btn-primary care-disclaimer-button" href="#request-match">Connect with an Expert Licensed Therapist that Sucha Recommends</a></p>
+  <p class="screening-disclaimer">These tests are informational only and are not a diagnosis or a substitute for clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance. If you are interested in being connected to qualified licensed doctors or counsellors, or if you are a care provider looking to connect to care seekers, click here.<br><a class="btn-primary care-disclaimer-button" href="#care-seeker-match">Connect with an Expert Licensed Therapist that Sucha Recommends</a></p>
   <div class="screening-tools">
     <button class="screening-card reveal" type="button" data-test="depression">
       <span class="screening-card-tag">BDI-style screen</span>
@@ -2038,7 +2038,7 @@
   <div class="care-grid">
     <article class="care-card reveal">
       <div class="care-card-kicker">For care seekers</div>
-      <h3>Connect me to a licensed and vetted therapist or counsellor</h3>
+      <h3 id="care-seeker-match">Connect me to a licensed and vetted therapist or counsellor</h3>
       <p>Start online, and tell us if you prefer 100% online care or an in-person visit near your city, area, or preferred location.</p>
       <ul class="care-list">
         <li>100% online matching available.</li>
@@ -2047,7 +2047,7 @@
       </ul>
       <p class="care-privacy">Your detailed request is encrypted in your browser before storage. Sucha stores ciphertext only, and this browser keeps the key needed to view the private details. Share only what you are comfortable saving until a matched provider is connected.</p>
       <div class="care-actions">
-        <button class="btn-primary" id="request-match" type="button" data-care-toggle="seeker">Request a match</button>
+        <button class="btn-primary" type="button" data-care-toggle="seeker">Request a match</button>
       </div>
       <form class="care-form" id="care-seeker-form" data-care-form="seeker" hidden>
         <div class="care-form-grid">
