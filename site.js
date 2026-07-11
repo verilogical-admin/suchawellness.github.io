@@ -165,6 +165,10 @@ function addPasswordVisibilityToggle(input, label = 'password') {
 const suchaApiBase = 'https://praivasipdf-api.verilogical.com';
 const suchaApiFallbackBase = 'https://payment-worker.verilogical.com';
 const suchaApiBases = [suchaApiBase, suchaApiFallbackBase];
+const suchaSiteApiBase = 'https://www.suchawellness.com';
+const suchaJournalApiBases = location.protocol === 'https:' && /(^|\.)suchawellness\.com$/i.test(location.hostname)
+  ? [location.origin, suchaApiBase, suchaApiFallbackBase]
+  : [suchaSiteApiBase, suchaApiBase, suchaApiFallbackBase];
 const careRequestKeysStorageKey = 'sucha-care-request-keys:v1';
 
 function trackSuchaEvent(event, detail = {}) {
@@ -4261,7 +4265,7 @@ async function redeemJournalCoupon() {
   try {
     let data = {};
     let lastError = null;
-    for (const base of suchaApiBases) {
+    for (const base of suchaJournalApiBases) {
       try {
         const response = await fetch(`${base}/api/sucha-journal/redeem-coupon`, {
           method: 'POST',
@@ -4313,7 +4317,7 @@ async function requestJournalFreeDayAccess() {
   trackSuchaEvent('free_day_access_requested');
   try {
     let lastError = null;
-    for (const base of suchaApiBases) {
+    for (const base of suchaJournalApiBases) {
       try {
         const response = await fetch(`${base}/api/sucha-journal/free-day-request`, {
           method: 'POST',
