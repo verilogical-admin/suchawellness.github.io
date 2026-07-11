@@ -1659,7 +1659,7 @@ function ensureJournalMarkup() {
           <div class="journal-premium-badge">Optional premium vault</div>
           <div class="journal-premium-title">$60/year with a 30-day cancellation refund</div>
           <p class="journal-note">Your journal is currently stored locally only. If you want more security and privacy, premium adds a password-protected encrypted vault.</p>
-          <p class="journal-note">Premium is billed yearly. If you cancel within 30 days, the refund is reduced by $20 for each PDF report already downloaded.</p>
+          <p class="journal-note">Premium is billed yearly. If you cancel within 30 days, the refund is reduced by $10 if you downloaded reports.</p>
           <p class="journal-note">For privacy, email verification can help with premium access and support, but it cannot unlock encrypted journal contents. Keep your journal password somewhere safe.</p>
           <p class="journal-note">For cancellation, refund, or support help, <a href="mailto:support@suchawellness.com?subject=Sucha%20Journal%20Premium%20Support">contact support</a>.</p>
           <div class="journal-premium-grid">
@@ -1744,7 +1744,7 @@ function ensureJournalPremiumMarkup() {
       <div class="journal-premium-badge">Optional premium vault</div>
       <div class="journal-premium-title">$60/year with a 30-day cancellation refund</div>
       <p class="journal-note">Your journal is currently stored locally only. If you want more security and privacy, premium adds a password-protected encrypted vault.</p>
-      <p class="journal-note">Premium is billed yearly. If you cancel within 30 days, the refund is reduced by $20 for each PDF report already downloaded.</p>
+      <p class="journal-note">Premium is billed yearly. If you cancel within 30 days, the refund is reduced by $10 if you downloaded reports.</p>
       <p class="journal-note">For privacy, email verification can help with premium access and support, but it cannot unlock encrypted journal contents. Keep your journal password somewhere safe.</p>
       <p class="journal-note">For cancellation, refund, or support help, <a href="mailto:support@suchawellness.com?subject=Sucha%20Journal%20Premium%20Support">contact support</a>.</p>
       <div class="journal-premium-grid">
@@ -4051,7 +4051,7 @@ function updateJournalGate() {
     const date = access?.expiresAt ? formatJournalDate(access.expiresAt) : 'your renewal date';
     setJournalPremiumStatus(`Encrypted journal unlocked. Premium active until ${date}.`);
   } else {
-    setJournalPremiumStatus('Your journal is currently stored locally only. Upgrade yearly for a password-protected encrypted vault. Cancel within 30 days for a refund minus $20 for each PDF report already downloaded.');
+    setJournalPremiumStatus('Your journal is currently stored locally only. Upgrade yearly for a password-protected encrypted vault. Cancel within 30 days for a refund minus $10 if you downloaded reports.');
   }
 
   renderJournalEntries();
