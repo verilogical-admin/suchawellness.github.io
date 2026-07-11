@@ -1029,14 +1029,76 @@ function addScreeningStyles() {
       margin-top: 0.16rem;
     }
     .report-download-row {
+      background:
+        linear-gradient(135deg, rgba(255,253,246,0.98), rgba(232,247,243,0.86)),
+        radial-gradient(circle at 90% 12%, rgba(255,210,31,0.24), transparent 30%);
+      border: 1px solid rgba(45,122,107,0.22);
+      box-shadow: 0 18px 44px rgba(22,63,53,0.14), inset 0 1px 0 rgba(255,255,255,0.9);
       display: grid;
-      gap: 0.75rem;
-      margin-top: 1rem;
+      gap: 0.9rem;
+      margin-top: 1.2rem;
+      padding: 1.25rem;
+      position: relative;
+      transform: translateZ(0);
+    }
+    .premium-offer-badge {
+      align-self: start;
+      background: var(--teal-dark);
+      color: white;
+      display: inline-flex;
+      font-size: 0.68rem;
+      font-weight: 600;
+      justify-self: start;
+      letter-spacing: 0.14em;
+      line-height: 1;
+      padding: 0.45rem 0.62rem;
+      text-transform: uppercase;
+    }
+    .premium-offer-title {
+      color: var(--teal-dark);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.45rem, 3vw, 2rem);
+      font-weight: 500;
+      line-height: 1.08;
+      margin: 0;
+    }
+    .premium-offer-copy {
+      color: var(--muted);
+      font-size: 0.96rem;
+      line-height: 1.65;
+      margin: 0;
+      max-width: 720px;
+    }
+    .premium-offer-points {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+    }
+    .premium-offer-points span {
+      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(45,122,107,0.18);
+      color: #263B34;
+      font-size: 0.78rem;
+      line-height: 1.25;
+      padding: 0.52rem 0.7rem;
+    }
+    .premium-offer-actions {
+      display: grid;
+      gap: 0.65rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     .report-download-row .test-submit {
+      box-shadow: 0 12px 26px rgba(45,122,107,0.16);
+      font-size: 0.78rem;
       line-height: 1.35;
       max-width: 100%;
+      min-height: 58px;
+      padding: 0.9rem 1rem;
       white-space: normal;
+    }
+    .report-download-row .test-submit:nth-of-type(2) {
+      background: #163F35;
+      border-color: #163F35;
     }
     @media (max-width: 900px) {
       .inline-test-head { display: grid; }
@@ -1061,6 +1123,9 @@ function addScreeningStyles() {
       .empathy-compass {
         margin: 0 auto;
         max-width: 300px;
+      }
+      .premium-offer-actions {
+        grid-template-columns: 1fr;
       }
     }
   `;
@@ -2706,12 +2771,25 @@ function showEmpathyResult(test) {
       <p><strong>How to read this:</strong> Empathy is not one single trait. Some people understand others mostly through perspective-taking, some through shared feeling, some through practical support, and some through physical attunement. Your result is a reflection of today's self-report, not a fixed personality label.</p>
       <div class="report-download-row">
         ${isPaidEmpathyRun ? `
-          <p class="inline-test-desc">Your comprehensive ${screeningStepState.empathyLength}-question empathy test is complete. Download your Sucha-branded PDF report.</p>
-          <button class="test-submit" type="button" id="empathy-report-download">Download PDF report</button>
+          <span class="premium-offer-badge">Report ready</span>
+          <h4 class="premium-offer-title">Your comprehensive ${screeningStepState.empathyLength}-question result is ready.</h4>
+          <p class="premium-offer-copy">Download your Sucha-branded PDF report with your score map, style descriptions, strengths, watch-outs, and practice suggestions.</p>
+          <div class="premium-offer-actions">
+            <button class="test-submit" type="button" id="empathy-report-download">Download PDF report</button>
+          </div>
         ` : `
-          <p class="inline-test-desc">For a fuller read, unlock the larger comprehensive 20 or 50 question test with a downloadable Sucha-branded PDF report.</p>
-          <button class="test-submit" type="button" data-empathy-length="20" data-label="Take 20-question comprehensive test + PDF report - $10">Take 20-question comprehensive test + PDF report - $10</button>
-          <button class="test-submit" type="button" data-empathy-length="50" data-label="Take 50-question deep empathy test + PDF report - $10">Take 50-question deep empathy test + PDF report - $10</button>
+          <span class="premium-offer-badge">Premium insight</span>
+          <h4 class="premium-offer-title">Go beyond this 5-question snapshot.</h4>
+          <p class="premium-offer-copy">Unlock a larger empathy test and a downloadable Sucha-branded PDF report you can save, reflect on, or share with a counsellor or coach.</p>
+          <div class="premium-offer-points">
+            <span>More questions for a steadier pattern</span>
+            <span>Score-share visual map</span>
+            <span>Strengths, watch-outs, and practices</span>
+          </div>
+          <div class="premium-offer-actions">
+            <button class="test-submit" type="button" data-empathy-length="20" data-label="Take 20-question comprehensive test + PDF report - $10">Take 20-question comprehensive test + PDF report - $10</button>
+            <button class="test-submit" type="button" data-empathy-length="50" data-label="Take 50-question deep empathy test + PDF report - $10">Take 50-question deep empathy test + PDF report - $10</button>
+          </div>
         `}
       </div>
     </div>
