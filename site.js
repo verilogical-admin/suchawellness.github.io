@@ -1121,7 +1121,7 @@ function ensureScreeningDisclaimer(takeTest) {
   if (!takeTest || takeTest.querySelector('.screening-disclaimer')) return;
   const disclaimer = document.createElement('p');
   disclaimer.className = 'screening-disclaimer';
-  disclaimer.innerHTML = 'These tests are informational only and are not a diagnosis or a substitute for clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance. If you are interested in being connected to qualified licensed doctors or counsellors, or if you are a care provider looking to connect to care seekers, click here.<br><a class="btn-primary care-disclaimer-button" href="#care">Open care connection forms</a>';
+  disclaimer.innerHTML = 'These tests are informational only and are not a diagnosis or a substitute for clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance. If you are interested in being connected to qualified licensed doctors or counsellors, or if you are a care provider looking to connect to care seekers, click here.<br><a class="btn-primary care-disclaimer-button" href="#care">Connect with an Expert Licensed Therapist that Sucha Recommends</a>';
   takeTest.querySelector('.section-subtitle')?.after(disclaimer);
 }
 
@@ -2016,7 +2016,37 @@ const empathyQuestions = [
   { text: "Do you often predict how someone will react before they do?", yes: { type: 'C', points: 2 }, no: { type: 'Y', points: 1 } },
   { text: "Do you often 'catch' the mood of a room within minutes of entering it?", yes: { type: 'E', points: 2 }, no: { type: 'Y', points: 1 } },
   { text: "When a coworker is overwhelmed, do you offer to take some of their work?", yes: { type: 'S', points: 2 }, no: { type: 'C', points: 1 } },
-  { text: "Do you find your breathing slows or quickens to match someone else's during conversation?", yes: { type: 'Y', points: 2 }, no: { type: 'E', points: 1 } }
+  { text: "Do you find your breathing slows or quickens to match someone else's during conversation?", yes: { type: 'Y', points: 2 }, no: { type: 'E', points: 1 } },
+  { text: "When a friend tells a story, do you focus on figuring out the 'why' behind their actions?", yes: { type: 'C', points: 2 }, no: { type: 'S', points: 1 } },
+  { text: "When someone shares good news, do you feel a rush of joy along with them?", yes: { type: 'E', points: 2 }, no: { type: 'C', points: 1 } },
+  { text: "Do you often think 'what can I do' rather than 'how do they feel'?", yes: { type: 'S', points: 2 }, no: { type: 'E', points: 1 } },
+  { text: "When someone smiles at you, do you smile back almost instantly, without deciding to?", yes: { type: 'Y', points: 2 }, no: { type: 'C', points: 1 } },
+  { text: "Do you enjoy analyzing why people from different backgrounds see things differently?", yes: { type: 'C', points: 2 }, no: { type: 'E', points: 1 } },
+  { text: "Do you avoid violent or intense media because you feel the emotions too strongly?", yes: { type: 'E', points: 2 }, no: { type: 'C', points: 1 } },
+  { text: "When you see a stranger struggling with bags, do you go help without thinking twice?", yes: { type: 'S', points: 2 }, no: { type: 'Y', points: 1 } },
+  { text: "In a group, do you sense shifts in energy or mood before anyone says anything?", yes: { type: 'Y', points: 2 }, no: { type: 'E', points: 1 } },
+  { text: "When reading a book, do you pause to think through a character's internal logic?", yes: { type: 'C', points: 2 }, no: { type: 'E', points: 1 } },
+  { text: "When a stranger is embarrassed in public, do you feel embarrassed on their behalf?", yes: { type: 'E', points: 2 }, no: { type: 'C', points: 1 } },
+  { text: "Do you volunteer or donate when you learn about someone's hardship?", yes: { type: 'S', points: 2 }, no: { type: 'E', points: 1 } },
+  { text: "Do you find it easy to sync your movements with a dance partner or teammate?", yes: { type: 'Y', points: 2 }, no: { type: 'C', points: 1 } },
+  { text: "In an argument, do you try to map out both sides' reasoning before taking a stance?", yes: { type: 'C', points: 2 }, no: { type: 'S', points: 1 } },
+  { text: "Do you find it hard to stay neutral when someone close to you is upset?", yes: { type: 'E', points: 2 }, no: { type: 'S', points: 1 } },
+  { text: "When a friend is sick, do you show up with soup rather than just texting sympathy?", yes: { type: 'S', points: 2 }, no: { type: 'E', points: 1 } },
+  { text: "When a baby or pet is nearby, do you instinctively soften your voice and movements?", yes: { type: 'Y', points: 2 }, no: { type: 'S', points: 1 } },
+  { text: "Do you find yourself explaining other people's behavior to friends using their point of view?", yes: { type: 'C', points: 2 }, no: { type: 'S', points: 1 } },
+  { text: "When listening to sad music, do you feel a physical heaviness in your chest?", yes: { type: 'E', points: 2 }, no: { type: 'C', points: 1 } },
+  { text: "Do you feel a strong urge to solve a problem the moment someone tells you about it?", yes: { type: 'S', points: 2 }, no: { type: 'C', points: 1 } },
+  { text: "Do you notice you cross your arms or lean back when the person you're talking to does?", yes: { type: 'Y', points: 2 }, no: { type: 'C', points: 1 } },
+  { text: "When someone explains a problem, do you first want to understand the reasoning before the emotion?", yes: { type: 'C', points: 2 }, no: { type: 'E', points: 1 } },
+  { text: "Do you tear up during emotional commercials or ads?", yes: { type: 'E', points: 2 }, no: { type: 'C', points: 1 } },
+  { text: "When someone is anxious about a task, do you offer to do part of it with them?", yes: { type: 'S', points: 2 }, no: { type: 'Y', points: 1 } },
+  { text: "When comforting someone, do you naturally match their breathing or pace before speaking?", yes: { type: 'Y', points: 2 }, no: { type: 'S', points: 1 } },
+  { text: "Do you like reading about psychology or human behavior to understand why people do what they do?", yes: { type: 'C', points: 2 }, no: { type: 'Y', points: 1 } },
+  { text: "When a friend vents, do you feel their frustration build up in your own body?", yes: { type: 'E', points: 2 }, no: { type: 'S', points: 1 } },
+  { text: "Do you keep track of small ways to help people close to you, like remembering their needs?", yes: { type: 'S', points: 2 }, no: { type: 'C', points: 1 } },
+  { text: "Do you often feel a physical urge to nod or lean in, in sync with a speaker's rhythm?", yes: { type: 'Y', points: 2 }, no: { type: 'C', points: 1 } },
+  { text: "When a coworker makes a mistake, do you first think about what led them to that decision?", yes: { type: 'C', points: 2 }, no: { type: 'S', points: 1 } },
+  { text: "Do you sometimes need to step away from emotional situations because they overwhelm you?", yes: { type: 'E', points: 2 }, no: { type: 'C', points: 1 } }
 ];
 
 const empathyTypes = {
@@ -2103,7 +2133,7 @@ const screeningNote = document.querySelector('#screening-note');
 const screeningClose = document.querySelector('#screening-close');
 const screeningVisual = document.querySelector('#screening-visual');
 let activeScreeningKey = null;
-const screeningStepState = { index: 0, answers: [] };
+const screeningStepState = { index: 0, answers: [], empathyLength: 5, empathyPaid: false };
 
 function getScreeningInterpretation(test, score, maxScore, answeredValues) {
   const ratio = maxScore ? score / maxScore : 0;
@@ -2165,11 +2195,12 @@ function getScreeningInterpretation(test, score, maxScore, answeredValues) {
 }
 
 function getScreeningQuestions(test) {
+  if (test.empathy) return empathyQuestions.slice(0, screeningStepState.empathyLength || 5);
   return test.riasec || test.rse || test.empathy ? test.questions : test.questions.map((text) => ({ text }));
 }
 
 function resultSupportNote() {
-  return 'These results are informational only and should not be used as a diagnosis or as clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance. If you are interested in being connected to qualified licensed doctors or counsellors, or if you are a care provider looking to connect to care seekers, click here.<br><a class="btn-primary care-disclaimer-button" href="#care">Open care connection forms</a>';
+  return 'These results are informational only and should not be used as a diagnosis or as clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance. If you are interested in being connected to qualified licensed doctors or counsellors, or if you are a care provider looking to connect to care seekers, click here.<br><a class="btn-primary care-disclaimer-button" href="#care">Connect with an Expert Licensed Therapist that Sucha Recommends</a>';
 }
 
 function empathyVisualMarkup(scores = null) {
@@ -2494,10 +2525,10 @@ async function verifyEmpathyReportCheckout(email, checkout, response) {
   throw lastError || new Error('Could not verify report payment.');
 }
 
-async function unlockAndDownloadEmpathyReport(scores, order, dominant, nextStrongest, quietest, button) {
+async function unlockAndStartEmpathyTest(length, button) {
   if (hasEmpathyReportAccess()) {
-    downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest);
-    trackSuchaEvent('test_report_downloaded', { test: 'empathy', paid: true, restored: true });
+    renderScreeningTest('empathy', { empathyLength: length, empathyPaid: true });
+    trackSuchaEvent('paid_empathy_test_started', { length, restored: true });
     return;
   }
 
@@ -2523,7 +2554,7 @@ async function unlockAndDownloadEmpathyReport(scores, order, dominant, nextStron
     theme: { color: '#2D7A6B' },
     handler: async (response) => {
       try {
-        button.textContent = 'Preparing PDF...';
+        button.textContent = 'Starting test...';
         const verifiedPayment = await verifyEmpathyReportCheckout(email, checkout, response);
         saveEmpathyReportAccess({
           email,
@@ -2531,26 +2562,26 @@ async function unlockAndDownloadEmpathyReport(scores, order, dominant, nextStron
           orderId: verifiedPayment.razorpayOrderId || response.razorpay_order_id,
           purchasedAt: verifiedPayment.purchasedAt || Date.now(),
         });
-        downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest);
-        trackSuchaEvent('test_report_downloaded', { test: 'empathy', paid: true });
+        renderScreeningTest('empathy', { empathyLength: length, empathyPaid: true });
+        trackSuchaEvent('paid_empathy_test_started', { length, paid: true });
       } catch (error) {
         alert(error.message || 'Could not verify payment.');
       } finally {
         button.disabled = false;
-        button.textContent = 'Download PDF report';
+        button.textContent = button.dataset.label || 'Start comprehensive empathy test';
       }
     },
     modal: {
       ondismiss: () => {
         button.disabled = false;
-        button.textContent = 'Unlock larger comprehensive 20 or 50 question test with downloadable PDF report - $10';
+        button.textContent = button.dataset.label || 'Start comprehensive empathy test';
       },
     },
   };
   const rz = new Razorpay(options);
   rz.on('payment.failed', (event) => {
     button.disabled = false;
-    button.textContent = 'Unlock larger comprehensive 20 or 50 question test with downloadable PDF report - $10';
+    button.textContent = button.dataset.label || 'Start comprehensive empathy test';
     alert(`Razorpay payment failed: ${event.error?.description || 'Try again.'}`);
   });
   rz.open();
@@ -2663,6 +2694,7 @@ function showEmpathyResult(test) {
   const nextStrongest = order[1];
   const quietest = order[order.length - 1];
   const total = Object.values(scores).reduce((sum, value) => sum + value, 0) || 1;
+  const isPaidEmpathyRun = Boolean(screeningStepState.empathyPaid);
 
   screeningBand.textContent = `${empathyTypes[dominant].full}: ${scores[dominant]} points`;
   screeningNote.innerHTML = `
@@ -2672,6 +2704,16 @@ function showEmpathyResult(test) {
     <div class="result-summary">
       <p><strong>Your leading pattern:</strong> Your strongest empathy signal was ${empathyTypes[dominant].title}, which points toward ${empathyTypes[dominant].description.toLowerCase()} Your next strongest style was ${empathyTypes[nextStrongest].title} (${scores[nextStrongest]} points).</p>
       <p><strong>How to read this:</strong> Empathy is not one single trait. Some people understand others mostly through perspective-taking, some through shared feeling, some through practical support, and some through physical attunement. Your result is a reflection of today's self-report, not a fixed personality label.</p>
+      <div class="report-download-row">
+        ${isPaidEmpathyRun ? `
+          <p class="inline-test-desc">Your comprehensive ${screeningStepState.empathyLength}-question empathy test is complete. Download your Sucha-branded PDF report.</p>
+          <button class="test-submit" type="button" id="empathy-report-download">Download PDF report</button>
+        ` : `
+          <p class="inline-test-desc">For a fuller read, unlock the larger comprehensive 20 or 50 question test with a downloadable Sucha-branded PDF report.</p>
+          <button class="test-submit" type="button" data-empathy-length="20" data-label="Take 20-question comprehensive test + PDF report - $10">Take 20-question comprehensive test + PDF report - $10</button>
+          <button class="test-submit" type="button" data-empathy-length="50" data-label="Take 50-question deep empathy test + PDF report - $10">Take 50-question deep empathy test + PDF report - $10</button>
+        `}
+      </div>
     </div>
     <div class="riasec-result-grid">
       ${order.map((type) => {
@@ -2690,15 +2732,17 @@ function showEmpathyResult(test) {
     <div class="result-summary">
       <p><strong>Growth focus:</strong> ${empathySuggestions[quietest]}</p>
       <p class="result-support-note">${resultSupportNote()}</p>
-      <div class="report-download-row">
-        <p class="inline-test-desc">For a fuller read, unlock the larger comprehensive 20 or 50 question test with a downloadable Sucha-branded PDF report.</p>
-        <button class="test-submit" type="button" id="empathy-report-download">${hasEmpathyReportAccess() ? 'Download PDF report' : 'Unlock larger comprehensive 20 or 50 question test with downloadable PDF report - $10'}</button>
-      </div>
     </div>
   `;
-  screeningNote.querySelector('#empathy-report-download')?.addEventListener('click', (event) => {
-    unlockAndDownloadEmpathyReport(scores, order, dominant, nextStrongest, quietest, event.currentTarget)
-      .catch((error) => alert(error.message || 'Could not unlock the PDF report.'));
+  screeningNote.querySelector('#empathy-report-download')?.addEventListener('click', () => {
+    downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest);
+    trackSuchaEvent('test_report_downloaded', { test: 'empathy', paid: true, length: screeningStepState.empathyLength });
+  });
+  screeningNote.querySelectorAll('[data-empathy-length]').forEach((button) => {
+    button.addEventListener('click', () => {
+      unlockAndStartEmpathyTest(Number(button.dataset.empathyLength || 20), button)
+        .catch((error) => alert(error.message || 'Could not unlock the comprehensive test.'));
+    });
   });
   screeningResult.hidden = false;
 }
@@ -2819,15 +2863,19 @@ function renderScreeningStep() {
   screeningForm.append(progress, progressBar, item, nav);
 }
 
-function renderScreeningTest(key) {
+function renderScreeningTest(key, options = {}) {
   const test = screeningTests[key];
   if (!test || !screeningPanel || !screeningForm) return;
 
   activeScreeningKey = key;
   screeningStepState.index = 0;
   screeningStepState.answers = [];
+  screeningStepState.empathyLength = test.empathy ? Number(options.empathyLength || 5) : 0;
+  screeningStepState.empathyPaid = Boolean(test.empathy && options.empathyPaid);
   screeningTitle.textContent = test.title;
-  screeningDesc.textContent = test.description;
+  screeningDesc.textContent = test.empathy && screeningStepState.empathyPaid
+    ? `Comprehensive ${screeningStepState.empathyLength}-question empathy test with downloadable PDF report after completion.`
+    : test.description;
   if (screeningVisual) {
     screeningVisual.hidden = !test.empathy;
     screeningVisual.innerHTML = test.empathy ? empathyVisualMarkup() : '';
@@ -2865,6 +2913,8 @@ screeningClose?.addEventListener('click', () => {
   activeScreeningKey = null;
   screeningStepState.index = 0;
   screeningStepState.answers = [];
+  screeningStepState.empathyLength = 5;
+  screeningStepState.empathyPaid = false;
 });
 
 const hamaForm = document.querySelector('#hama-form');
