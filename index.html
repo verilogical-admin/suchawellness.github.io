@@ -288,6 +288,7 @@
     border: 1px solid rgba(45,122,107,0.18);
     box-shadow: 0 24px 60px rgba(45,122,107,0.18);
     display: block;
+    height: auto;
     max-width: min(420px, 100%);
     object-fit: contain;
     object-position: center;
@@ -663,40 +664,18 @@
   }
 
   .screening-hero {
-    align-items: center;
-    display: grid;
-    column-gap: 2.5rem;
-    row-gap: 1.4rem;
-    grid-template-columns: minmax(0, 1.08fr) minmax(260px, 0.72fr);
-    margin-bottom: 1.35rem;
+    display: flow-root;
+    margin-bottom: 1.25rem;
   }
 
   .screening-hero .section-subtitle {
-    margin-bottom: 0;
+    max-width: none;
+    margin-bottom: 1.1rem;
   }
 
   .screening-hero .screening-disclaimer {
     margin-bottom: 0;
-  }
-
-  .screening-hero-copy {
-    min-width: 0;
-  }
-
-  .screening-hero-media {
-    align-items: center;
-    display: flex;
-    justify-content: flex-end;
-    min-width: 0;
-    position: relative;
-  }
-
-  .screening-hero-media::before {
-    background: rgba(75,175,156,0.12);
-    border: 1px solid rgba(45,122,107,0.14);
-    content: '';
-    inset: 1.2rem -0.4rem -1.2rem 2rem;
-    position: absolute;
+    max-width: none;
   }
 
   .screening-hero-photo {
@@ -705,7 +684,10 @@
     border: 1px solid rgba(45,122,107,0.18);
     box-shadow: 0 24px 60px rgba(45,122,107,0.18);
     display: block;
-    max-width: min(360px, 100%);
+    float: right;
+    height: auto;
+    margin: 0 0 1.1rem 2rem;
+    max-width: min(310px, 36%);
     object-fit: contain;
     object-position: center;
     position: relative;
@@ -1644,11 +1626,8 @@
     .care-form textarea { grid-column: auto; }
     #about { grid-template-columns: 1fr; gap: 2.5rem; padding: 4rem 1.5rem; }
     .about-accent { display: none; }
-    .screening-hero { grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1.2rem; }
-    .screening-hero-copy { order: 2; }
-    .screening-hero-media { justify-content: center; }
-    .screening-hero-media { order: 1; }
-    .screening-hero-photo { max-width: 300px; }
+    .screening-hero { display: grid; gap: 1rem; margin-bottom: 1.2rem; }
+    .screening-hero-photo { float: none; margin: 0 auto; max-width: 300px; }
     .screening-tools { grid-template-columns: 1fr; }
     .inline-test-head { display: grid; }
     .inline-options { grid-template-columns: 1fr; }
@@ -1766,14 +1745,10 @@
 <section id="take-test">
   <div class="section-eyebrow">Take Test</div>
   <div class="screening-hero">
-    <div class="screening-hero-copy">
-      <h2 class="section-title">Premium screening tests</h2>
-      <p class="section-subtitle">Choose a quick, confidential Sucha-hosted screening tool. Answers stay in your browser and results are informational only, not a diagnosis or a replacement for care from a qualified clinician. On-screen results are available after completion; downloadable PDF reports are included for premium account holders or can be unlocked with a one-time premium payment for that test. Premium empathy 20Q and 50Q tests are separate paid products.</p>
-      <p class="screening-disclaimer">These tests are informational only and are not a diagnosis or a substitute for clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance. If you are interested in being connected to qualified licensed doctors or counsellors, or if you are a care provider looking to connect to care seekers, click here.<br><a class="btn-primary care-disclaimer-button" href="#care-seeker-match">Connect with an Expert Licensed Therapist that Sucha Recommends</a></p>
-    </div>
-    <div class="screening-hero-media">
-      <img src="/assets/sucha-phone-journal-human.jpg" alt="A calm person using a phone for digital journaling" class="screening-hero-photo" width="1024" height="1536">
-    </div>
+    <img src="/assets/sucha-phone-journal-human.jpg" alt="A calm person using a phone for digital journaling" class="screening-hero-photo" width="1024" height="1536">
+    <h2 class="section-title">Premium screening tests</h2>
+    <p class="section-subtitle">Choose a quick, confidential Sucha-hosted screening tool. Answers stay in your browser and results are informational only, not a diagnosis or a replacement for care from a qualified clinician. On-screen results are available after completion; downloadable PDF reports are included for premium account holders or can be unlocked with a one-time premium payment for that test. Premium empathy 20Q and 50Q tests are separate paid products.</p>
+    <p class="screening-disclaimer">These tests are informational only and are not a diagnosis or a substitute for clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance. If you are interested in being connected to qualified licensed doctors or counsellors, or if you are a care provider looking to connect to care seekers, click here.<br><a class="btn-primary care-disclaimer-button" href="#care-seeker-match">Connect with an Expert Licensed Therapist that Sucha Recommends</a></p>
   </div>
   <div class="screening-tools">
     <button class="screening-card reveal" type="button" data-test="depression">
