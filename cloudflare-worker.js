@@ -14,6 +14,7 @@ const SECURITY_HEADERS = {
 const JOURNAL_PLAN_ID = 'journal_monthly_5';
 const JOURNAL_PRODUCT = 'SuchaJournal';
 const EMPATHY_REPORT_PLAN_ID = 'empathy_report_10';
+const EMPATHY_DEEP_REPORT_PLAN_ID = 'empathy_deep_report_30';
 const EMPATHY_REPORT_PRODUCT = 'SuchaEmpathyReport';
 const GUARANTEE_DAYS = 30;
 const VERIFICATION_COOKIE = 'sucha_verified_visitor';
@@ -96,10 +97,17 @@ function validateJournalCheckoutRequest(body) {
 
 function validateEmpathyReportCheckoutRequest(body) {
   const email = String(body.email || '').trim().toLowerCase();
-  if (body.planId && body.planId !== EMPATHY_REPORT_PLAN_ID) throw new Error('Unknown empathy report plan.');
+  if (body.planId && ![EMPATHY_REPORT_PLAN_ID, EMPATHY_DEEP_REPORT_PLAN_ID].includes(body.planId)) throw new Error('Unknown empathy report plan.');
   if (body.product && body.product !== EMPATHY_REPORT_PRODUCT) throw new Error('Unknown product.');
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('A valid billing email is required.');
   return email;
+}
+
+function empathyReportPlan(body = {}) {
+  const planId = body.planId === EMPATHY_DEEP_REPORT_PLAN_ID ? EMPATHY_DEEP_REPORT_PLAN_ID : EMPATHY_REPORT_PLAN_ID;
+  return planId === EMPATHY_DEEP_REPORT_PLAN_ID
+    ? { planId, label: '50-question deep empathy report', amount: 3000, price: '$30', length: 50 }
+    : { planId, label: '20-question comprehensive empathy report', amount: 1000, price: '$10', length: 20 };
 }
 
 async function hmacSha256Hex(secret, message) {
@@ -653,7 +661,7 @@ async function createSuchaJournalCheckout(request, env) {
   if (!auth) return json({ error: 'Razorpay Worker secrets are not configured.' }, { status: 501 });
 
   const body = await readJson(request);
-  if (body.product === EMPATHY_REPORT_PRODUCT || body.planId === EMPATHY_REPORT_PLAN_ID) {
+  if (body.product === EMPATHY_REPORT_PRODUCT || [EMPATHY_REPORT_PLAN_ID, EMPATHY_DEEP_REPORT_PLAN_ID].includes(body.planId)) {
     let email;
     try {
       email = validateEmpathyReportCheckoutRequest(body);
@@ -662,7 +670,10 @@ async function createSuchaJournalCheckout(request, env) {
     }
 
     const now = Date.now();
-    const amount = Number(env.SUCHA_EMPATHY_REPORT_AMOUNT_MINOR || 1000);
+    const plan = empathyReportPlan(body);
+    const amount = Number(plan.planId === EMPATHY_DEEP_REPORT_PLAN_ID
+      ? env.SUCHA_EMPATHY_DEEP_REPORT_AMOUNT_MINOR || plan.amount
+      : env.SUCHA_EMPATHY_REPORT_AMOUNT_MINOR || plan.amount);
     const currency = env.SUCHA_EMPATHY_REPORT_CURRENCY || 'USD';
     const response = await fetch('https://api.razorpay.com/v1/orders', {
       method: 'POST',
@@ -676,9 +687,10 @@ async function createSuchaJournalCheckout(request, env) {
         receipt: `sucha_empathy_${now}`,
         notes: {
           product: EMPATHY_REPORT_PRODUCT,
-          planId: EMPATHY_REPORT_PLAN_ID,
+          planId: plan.planId,
           email,
-          price: '$10 one-time PDF report',
+          price: `${plan.price} ${plan.label}`,
+          length: String(plan.length),
           supportEmail: 'support@suchawellness.com',
         },
       }),
@@ -691,8 +703,10 @@ async function createSuchaJournalCheckout(request, env) {
       orderId: data.id,
       amount: data.amount,
       currency: data.currency,
-      planId: EMPATHY_REPORT_PLAN_ID,
+      planId: plan.planId,
       product: EMPATHY_REPORT_PRODUCT,
+      price: plan.price,
+      length: plan.length,
     });
   }
 
@@ -779,7 +793,7 @@ async function verifySuchaJournalCheckout(request, env) {
   if (!env.RAZORPAY_KEY_SECRET) return json({ error: 'Razorpay Worker secrets are not configured.' }, { status: 501 });
 
   const body = await readJson(request);
-  const isEmpathyReport = body.product === EMPATHY_REPORT_PRODUCT || body.planId === EMPATHY_REPORT_PLAN_ID;
+  const isEmpathyReport = body.product === EMPATHY_REPORT_PRODUCT || [EMPATHY_REPORT_PLAN_ID, EMPATHY_DEEP_REPORT_PLAN_ID].includes(body.planId);
   let email;
   try {
     email = isEmpathyReport ? validateEmpathyReportCheckoutRequest(body) : validateJournalCheckoutRequest(body);
@@ -799,16 +813,18 @@ async function verifySuchaJournalCheckout(request, env) {
   }
 
   if (isEmpathyReport) {
+    const plan = empathyReportPlan(body);
     return json({
       ok: true,
       source: 'razorpay_order',
-      planId: EMPATHY_REPORT_PLAN_ID,
+      planId: plan.planId,
       product: EMPATHY_REPORT_PRODUCT,
       email,
       razorpayPaymentId: body.razorpay_payment_id,
       razorpayOrderId: body.razorpay_order_id,
       purchasedAt: Date.now(),
-      price: '$10',
+      price: plan.price,
+      length: plan.length,
     });
   }
 

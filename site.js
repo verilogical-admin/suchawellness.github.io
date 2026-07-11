@@ -198,8 +198,12 @@ const suchaVerificationTokenKey = 'sucha-verification-token:v1';
 const suchaVerificationEmailKey = 'sucha-verification-email:v1';
 const empathyReportAccessStorageKey = 'sucha-empathy-report-access:v1';
 const empathyReportPlanId = 'empathy_report_10';
+const empathyDeepReportPlanId = 'empathy_deep_report_30';
 const empathyReportProduct = 'SuchaEmpathyReport';
-const empathyReportPrice = '$10';
+const empathyReportPlans = {
+  20: { planId: empathyReportPlanId, price: '$10', label: '20-question comprehensive test + PDF report' },
+  50: { planId: empathyDeepReportPlanId, price: '$30', label: '50-question deep empathy test + expanded PDF report' },
+};
 let suchaVerificationPending = null;
 
 function addVerificationStyles() {
@@ -2417,7 +2421,8 @@ Q
 `;
 }
 
-function downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest) {
+function downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest, reportLength = screeningStepState.empathyLength || 20) {
+  const isDeepReport = Number(reportLength) >= 50;
   const generatedAt = new Date().toLocaleString(undefined, {
     year: 'numeric',
     month: 'short',
@@ -2434,7 +2439,7 @@ function downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest)
   stream += pdfLine('Sucha Wellness', 108, 724, 16, '#163F35', 'F2');
   stream += pdfLine(`Empathy Type Test Report | ${generatedAt}`, 108, 706, 9, '#65736C');
   stream += pdfLine('Empathy Type Test Report', 52, 662, 25, '#163F35', 'F2');
-  stream += pdfLine('A Sucha-hosted reflection on thinking, feeling, helping, and bodily attuning.', 52, 640, 10, '#65736C');
+  stream += pdfLine(`${reportLength}-question Sucha reflection on thinking, feeling, helping, and bodily attuning.`, 52, 640, 10, '#65736C');
   stream += drawPdfEmpathyDiagram(scores, 178, 488);
 
   stream += 'q 0.961 0.949 0.922 rg 330 406 206 164 re f Q\n';
@@ -2466,6 +2471,18 @@ function downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest)
     });
     y -= 58;
   });
+
+  if (isDeepReport) {
+    stream += pdfLine('Deep report extras', 330, 342, 14, '#163F35', 'F2');
+    [
+      'Use this deeper result as a conversation map, not a fixed identity.',
+      'Notice where your strongest style helps connection, and where it may over-function.',
+      'Choose one quieter style to practice for seven days in low-stakes conversations.',
+      'After difficult interactions, journal what you understood, felt, did, and mirrored.'
+    ].flatMap((text) => wrapReportText(text, 44)).slice(0, 9).forEach((line, index) => {
+      stream += pdfLine(line, 330, 322 - (index * 11), 8, '#65736C');
+    });
+  }
 
   stream += pdfLine('Important note', 52, 86, 12, '#163F35', 'F2');
   wrapReportText('These results are informational only and should not be used as a diagnosis or as clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance.', 102).forEach((line, index) => {
@@ -2514,17 +2531,26 @@ function readEmpathyReportAccess() {
   }
 }
 
-function hasEmpathyReportAccess() {
+function empathyPlanForLength(length) {
+  return empathyReportPlans[Number(length) >= 50 ? 50 : 20];
+}
+
+function hasEmpathyReportAccess(length = 20) {
   const access = readEmpathyReportAccess();
-  return Boolean(access?.paymentId && access?.planId === empathyReportPlanId);
+  if (!access?.paymentId) return false;
+  if (Number(length) >= 50) return access.planId === empathyDeepReportPlanId || Number(access.length || 0) >= 50;
+  return [empathyReportPlanId, empathyDeepReportPlanId].includes(access.planId) || Number(access.length || 0) >= 20;
 }
 
 function saveEmpathyReportAccess(access) {
+  const length = Number(access.length || 20);
+  const plan = empathyPlanForLength(length);
   localStorage.setItem(empathyReportAccessStorageKey, JSON.stringify({
     ...access,
-    planId: empathyReportPlanId,
+    planId: access.planId || plan.planId,
     product: empathyReportProduct,
-    price: empathyReportPrice,
+    price: access.price || plan.price,
+    length,
     purchasedAt: access.purchasedAt || Date.now(),
   }));
 }
@@ -2535,12 +2561,14 @@ function empathyCheckoutBases() {
     : suchaApiBases;
 }
 
-async function createEmpathyReportCheckout(email) {
+async function createEmpathyReportCheckout(email, length = 20) {
+  const plan = empathyPlanForLength(length);
   const payload = {
-    planId: empathyReportPlanId,
+    planId: plan.planId,
     product: empathyReportProduct,
     email,
-    amountUsd: 10,
+    amountUsd: Number(plan.price.replace('$', '')),
+    length: Number(length),
   };
   let lastError = null;
   for (const base of empathyCheckoutBases()) {
@@ -2561,11 +2589,13 @@ async function createEmpathyReportCheckout(email) {
   throw lastError || new Error('Could not create report checkout.');
 }
 
-async function verifyEmpathyReportCheckout(email, checkout, response) {
+async function verifyEmpathyReportCheckout(email, checkout, response, length = 20) {
+  const plan = empathyPlanForLength(length);
   const payload = {
-    planId: empathyReportPlanId,
+    planId: plan.planId,
     product: empathyReportProduct,
     email,
+    length: Number(length),
     checkoutMode: 'order',
     razorpay_order_id: response.razorpay_order_id,
     razorpay_payment_id: response.razorpay_payment_id,
@@ -2591,12 +2621,13 @@ async function verifyEmpathyReportCheckout(email, checkout, response) {
 }
 
 async function unlockAndStartEmpathyTest(length, button) {
-  if (hasEmpathyReportAccess()) {
+  if (hasEmpathyReportAccess(length)) {
     renderScreeningTest('empathy', { empathyLength: length, empathyPaid: true });
     trackSuchaEvent('paid_empathy_test_started', { length, restored: true });
     return;
   }
 
+  const plan = empathyPlanForLength(length);
   if (location.protocol === 'file:') throw new Error('Open the live site to buy the comprehensive empathy test and PDF report.');
   const verified = await requireSuchaVerification({ mode: 'tool', tool: 'Comprehensive Empathy Type Test and PDF Report', toolType: 'paid-report' });
   if (!verified) return;
@@ -2607,11 +2638,11 @@ async function unlockAndStartEmpathyTest(length, button) {
 
   button.disabled = true;
   button.textContent = 'Opening payment...';
-  const checkout = await createEmpathyReportCheckout(email);
+  const checkout = await createEmpathyReportCheckout(email, length);
   const options = {
     key: checkout.keyId,
     name: 'Sucha Wellness',
-    description: `Comprehensive Empathy Type Test + PDF Report - ${empathyReportPrice}`,
+    description: `${plan.label} - ${plan.price}`,
     amount: checkout.amount,
     currency: checkout.currency || 'USD',
     order_id: checkout.orderId,
@@ -2620,9 +2651,12 @@ async function unlockAndStartEmpathyTest(length, button) {
     handler: async (response) => {
       try {
         button.textContent = 'Starting test...';
-        const verifiedPayment = await verifyEmpathyReportCheckout(email, checkout, response);
+        const verifiedPayment = await verifyEmpathyReportCheckout(email, checkout, response, length);
         saveEmpathyReportAccess({
           email,
+          planId: verifiedPayment.planId || plan.planId,
+          price: verifiedPayment.price || plan.price,
+          length,
           paymentId: verifiedPayment.razorpayPaymentId || response.razorpay_payment_id,
           orderId: verifiedPayment.razorpayOrderId || response.razorpay_order_id,
           purchasedAt: verifiedPayment.purchasedAt || Date.now(),
@@ -2773,22 +2807,23 @@ function showEmpathyResult(test) {
         ${isPaidEmpathyRun ? `
           <span class="premium-offer-badge">Report ready</span>
           <h4 class="premium-offer-title">Your comprehensive ${screeningStepState.empathyLength}-question result is ready.</h4>
-          <p class="premium-offer-copy">Download your Sucha-branded PDF report with your score map, style descriptions, strengths, watch-outs, and practice suggestions.</p>
+          <p class="premium-offer-copy">Download your Sucha-branded PDF report with your score map, style descriptions, strengths, watch-outs, and practice suggestions${screeningStepState.empathyLength >= 50 ? ', plus deep reflection prompts' : ''}.</p>
           <div class="premium-offer-actions">
             <button class="test-submit" type="button" id="empathy-report-download">Download PDF report</button>
           </div>
         ` : `
           <span class="premium-offer-badge">Premium insight</span>
           <h4 class="premium-offer-title">Go beyond this 5-question snapshot.</h4>
-          <p class="premium-offer-copy">Unlock a larger empathy test and a downloadable Sucha-branded PDF report you can save, reflect on, or share with a counsellor or coach.</p>
+          <p class="premium-offer-copy">Unlock a larger empathy test and a downloadable Sucha-branded PDF report you can save, reflect on, or share with a counsellor or coach. The 50-question version adds deeper reflection prompts for a more complete read.</p>
           <div class="premium-offer-points">
             <span>More questions for a steadier pattern</span>
             <span>Score-share visual map</span>
             <span>Strengths, watch-outs, and practices</span>
+            <span>Deep prompts included in 50Q report</span>
           </div>
           <div class="premium-offer-actions">
             <button class="test-submit" type="button" data-empathy-length="20" data-label="Take 20-question comprehensive test + PDF report - $10">Take 20-question comprehensive test + PDF report - $10</button>
-            <button class="test-submit" type="button" data-empathy-length="50" data-label="Take 50-question deep empathy test + PDF report - $10">Take 50-question deep empathy test + PDF report - $10</button>
+            <button class="test-submit" type="button" data-empathy-length="50" data-label="Take 50-question deep empathy test + expanded PDF report - $30">Take 50-question deep empathy test + expanded PDF report - $30</button>
           </div>
         `}
       </div>
@@ -2813,7 +2848,7 @@ function showEmpathyResult(test) {
     </div>
   `;
   screeningNote.querySelector('#empathy-report-download')?.addEventListener('click', () => {
-    downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest);
+    downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest, screeningStepState.empathyLength);
     trackSuchaEvent('test_report_downloaded', { test: 'empathy', paid: true, length: screeningStepState.empathyLength });
   });
   screeningNote.querySelectorAll('[data-empathy-length]').forEach((button) => {
