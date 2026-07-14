@@ -1,32 +1,40 @@
-User-agent: GPTBot
-Disallow: /
+# Sucha Wellness allows responsible search and AI discovery so people can find
+# mental wellness screening, private journaling, and care-navigation resources.
+# Public pages may be crawled and referenced. Private account, payment, and
+# admin surfaces remain unavailable to automated crawlers.
+
+Content-Signal: search=yes,ai-input=yes,ai-train=yes,use=reference
+
+Sitemap: https://www.suchawellness.com/sitemap.xml
+Host: https://www.suchawellness.com
+
+User-agent: OAI-SearchBot
+Allow: /
 
 User-agent: ChatGPT-User
-Disallow: /
+Allow: /
 
-User-agent: ClaudeBot
-Disallow: /
-
-User-agent: Claude-SearchBot
-Disallow: /
-
-User-agent: Google-Extended
-Disallow: /
-
-User-agent: CCBot
-Disallow: /
+User-agent: GPTBot
+Allow: /
 
 User-agent: PerplexityBot
-Disallow: /
+Allow: /
 
-User-agent: Bytespider
-Disallow: /
+User-agent: ClaudeBot
+Allow: /
 
-User-agent: Amazonbot
-Disallow: /
+User-agent: Claude-SearchBot
+Allow: /
 
-User-agent: Applebot-Extended
-Disallow: /
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /account
+Disallow: /account.html

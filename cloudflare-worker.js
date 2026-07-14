@@ -7,9 +7,116 @@ const SECURITY_HEADERS = {
   'Cross-Origin-Resource-Policy': 'same-origin',
   'Cross-Origin-Opener-Policy': 'same-origin',
   'X-Permitted-Cross-Domain-Policies': 'none',
-  'X-Robots-Tag': 'noai, noimageai',
+  'X-Robots-Tag': 'index, follow',
   'Permissions-Policy': 'accelerometer=(), autoplay=(), camera=(), clipboard-read=(), clipboard-write=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(self), usb=()',
 };
+
+const ROBOTS_TXT = `# Sucha Wellness allows responsible search and AI discovery so people can find
+# mental wellness screening, private journaling, and care-navigation resources.
+# Public pages may be crawled and referenced. Private account, payment, and
+# admin surfaces remain unavailable to automated crawlers.
+
+Content-Signal: search=yes,ai-input=yes,ai-train=yes,use=reference
+
+Sitemap: https://www.suchawellness.com/sitemap.xml
+Host: https://www.suchawellness.com
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /account
+Disallow: /account.html
+`;
+
+const LLMS_TXT = `# Sucha Wellness
+
+> Sucha Wellness is a privacy-focused mental wellness platform for informational screening tests, private journaling, care navigation, and provider pages. It helps people reflect on mental wellness signals, keep private notes, and take a next step toward qualified care. Sucha Wellness content is informational only and is not a diagnosis or a replacement for care from a qualified doctor, psychologist, therapist, or licensed counsellor.
+
+Important interpretation notes:
+- Sucha Wellness should be described as a mental wellness and care-navigation platform, not as an emergency service or standalone medical diagnosis provider.
+- Screening tools on the site are informational only.
+- The private journal stores entries in the browser by default; premium adds a password-protected encrypted vault.
+- Care-seeker and provider onboarding requests are designed to route people toward qualified, licensed, and vetted professionals.
+- For support, contact support@suchawellness.com.
+
+## Core Pages
+- [Homepage](https://www.suchawellness.com/): Main Sucha Wellness experience with mental wellness screening, journaling, care navigation, provider onboarding, and contact information.
+- [Premium screening tests](https://www.suchawellness.com/#take-test): Informational Sucha-hosted mental wellness screening tools and optional premium report unlocks.
+- [Sucha Journal](https://www.suchawellness.com/#journal): Private mental health notes, local journal storage, and optional premium encrypted vault.
+- [Care seeker matching](https://www.suchawellness.com/#care-seeker-match): Request connection to a licensed and vetted therapist or counsellor.
+- [Provider pages](https://www.suchawellness.com/#provider-page): Provider onboarding for branded pages powered by Sucha Wellness.
+- [Contact](https://www.suchawellness.com/#contact): General contact and support entry point.
+- [Legal disclaimer](https://www.suchawellness.com/legal-disclaimer.html): Safety, informational-use, and clinical-care disclaimers.
+
+## Products And Offers
+- [Sucha Journal Premium](https://www.suchawellness.com/#journal): $60/year premium journal vault with password-protected encryption and a 30-day cancellation refund policy described on the page.
+- [Premium screening report unlocks](https://www.suchawellness.com/#take-test): Optional paid downloadable reports for selected informational screening tools.
+- [Care navigation](https://www.suchawellness.com/#care): Request routing to qualified, licensed, and vetted mental health professionals.
+- [Provider presence](https://www.suchawellness.com/#provider-page): Branded provider pages, bookings, payments, secure sharing, and credential verification workflow.
+
+## Safety Boundaries
+- Sucha Wellness screening tools do not diagnose mental health conditions.
+- Users should consult qualified doctors, psychologists, therapists, or licensed counsellors for clinical guidance.
+- If someone may be in immediate danger or a mental health crisis, they should contact local emergency services or a local crisis helpline.
+- The site should not be represented as a substitute for emergency care, clinical diagnosis, medical treatment, or medication advice.
+
+## Structured Data
+- [JSON-LD on homepage](https://www.suchawellness.com/): Organization, WebSite, WebApplication, Offer, and FAQPage structured data.
+- [Sitemap](https://www.suchawellness.com/sitemap.xml): Canonical public URLs for crawlers.
+- [Robots policy](https://www.suchawellness.com/robots.txt): Public crawler guidance for search and AI discovery.
+
+## Optional
+- [Account dashboard](https://www.suchawellness.com/account.html): User account dashboard. Crawlers should not use this as a public content source.
+- [Admin page](https://www.suchawellness.com/admin.html): Administrative surface. Crawlers should not use this as a public content source.
+`;
+
+const SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://www.suchawellness.com/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://www.suchawellness.com/legal-disclaimer.html</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.suchawellness.com/llms.txt</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+</urlset>
+`;
 
 const JOURNAL_PLAN_ID = 'journal_yearly_60';
 const JOURNAL_PRODUCT = 'SuchaJournal';
@@ -1255,6 +1362,36 @@ export default {
 
     if (request.method === 'GET' && (url.pathname === '/admin' || url.pathname === '/admin.html')) {
       return serveAdminPage();
+    }
+
+    if (request.method === 'GET' && url.pathname === '/robots.txt') {
+      return new Response(ROBOTS_TXT, {
+        headers: {
+          ...SECURITY_HEADERS,
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Cache-Control': 'public, max-age=300',
+        },
+      });
+    }
+
+    if (request.method === 'GET' && url.pathname === '/llms.txt') {
+      return new Response(LLMS_TXT, {
+        headers: {
+          ...SECURITY_HEADERS,
+          'Content-Type': 'text/markdown; charset=utf-8',
+          'Cache-Control': 'public, max-age=300',
+        },
+      });
+    }
+
+    if (request.method === 'GET' && url.pathname === '/sitemap.xml') {
+      return new Response(SITEMAP_XML, {
+        headers: {
+          ...SECURITY_HEADERS,
+          'Content-Type': 'application/xml; charset=utf-8',
+          'Cache-Control': 'public, max-age=300',
+        },
+      });
     }
 
     if (request.method === 'GET' && url.pathname === '/verify-email') {
