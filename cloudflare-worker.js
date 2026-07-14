@@ -171,6 +171,16 @@ function corsPreflight() {
   });
 }
 
+function staticResponse(request, body, contentType) {
+  return new Response(request.method === 'HEAD' ? null : body, {
+    headers: {
+      ...SECURITY_HEADERS,
+      'Content-Type': contentType,
+      'Cache-Control': 'public, max-age=300',
+    },
+  });
+}
+
 async function serveAdminPage() {
   const response = await fetch(`https://raw.githubusercontent.com/verilogical-admin/suchawellness.github.io/main/admin.html?v=${Date.now()}`, {
     headers: { 'User-Agent': 'suchawellness-edge-worker' },
@@ -1364,34 +1374,16 @@ export default {
       return serveAdminPage();
     }
 
-    if (request.method === 'GET' && url.pathname === '/robots.txt') {
-      return new Response(ROBOTS_TXT, {
-        headers: {
-          ...SECURITY_HEADERS,
-          'Content-Type': 'text/plain; charset=utf-8',
-          'Cache-Control': 'public, max-age=300',
-        },
-      });
+    if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/robots.txt') {
+      return staticResponse(request, ROBOTS_TXT, 'text/plain; charset=utf-8');
     }
 
-    if (request.method === 'GET' && url.pathname === '/llms.txt') {
-      return new Response(LLMS_TXT, {
-        headers: {
-          ...SECURITY_HEADERS,
-          'Content-Type': 'text/markdown; charset=utf-8',
-          'Cache-Control': 'public, max-age=300',
-        },
-      });
+    if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/llms.txt') {
+      return staticResponse(request, LLMS_TXT, 'text/markdown; charset=utf-8');
     }
 
-    if (request.method === 'GET' && url.pathname === '/sitemap.xml') {
-      return new Response(SITEMAP_XML, {
-        headers: {
-          ...SECURITY_HEADERS,
-          'Content-Type': 'application/xml; charset=utf-8',
-          'Cache-Control': 'public, max-age=300',
-        },
-      });
+    if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/sitemap.xml') {
+      return staticResponse(request, SITEMAP_XML, 'application/xml; charset=utf-8');
     }
 
     if (request.method === 'GET' && url.pathname === '/verify-email') {
