@@ -329,6 +329,10 @@ function feedbackKey(date, id) {
   return `feedback:${date}:${id}`;
 }
 
+function askQuestionKey(date, id) {
+  return `ask-question:${date}:${id}`;
+}
+
 function freeAccessRequestKey(id) {
   return `free-access-request:${id}`;
 }
@@ -787,6 +791,37 @@ async function createFeedback(request, env) {
   return json({ ok: true, id });
 }
 
+async function createAskSuchaQuestion(request, env) {
+  const kv = getKv(env);
+  if (!kv) return json({ error: 'Question storage is not configured.' }, { status: 501 });
+  const body = await readJson(request);
+  const question = cleanText(body.question, 1000);
+  if (!question) return json({ error: 'Question is required.' }, { status: 400 });
+  const now = new Date();
+  const id = `ask_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`;
+  const item = {
+    id,
+    question,
+    matched: Boolean(body.matched),
+    answerTitle: cleanText(body.answerTitle, 120),
+    contact: cleanText(body.email || body.contact, 240),
+    wantsReply: Boolean(body.wantsReply),
+    page: cleanText(body.page, 160),
+    path: cleanText(body.path, 160),
+    url: cleanText(body.url, 500),
+    timezone: cleanText(body.timezone, 80),
+    country: request.headers.get('CF-IPCountry') || 'unknown',
+    region: cleanText(request.cf?.region || 'unknown', 80),
+    city: cleanText(request.cf?.city || 'unknown', 80),
+    createdAt: now.toISOString(),
+    source: 'ask-sucha',
+    status: 'open',
+  };
+  const date = now.toISOString().slice(0, 10);
+  await kv.put(askQuestionKey(date, id), JSON.stringify(item), { expirationTtl: 60 * 60 * 24 * 365 });
+  return json({ ok: true, id });
+}
+
 async function createCareRequest(request, env) {
   const kv = getKv(env);
   if (!kv) return json({ error: 'Care request storage is not configured.' }, { status: 501 });
@@ -902,7 +937,14 @@ async function adminSummary(request, env) {
     if (item) feedback.push(item);
   }
   feedback.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
-  return json({ coupons: couponStates, manualCoupons, freeAccessRequests, analytics, verifiedVisitors, careRequests, feedback });
+  const questionList = await kv.list({ prefix: 'ask-question:', limit: 500 });
+  const questions = [];
+  for (const key of questionList.keys) {
+    const item = await kv.get(key.name, { type: 'json' });
+    if (item) questions.push(item);
+  }
+  questions.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  return json({ coupons: couponStates, manualCoupons, freeAccessRequests, analytics, verifiedVisitors, careRequests, feedback, questions });
 }
 
 async function adminRevokeCoupon(request, env) {
@@ -1467,6 +1509,10 @@ export default {
 
     if (request.method === 'POST' && url.pathname === '/api/feedback') {
       return createFeedback(request, env);
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/ask-sucha/question') {
+      return createAskSuchaQuestion(request, env);
     }
 
     if (request.method === 'POST' && url.pathname === '/api/care/requests') {

@@ -14,6 +14,7 @@ const totalsEl = document.querySelector('#totals');
 const analyticsEl = document.querySelector('#analytics');
 const careRequestsEl = document.querySelector('#care-requests');
 const feedbackEl = document.querySelector('#feedback');
+const visitorQuestionsEl = document.querySelector('#visitor-questions');
 const adminApiBase = location.protocol === 'https:' && /(^|\.)suchawellness\.com$/i.test(location.hostname)
   ? location.origin
   : 'https://www.suchawellness.com';
@@ -273,6 +274,43 @@ function renderFeedback(items = []) {
   });
 }
 
+function renderVisitorQuestions(items = []) {
+  if (!visitorQuestionsEl) return;
+  visitorQuestionsEl.replaceChildren();
+  if (!items.length) {
+    visitorQuestionsEl.innerHTML = '<tr><td colspan="6">No visitor questions yet.</td></tr>';
+    return;
+  }
+  items.slice(0, 250).forEach((item) => {
+    const row = document.createElement('tr');
+    const created = document.createElement('td');
+    created.textContent = fmt(item.createdAt);
+    const question = document.createElement('td');
+    question.style.maxWidth = '420px';
+    question.style.whiteSpace = 'pre-wrap';
+    question.textContent = item.question || '';
+    const match = document.createElement('td');
+    match.append(document.createTextNode(item.matched ? 'Matched' : 'Needs review'), document.createElement('br'));
+    const answerTitle = document.createElement('span');
+    answerTitle.className = 'label';
+    answerTitle.textContent = item.answerTitle || '-';
+    match.append(answerTitle);
+    const contact = document.createElement('td');
+    contact.textContent = item.contact || (item.wantsReply ? 'Reply requested' : '-');
+    const page = document.createElement('td');
+    const code = document.createElement('code');
+    code.textContent = item.page || item.path || '-';
+    const url = document.createElement('span');
+    url.className = 'label';
+    url.textContent = item.url || '';
+    page.append(code, document.createElement('br'), url);
+    const location = document.createElement('td');
+    location.textContent = `${item.city || 'unknown'}, ${item.region || 'unknown'}, ${item.country || 'unknown'}`;
+    row.append(created, question, match, contact, page, location);
+    visitorQuestionsEl.append(row);
+  });
+}
+
 async function loadDashboard() {
   const token = tokenInput.value.trim();
   if (!token) {
@@ -289,6 +327,7 @@ async function loadDashboard() {
   renderVerifiedVisitors(data.verifiedVisitors || []);
   renderCareRequests(data.careRequests || []);
   renderFeedback(data.feedback || []);
+  renderVisitorQuestions(data.questions || []);
   setStatus('Dashboard loaded.');
 }
 

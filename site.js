@@ -198,6 +198,296 @@ function trackSuchaEvent(event, detail = {}) {
 
 trackSuchaEvent('page_view');
 
+const askSuchaFaq = [
+  {
+    title: 'Choosing a test',
+    chips: ['which test should i take', 'test', 'screening', 'depression', 'anxiety'],
+    answer: 'Sucha tests are informational screening tools. If you are unsure where to start, the free BDI depression screen and BAI anxiety screen are placed first. Empathy type, self-esteem, career, and other tools can help with self-reflection. For clinical advice, consult a qualified professional.'
+  },
+  {
+    title: 'PDF reports',
+    chips: ['pdf', 'report', 'download', 'premium report'],
+    answer: 'On-screen test results are available after completion. Downloadable PDF reports require either a premium account or a one-time paid unlock for that test. Premium empathy tests are separate: the larger 20-question and 50-question empathy experiences include more detailed report options.'
+  },
+  {
+    title: 'Therapist matching',
+    chips: ['therapist', 'counsellor', 'counselor', 'doctor', 'expert', 'match'],
+    answer: 'You can request to be connected with a licensed and vetted therapist or counsellor recommended by Sucha. The care request flow asks for matching details and is designed to keep sensitive information protected.'
+  },
+  {
+    title: 'Journal privacy',
+    chips: ['journal', 'private', 'privacy', 'encrypted', 'password'],
+    answer: 'The free journal is stored locally in your browser. Premium adds a password-protected encrypted vault. If you use the encrypted vault, keep your password safe because the site is designed not to read your private journal contents.'
+  },
+  {
+    title: 'Premium',
+    chips: ['premium', 'price', 'billing', 'subscription', 'refund', 'cancel'],
+    answer: 'Sucha premium is positioned as a yearly account with clearer privacy features and premium PDF report access for supported tests. The copy explains the 30-day cancellation refund policy and any deductions for downloaded reports. Empathy premium tests are separate from the general premium package.'
+  }
+];
+
+function addAskSuchaStyles() {
+  if (document.querySelector('#ask-sucha-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'ask-sucha-styles';
+  style.textContent = `
+    .ask-sucha {
+      background: linear-gradient(135deg, rgba(245,242,235,0.96), rgba(255,255,255,0.92));
+      border-block: 1px solid rgba(45,122,107,0.16);
+      padding: clamp(1.4rem, 4vw, 2.4rem) 1rem;
+    }
+    .ask-sucha-inner {
+      margin: 0 auto;
+      max-width: 980px;
+    }
+    .ask-sucha-title {
+      color: #1f423c;
+      font-size: clamp(1.45rem, 4vw, 2rem);
+      font-weight: 600;
+      line-height: 1.2;
+      margin: 0 0 0.45rem;
+    }
+    .ask-sucha-copy {
+      color: #3f463f;
+      margin: 0 0 1rem;
+      max-width: 760px;
+    }
+    .ask-sucha-box {
+      background: rgba(255,255,255,0.82);
+      border: 1px solid rgba(45,122,107,0.22);
+      box-shadow: 0 18px 50px rgba(45,122,107,0.1);
+      padding: 1rem;
+    }
+    .ask-sucha-row {
+      display: grid;
+      gap: 0.75rem;
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+    .ask-sucha-input,
+    .ask-sucha-email {
+      background: #fff;
+      border: 1px solid rgba(45,122,107,0.28);
+      color: #171717;
+      font: inherit;
+      min-height: 48px;
+      padding: 0.75rem 0.85rem;
+      width: 100%;
+    }
+    .ask-sucha-button {
+      background: #2D7A6B;
+      border: 1px solid #2D7A6B;
+      color: #fff;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      min-height: 48px;
+      padding: 0.75rem 1.1rem;
+    }
+    .ask-sucha-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.85rem;
+    }
+    .ask-sucha-chip {
+      background: rgba(45,122,107,0.08);
+      border: 1px solid rgba(45,122,107,0.22);
+      color: #245e54;
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.9rem;
+      min-height: 38px;
+      padding: 0.45rem 0.7rem;
+    }
+    .ask-sucha-answer {
+      background: rgba(245,242,235,0.72);
+      border-left: 4px solid #2D7A6B;
+      color: #232923;
+      display: none;
+      margin-top: 1rem;
+      padding: 0.9rem 1rem;
+    }
+    .ask-sucha-answer.on { display: block; }
+    .ask-sucha-answer strong {
+      color: #1f423c;
+      display: block;
+      margin-bottom: 0.35rem;
+    }
+    .ask-sucha-reply {
+      display: none;
+      gap: 0.65rem;
+      grid-template-columns: minmax(0, 1fr) auto;
+      margin-top: 0.75rem;
+    }
+    .ask-sucha-reply.on { display: grid; }
+    .ask-sucha-note {
+      color: #4E534A;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      margin: 0.8rem 0 0;
+    }
+    @media (max-width: 680px) {
+      .ask-sucha-row,
+      .ask-sucha-reply {
+        grid-template-columns: 1fr;
+      }
+      .ask-sucha-button {
+        width: 100%;
+      }
+      .ask-sucha-chip {
+        flex: 1 1 100%;
+        text-align: left;
+      }
+    }
+  `;
+  document.head.append(style);
+}
+
+function matchAskSuchaFaq(question) {
+  const normalized = question.toLowerCase();
+  let best = null;
+  let score = 0;
+  askSuchaFaq.forEach((item) => {
+    const itemScore = item.chips.reduce((total, chip) => total + (normalized.includes(chip) ? 1 : 0), 0);
+    if (itemScore > score) {
+      best = item;
+      score = itemScore;
+    }
+  });
+  return score ? best : null;
+}
+
+async function sendAskSuchaQuestion(payload) {
+  const body = JSON.stringify({
+    ...payload,
+    page: document.title,
+    path: location.pathname,
+    url: location.href,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+    ts: new Date().toISOString(),
+  });
+  const bases = location.protocol === 'https:' && /(^|\.)suchawellness\.com$/i.test(location.hostname)
+    ? [location.origin, suchaSiteApiBase]
+    : [suchaSiteApiBase];
+  for (const base of bases) {
+    try {
+      const response = await fetch(`${base}/api/ask-sucha/question`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+        keepalive: true,
+      });
+      if (response.ok) return true;
+    } catch {
+      // Visitor questions are product signals; the Q&A should keep working offline.
+    }
+  }
+  return false;
+}
+
+function initAskSucha() {
+  if (document.querySelector('.ask-sucha')) return;
+  const anchor = document.querySelector('#take-test') || document.querySelector('main')?.firstElementChild;
+  if (!anchor?.parentNode) return;
+  addAskSuchaStyles();
+
+  const section = document.createElement('section');
+  section.className = 'ask-sucha';
+  section.setAttribute('aria-labelledby', 'ask-sucha-title');
+  section.innerHTML = `
+    <div class="ask-sucha-inner">
+      <h2 class="ask-sucha-title" id="ask-sucha-title">Ask Sucha</h2>
+      <p class="ask-sucha-copy">Search tests, journal, premium reports, therapist matching, and account features from a simple Sucha FAQ.</p>
+      <div class="ask-sucha-box">
+        <div class="ask-sucha-row">
+          <input class="ask-sucha-input" type="search" placeholder="Search tests, journal, premium reports, therapist matching..." aria-label="Ask Sucha">
+          <button class="ask-sucha-button" type="button">Ask</button>
+        </div>
+        <div class="ask-sucha-chips" aria-label="Suggested questions"></div>
+        <div class="ask-sucha-answer" aria-live="polite"></div>
+        <div class="ask-sucha-reply">
+          <input class="ask-sucha-email" type="email" placeholder="Want a reply? Add email (optional)" aria-label="Email for reply">
+          <button class="ask-sucha-button ask-sucha-send" type="button">Send question</button>
+        </div>
+        <p class="ask-sucha-note">Do not share emergency or highly private medical details here. For clinical advice, consult a qualified professional.</p>
+      </div>
+    </div>
+  `;
+  anchor.parentNode.insertBefore(section, anchor);
+
+  const input = section.querySelector('.ask-sucha-input');
+  const askButton = section.querySelector('.ask-sucha-button');
+  const chips = section.querySelector('.ask-sucha-chips');
+  const answer = section.querySelector('.ask-sucha-answer');
+  const reply = section.querySelector('.ask-sucha-reply');
+  const email = section.querySelector('.ask-sucha-email');
+  const sendButton = section.querySelector('.ask-sucha-send');
+  let lastQuestion = '';
+  let lastMatch = null;
+
+  [
+    'Which test should I take?',
+    'How do PDF reports work?',
+    'How do I connect to a therapist?',
+    'Is my journal private?',
+    'What is premium?'
+  ].forEach((text) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'ask-sucha-chip';
+    chip.textContent = text;
+    chip.addEventListener('click', () => {
+      input.value = text;
+      askButton.click();
+    });
+    chips.append(chip);
+  });
+
+  function showAnswer(question) {
+    lastQuestion = question.trim();
+    if (!lastQuestion) return;
+    lastMatch = matchAskSuchaFaq(lastQuestion);
+    if (lastMatch) {
+      answer.innerHTML = `<strong>${lastMatch.title}</strong><span>${lastMatch.answer}</span>`;
+      reply.classList.remove('on');
+    } else {
+      answer.innerHTML = '<strong>Thanks. We will use this question to improve Sucha.</strong><span>I do not have a fixed FAQ answer for that yet. You can send it to Sucha, and add an email if you want a reply.</span>';
+      reply.classList.add('on');
+    }
+    answer.classList.add('on');
+    trackSuchaEvent('ask_sucha_question', { matched: Boolean(lastMatch), answer: lastMatch?.title || 'unmatched' });
+    sendAskSuchaQuestion({
+      question: lastQuestion,
+      matched: Boolean(lastMatch),
+      answerTitle: lastMatch?.title || '',
+    });
+  }
+
+  askButton.addEventListener('click', () => showAnswer(input.value));
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      showAnswer(input.value);
+    }
+  });
+  sendButton.addEventListener('click', async () => {
+    if (!lastQuestion) showAnswer(input.value);
+    sendButton.disabled = true;
+    sendButton.textContent = 'Sending...';
+    const ok = await sendAskSuchaQuestion({
+      question: lastQuestion,
+      matched: Boolean(lastMatch),
+      answerTitle: lastMatch?.title || '',
+      email: email.value.trim(),
+      wantsReply: Boolean(email.value.trim()),
+    });
+    sendButton.textContent = ok ? 'Sent' : 'Try again';
+    sendButton.disabled = false;
+  });
+}
+
+initAskSucha();
+
 const suchaVerificationTokenKey = 'sucha-verification-token:v1';
 const suchaVerificationEmailKey = 'sucha-verification-email:v1';
 const empathyReportAccessStorageKey = 'sucha-empathy-report-access:v1';
