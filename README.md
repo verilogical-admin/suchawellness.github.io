@@ -31,7 +31,7 @@ analytics data is stored under `sucha:*` keys in the payment Worker KV store, us
 `SUCHA_ADMIN_KV` if it is bound or falling back to `FEEDBACK_KV`.
 
 The journal remains free without a password. Premium offers an optional password-protected
-encrypted local vault at `$5/month` with a 30-day money-back guarantee, and directs
+encrypted local vault at `$60/year` with a 30-day cancellation refund policy, and directs
 cancellation/refund/support questions to `support@suchawellness.com`.
 
 The admin page is available at `/admin` or `/admin.html`. It supports five one-time premium

@@ -66,17 +66,20 @@ Important interpretation notes:
 
 ## Core Pages
 - [Homepage](https://www.suchawellness.com/): Main Sucha Wellness experience with mental wellness screening, journaling, care navigation, provider onboarding, and contact information.
-- [Premium screening tests](https://www.suchawellness.com/#take-test): Informational Sucha-hosted mental wellness screening tools and optional premium report unlocks.
-- [Sucha Journal](https://www.suchawellness.com/#journal): Private mental health notes, local journal storage, and optional premium encrypted vault.
-- [Care seeker matching](https://www.suchawellness.com/#care-seeker-match): Request connection to a licensed and vetted therapist or counsellor.
+- [Mental health screening tests](https://www.suchawellness.com/tests): Dedicated landing page for informational Sucha-hosted screening tools and optional premium report unlocks.
+- [Empathy Type Test](https://www.suchawellness.com/empathy-test): Dedicated page for the free 5-question empathy snapshot and separate paid 20Q/50Q empathy reports.
+- [Sucha Journal](https://www.suchawellness.com/journal): Dedicated page for private mental health notes, local journal storage, and optional premium encrypted vault.
+- [Care seeker matching](https://www.suchawellness.com/therapist-matching): Dedicated page for requesting connection to a licensed and vetted therapist or counsellor.
+- [Premium PDF reports](https://www.suchawellness.com/premium-reports): Dedicated page explaining premium account report access, one-time report unlocks, and separate empathy report products.
 - [Provider pages](https://www.suchawellness.com/#provider-page): Provider onboarding for branded pages powered by Sucha Wellness.
 - [Contact](https://www.suchawellness.com/#contact): General contact and support entry point.
 - [Legal disclaimer](https://www.suchawellness.com/legal-disclaimer.html): Safety, informational-use, and clinical-care disclaimers.
 
 ## Products And Offers
-- [Sucha Journal Premium](https://www.suchawellness.com/#journal): $60/year premium journal vault with password-protected encryption and a 30-day cancellation refund policy described on the page.
-- [Premium screening report unlocks](https://www.suchawellness.com/#take-test): Optional paid downloadable reports for selected informational screening tools.
-- [Care navigation](https://www.suchawellness.com/#care): Request routing to qualified, licensed, and vetted mental health professionals.
+- [Sucha Journal Premium](https://www.suchawellness.com/journal): $60/year premium journal vault with password-protected encryption and a 30-day cancellation refund policy described on the page.
+- [Premium screening report unlocks](https://www.suchawellness.com/premium-reports): Optional paid downloadable reports for selected informational screening tools.
+- [Premium empathy reports](https://www.suchawellness.com/empathy-test): Separate paid 20Q comprehensive and 50Q deep empathy tests with downloadable PDF reports.
+- [Care navigation](https://www.suchawellness.com/therapist-matching): Request routing to qualified, licensed, and vetted mental health professionals.
 - [Provider presence](https://www.suchawellness.com/#provider-page): Branded provider pages, bookings, payments, secure sharing, and credential verification workflow.
 
 ## Safety Boundaries
@@ -99,19 +102,49 @@ const SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.suchawellness.com/</loc>
-    <lastmod>2026-07-14</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://www.suchawellness.com/tests</loc>
+    <lastmod>2026-07-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.suchawellness.com/empathy-test</loc>
+    <lastmod>2026-07-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.suchawellness.com/journal</loc>
+    <lastmod>2026-07-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.suchawellness.com/therapist-matching</loc>
+    <lastmod>2026-07-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.suchawellness.com/premium-reports</loc>
+    <lastmod>2026-07-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.suchawellness.com/legal-disclaimer.html</loc>
-    <lastmod>2026-07-14</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.suchawellness.com/llms.txt</loc>
-    <lastmod>2026-07-14</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1454,8 +1487,16 @@ export default {
       return adminCreateCoupon(request, env);
     }
 
-    const originRequest = url.pathname === '/admin'
-      ? new Request(new URL('/admin.html', url), request)
+    const cleanPageMap = {
+      '/admin': '/admin.html',
+      '/tests': '/tests.html',
+      '/empathy-test': '/empathy-test.html',
+      '/journal': '/journal.html',
+      '/therapist-matching': '/therapist-matching.html',
+      '/premium-reports': '/premium-reports.html',
+    };
+    const originRequest = cleanPageMap[url.pathname]
+      ? new Request(new URL(cleanPageMap[url.pathname], url), request)
       : request;
 
     const response = await fetch(originRequest);

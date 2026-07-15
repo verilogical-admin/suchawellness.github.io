@@ -2,3 +2,8 @@ http://suchawellness.com/* https://suchawellness.com/:splat 301!
 https://suchawellness.com/* https://www.suchawellness.com/:splat 301!
 http://www.suchawellness.com/* https://www.suchawellness.com/:splat 301!
 /admin /admin.html 200
+/tests /tests.html 200
+/empathy-test /empathy-test.html 200
+/journal /journal.html 200
+/therapist-matching /therapist-matching.html 200
+/premium-reports /premium-reports.html 200
