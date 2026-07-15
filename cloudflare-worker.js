@@ -214,6 +214,20 @@ function staticResponse(request, body, contentType) {
   });
 }
 
+function staticContentType(pathname) {
+  if (pathname.endsWith('.html')) return 'text/html; charset=utf-8';
+  if (pathname.endsWith('.js')) return 'application/javascript; charset=utf-8';
+  if (pathname.endsWith('.css')) return 'text/css; charset=utf-8';
+  if (pathname.endsWith('.json') || pathname.endsWith('.webmanifest')) return 'application/manifest+json; charset=utf-8';
+  if (pathname.endsWith('.svg')) return 'image/svg+xml';
+  if (pathname.endsWith('.png')) return 'image/png';
+  if (pathname.endsWith('.jpg') || pathname.endsWith('.jpeg')) return 'image/jpeg';
+  if (pathname.endsWith('.ico')) return 'image/x-icon';
+  if (pathname.endsWith('.txt')) return 'text/plain; charset=utf-8';
+  if (pathname.endsWith('.xml')) return 'application/xml; charset=utf-8';
+  return 'application/octet-stream';
+}
+
 async function serveAdminPage() {
   const response = await fetch(`https://raw.githubusercontent.com/verilogical-admin/suchawellness.github.io/main/admin.html?v=${Date.now()}`, {
     headers: { 'User-Agent': 'suchawellness-edge-worker' },
@@ -1489,24 +1503,27 @@ export default {
 
     const cleanPageMap = {
       '/admin': '/admin.html',
+      '/account': '/account.html',
+      '/legal-disclaimer': '/legal-disclaimer.html',
       '/tests': '/tests.html',
       '/empathy-test': '/empathy-test.html',
       '/journal': '/journal.html',
       '/therapist-matching': '/therapist-matching.html',
       '/premium-reports': '/premium-reports.html',
     };
-    const originRequest = cleanPageMap[url.pathname]
-      ? new Request(new URL(cleanPageMap[url.pathname], url), request)
-      : request;
-
-    const response = await fetch(originRequest);
+    const staticPath = cleanPageMap[url.pathname] || (url.pathname === '/' ? '/index.html' : url.pathname);
+    const rawUrl = `https://raw.githubusercontent.com/verilogical-admin/suchawellness.github.io/main${staticPath}`;
+    const response = await fetch(rawUrl, {
+      headers: { 'User-Agent': 'suchawellness-edge-worker' },
+    });
     const headers = new Headers(response.headers);
 
     Object.entries(SECURITY_HEADERS).forEach(([name, value]) => {
       headers.set(name, value);
     });
+    headers.set('Content-Type', staticContentType(staticPath));
 
-    return new Response(response.body, {
+    return new Response(request.method === 'HEAD' ? null : response.body, {
       status: response.status,
       statusText: response.statusText,
       headers,
