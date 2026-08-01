@@ -14,6 +14,7 @@ Important interpretation notes:
 - [Mental health screening tests](https://www.suchawellness.com/tests): Dedicated landing page for informational Sucha-hosted screening tools and optional premium report unlocks.
 - [Empathy Type Test](https://www.suchawellness.com/empathy-test): Dedicated page for the free 5-question empathy snapshot and separate paid 20Q/50Q empathy reports.
 - [Sucha Journal](https://www.suchawellness.com/journal): Dedicated page for private mental health notes, local journal storage, and optional premium encrypted vault.
+- [Transactional Analysis Practice Lab](https://www.suchawellness.com/transactional-analysis): TA learning and application tool with free PAC lessons, a 7-day local trial, and optional Razorpay premium for transaction analysis, logs, strokes, life positions, and reflection.
 - [Care seeker matching](https://www.suchawellness.com/therapist-matching): Dedicated page for requesting connection to a licensed and vetted therapist or counsellor.
 - [Premium PDF reports](https://www.suchawellness.com/premium-reports): Dedicated page explaining premium account report access, one-time report unlocks, and separate empathy report products.
 - [Provider pages](https://www.suchawellness.com/#provider-page): Provider onboarding for branded pages powered by Sucha Wellness.

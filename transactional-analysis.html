@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>TA Lab | Sucha Wellness</title>
+<meta name="description" content="A calm Transactional Analysis learning lab with free PAC lessons, a 7-day trial, and premium tools for conversation analysis, daily logs, strokes, life positions, and reflection.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://www.suchawellness.com/transactional-analysis">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Sucha Wellness">
+<meta property="og:title" content="TA Lab | Sucha Wellness">
+<meta property="og:description" content="Learn TA for free, start a 7-day trial, or unlock premium practice tools for real conversations.">
+<meta property="og:url" content="https://www.suchawellness.com/transactional-analysis">
+<meta property="og:image" content="https://www.suchawellness.com/assets/sucha-phone-journal-human.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="TA Lab">
+<meta name="twitter:description" content="Free TA learning plus trial and premium tools for real conversations.">
+<meta name="twitter:image" content="https://www.suchawellness.com/assets/sucha-phone-journal-human.jpg">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/sucha-web-icon-180.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#f7f2e8">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :root {
+    --paper: #f7f2e8;
+    --panel: #fffdfa;
+    --ink: #18231f;
+    --muted: #657067;
+    --line: rgba(33, 91, 79, .17);
+    --teal: #2f7d70;
+    --mint: #dcefe9;
+    --rose: #df8f83;
+    --clay: #b98b55;
+    --blue: #526f8f;
+    --shadow: 0 18px 60px rgba(34, 47, 43, .08);
+    --radius: 8px;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.55;
+  }
+  body::before {
+    background:
+      radial-gradient(circle at 12% 0%, rgba(47, 125, 112, .13), transparent 24rem),
+      linear-gradient(135deg, rgba(255,255,255,.65), transparent 55%);
+    content: "";
+    inset: 0;
+    pointer-events: none;
+    position: fixed;
+    z-index: -1;
+  }
+  a { color: var(--teal); }
+  button, input, textarea, select { font: inherit; }
+  button { cursor: pointer; }
+  .topbar {
+    align-items: center;
+    background: rgba(247, 242, 232, .88);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    left: 0;
+    padding: .82rem clamp(1rem, 4vw, 3rem);
+    position: sticky;
+    right: 0;
+    top: 0;
+    z-index: 20;
+  }
+  .brand {
+    align-items: center;
+    color: #163f35;
+    display: inline-flex;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.08rem;
+    gap: .62rem;
+    text-decoration: none;
+  }
+  .brand-mark {
+    align-items: center;
+    background: var(--teal);
+    border-radius: 50%;
+    color: #fff;
+    display: inline-flex;
+    font-family: Georgia, "Times New Roman", serif;
+    height: 2rem;
+    justify-content: center;
+    width: 2rem;
+  }
+  .nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+    justify-content: flex-end;
+  }
+  .nav a {
+    border: 1px solid transparent;
+    border-radius: 999px;
+    color: #33423c;
+    font-size: .78rem;
+    font-weight: 750;
+    letter-spacing: .08em;
+    padding: .48rem .68rem;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+  .nav a:hover { border-color: var(--line); background: rgba(255,255,255,.58); }
+  .wrap { margin: 0 auto; max-width: 1180px; padding: 0 clamp(1rem, 4vw, 3rem); }
+  .hero {
+    display: grid;
+    gap: clamp(1.6rem, 4vw, 3.2rem);
+    grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr);
+    min-height: calc(100vh - 68px);
+    padding-bottom: 2rem;
+    padding-top: clamp(2.2rem, 6vw, 5rem);
+  }
+  .eyebrow {
+    color: var(--teal);
+    font-size: .78rem;
+    font-weight: 850;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+  }
+  h1, h2, h3 { margin: 0; }
+  h1 {
+    color: #153b34;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(2.65rem, 7vw, 6.3rem);
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: .96;
+    margin-top: .7rem;
+    max-width: 12ch;
+  }
+  .lead {
+    color: #3e4b45;
+    font-size: clamp(1.05rem, 2vw, 1.24rem);
+    margin: 1.2rem 0 0;
+    max-width: 64ch;
+  }
+  .hero-actions, .button-row { display: flex; flex-wrap: wrap; gap: .7rem; }
+  .hero-actions { margin-top: 1.6rem; }
+  .btn {
+    align-items: center;
+    background: var(--teal);
+    border: 1px solid var(--teal);
+    border-radius: 999px;
+    color: #fff;
+    display: inline-flex;
+    font-size: .82rem;
+    font-weight: 800;
+    gap: .45rem;
+    justify-content: center;
+    letter-spacing: .08em;
+    min-height: 2.65rem;
+    padding: .78rem 1rem;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+  .btn.secondary {
+    background: transparent;
+    border-color: var(--line);
+    color: #23463e;
+  }
+  .hero-panel {
+    align-self: stretch;
+    background: rgba(255, 253, 250, .78);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    display: grid;
+    gap: .8rem;
+    padding: clamp(1rem, 3vw, 1.4rem);
+  }
+  .hero-photo {
+    aspect-ratio: 16 / 7;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    display: block;
+    object-fit: cover;
+    object-position: center 38%;
+    width: 100%;
+  }
+  .pac-map {
+    display: grid;
+    gap: .7rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .ego-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    min-height: 10rem;
+    padding: 1rem;
+  }
+  .ego-card strong {
+    display: block;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.6rem;
+    font-weight: 400;
+  }
+  .ego-card span, .micro { color: var(--muted); font-size: .92rem; }
+  .signal-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .45rem;
+    margin-top: .8rem;
+  }
+  .signal-list span, .pill {
+    background: rgba(220, 239, 233, .65);
+    border: 1px solid rgba(47, 125, 112, .18);
+    border-radius: 999px;
+    color: #24473f;
+    display: inline-flex;
+    font-size: .76rem;
+    font-weight: 750;
+    padding: .34rem .55rem;
+  }
+  .section { padding: clamp(2.4rem, 6vw, 4.8rem) 0; }
+  .section-head {
+    align-items: end;
+    display: flex;
+    gap: 1.2rem;
+    justify-content: space-between;
+    margin-bottom: 1.1rem;
+  }
+  .section-title {
+    color: #163f35;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1.05;
+  }
+  .section-copy { color: var(--muted); max-width: 56rem; }
+  .grid { display: grid; gap: 1rem; }
+  .two { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); }
+  .three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .panel, .mini-card {
+    background: rgba(255, 253, 250, .82);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 32px rgba(34, 47, 43, .05);
+    padding: 1rem;
+  }
+  .panel h3, .mini-card h3 {
+    color: #173d35;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.28rem;
+    font-weight: 400;
+    margin-bottom: .35rem;
+  }
+  .field { display: grid; gap: .38rem; margin-top: .8rem; }
+  label { color: #31423c; font-size: .8rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+  input, textarea, select {
+    background: #fff;
+    border: 1px solid rgba(33, 91, 79, .2);
+    border-radius: var(--radius);
+    color: var(--ink);
+    outline: none;
+    padding: .78rem .85rem;
+    width: 100%;
+  }
+  textarea { min-height: 11rem; resize: vertical; }
+  input:focus, textarea:focus, select:focus {
+    border-color: rgba(47, 125, 112, .65);
+    box-shadow: 0 0 0 3px rgba(47, 125, 112, .12);
+  }
+  .score-row {
+    display: grid;
+    gap: .55rem;
+    margin-top: .9rem;
+  }
+  .bar { background: rgba(33, 91, 79, .08); border-radius: 999px; height: .52rem; overflow: hidden; }
+  .bar span { background: var(--teal); display: block; height: 100%; width: 0; }
+  .score-line { align-items: center; display: grid; gap: .6rem; grid-template-columns: 5.4rem 1fr 2.3rem; }
+  .score-line b { color: #27443d; font-size: .88rem; }
+  .result {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: #33423c;
+    margin-top: .9rem;
+    min-height: 4.4rem;
+    padding: .95rem;
+  }
+  .diagram {
+    background:
+      linear-gradient(90deg, transparent 49.6%, rgba(33,91,79,.18) 49.6%, rgba(33,91,79,.18) 50.4%, transparent 50.4%),
+      linear-gradient(#fffdf9, #fff);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 19rem;
+    overflow: hidden;
+    position: relative;
+  }
+  .person {
+    display: grid;
+    gap: .55rem;
+    padding: 1rem;
+  }
+  .state-dot {
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    display: flex;
+    font-weight: 800;
+    height: 3.2rem;
+    justify-content: center;
+  }
+  .vector {
+    background: var(--rose);
+    border-radius: 999px;
+    height: 3px;
+    left: 20%;
+    position: absolute;
+    top: 42%;
+    transform: rotate(10deg);
+    transform-origin: left center;
+    width: 60%;
+  }
+  .vector::after {
+    border-bottom: 6px solid transparent;
+    border-left: 10px solid var(--rose);
+    border-top: 6px solid transparent;
+    content: "";
+    position: absolute;
+    right: -6px;
+    top: -4.5px;
+  }
+  .vector.reply { background: var(--blue); top: 58%; transform: rotate(170deg); }
+  .vector.reply::after { border-left-color: var(--blue); }
+  .diagram.crossed .vector { transform: rotate(23deg); }
+  .diagram.crossed .vector.reply { transform: rotate(205deg); }
+  .diagram.ulterior .vector { box-shadow: 0 10px 0 rgba(185, 139, 85, .75); }
+  .tabs, .segmented {
+    background: rgba(255, 255, 255, .6);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: .25rem;
+    padding: .25rem;
+  }
+  .tab, .segment {
+    background: transparent;
+    border: 0;
+    border-radius: 999px;
+    color: #3e4b45;
+    font-size: .78rem;
+    font-weight: 850;
+    letter-spacing: .08em;
+    min-height: 2.1rem;
+    padding: .45rem .72rem;
+    text-transform: uppercase;
+  }
+  .tab.active, .segment.active { background: var(--teal); color: #fff; }
+  .lesson-body { margin-top: .9rem; }
+  .option-grid {
+    display: grid;
+    gap: .6rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: .8rem;
+  }
+  .choice {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: #263e37;
+    min-height: 3rem;
+    padding: .75rem;
+  }
+  .choice.selected { border-color: var(--teal); box-shadow: inset 0 0 0 1px var(--teal); }
+  .entry-list { display: grid; gap: .7rem; margin-top: .9rem; }
+  .entry {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    display: grid;
+    gap: .35rem;
+    padding: .8rem;
+  }
+  .entry-top { align-items: center; display: flex; gap: .5rem; justify-content: space-between; }
+  .entry strong { color: #173d35; }
+  .link-button {
+    background: transparent;
+    border: 0;
+    color: var(--teal);
+    font-size: .8rem;
+    font-weight: 850;
+    padding: .2rem;
+  }
+  .metric-grid {
+    display: grid;
+    gap: .7rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .metric {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: .85rem;
+  }
+  .metric span { color: var(--muted); display: block; font-size: .76rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+  .metric strong { color: #163f35; display: block; font-family: Georgia, "Times New Roman", serif; font-size: 1.8rem; font-weight: 400; line-height: 1.1; margin-top: .22rem; }
+  .quadrant {
+    aspect-ratio: 1 / 1;
+    background:
+      linear-gradient(90deg, transparent calc(50% - 1px), rgba(33,91,79,.24) calc(50% - 1px), rgba(33,91,79,.24) calc(50% + 1px), transparent calc(50% + 1px)),
+      linear-gradient(0deg, transparent calc(50% - 1px), rgba(33,91,79,.24) calc(50% - 1px), rgba(33,91,79,.24) calc(50% + 1px), transparent calc(50% + 1px)),
+      #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow: hidden;
+  }
+  .quad {
+    border: 0;
+    background: transparent;
+    color: #2e403a;
+    font-weight: 800;
+    min-height: 8rem;
+    padding: .8rem;
+    text-align: left;
+  }
+  .quad.active { background: rgba(47, 125, 112, .15); }
+  .game-list { display: grid; gap: .7rem; }
+  .game {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: .8rem;
+  }
+  .game b { color: #173d35; display: block; }
+  .footer {
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: .8rem;
+    justify-content: space-between;
+    padding: 1.2rem clamp(1rem, 4vw, 3rem);
+  }
+  .footer-links { display: flex; flex-wrap: wrap; gap: .75rem; }
+  .empty { color: var(--muted); font-style: italic; }
+  .premium-lock-banner {
+    align-items: center;
+    background: rgba(255, 255, 255, .88);
+    border: 1px solid rgba(185, 139, 85, .34);
+    border-radius: var(--radius);
+    color: #4b4235;
+    display: none;
+    gap: .7rem;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding: .85rem;
+  }
+  .premium-locked .premium-lock-banner { display: flex; }
+  .premium-locked .premium-feature {
+    filter: grayscale(.12);
+    opacity: .5;
+    pointer-events: none;
+  }
+  @media (max-width: 920px) {
+    .hero, .two, .three { grid-template-columns: 1fr; }
+    .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 680px) {
+    .topbar { align-items: flex-start; flex-direction: column; }
+    .nav { justify-content: flex-start; }
+    .nav a { font-size: .72rem; padding: .42rem .54rem; }
+    .pac-map, .option-grid, .metric-grid { grid-template-columns: 1fr; }
+    .section-head { align-items: flex-start; flex-direction: column; }
+    .hero { min-height: auto; }
+    .btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/"><span class="brand-mark">S</span><span>Sucha Wellness</span></a>
+  <nav class="nav" aria-label="Transactional Analysis sections">
+    <a href="#learn">Learn</a>
+    <a href="#analyze">Analyze</a>
+    <a href="#log">Log</a>
+    <a href="#insights">Insights</a>
+    <a href="/journal">Journal</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero wrap">
+    <div>
+      <div class="eyebrow">Transactional Analysis lab</div>
+      <h1>TA Lab</h1>
+      <p class="lead">A minimal practice console for applying TA in real conversations: spot Parent, Adult, and Child signals, analyze crossed transactions, log daily patterns, and return to a clearer Adult response.</p>
+      <div class="hero-actions">
+        <a class="btn" href="#analyze">Analyze a conversation</a>
+        <a class="btn secondary" href="#learn">Start with PAC</a>
+      </div>
+      <p class="micro" style="margin-top:1rem">Educational only. This tool is not therapy, diagnosis, or a substitute for care from a qualified professional.</p>
+    </div>
+    <aside class="hero-panel" aria-label="Parent Adult Child model">
+      <img class="hero-photo" src="/assets/sucha-phone-journal-human.jpg" alt="A calm person reflecting with a phone journal" width="1024" height="1536">
+      <div class="pac-map">
+        <article class="ego-card">
+          <strong>Parent</strong>
+          <span>Rules, care, criticism, protection, tradition.</span>
+          <div class="signal-list"><span>should</span><span>always</span><span>must</span></div>
+        </article>
+        <article class="ego-card">
+          <strong>Adult</strong>
+          <span>Present facts, options, consent, timing, reality testing.</span>
+          <div class="signal-list"><span>what happened</span><span>options</span><span>data</span></div>
+        </article>
+        <article class="ego-card">
+          <strong>Child</strong>
+          <span>Feeling, play, protest, fear, compliance, spontaneity.</span>
+          <div class="signal-list"><span>I want</span><span>unfair</span><span>please</span></div>
+        </article>
+      </div>
+      <div class="panel">
+        <h3>Adult pause</h3>
+        <p class="section-copy" id="daily-prompt">Before responding, what observable fact can I name without blame?</p>
+      </div>
+      <div class="panel">
+        <h3>TA Lab Premium</h3>
+        <p class="section-copy">Start with the free PAC lesson and quiz. Premium unlocks conversation analysis, daily logs, weekly insight reports, life positions, strokes, and games practice.</p>
+        <div class="field">
+          <label for="ta-billing-email">Billing email</label>
+          <input id="ta-billing-email" type="email" placeholder="you@example.com" autocomplete="email">
+        </div>
+        <div class="button-row" style="margin-top:.8rem">
+          <button class="btn" type="button" id="ta-trial-button">Start 7-day trial</button>
+          <button class="btn secondary" type="button" id="ta-checkout-button">Upgrade with Razorpay</button>
+        </div>
+        <p class="micro" id="ta-payment-status">Free preview is ready. Trial or premium unlocks the application tools.</p>
+      </div>
+    </aside>
+  </section>
+
+  <section class="section wrap" id="learn">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Core learning</div>
+        <h2 class="section-title">PAC in minutes</h2>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Lessons">
+        <button class="tab active" type="button" data-lesson="ego">Ego states</button>
+        <button class="tab" type="button" data-lesson="transactions">Transactions</button>
+        <button class="tab" type="button" data-lesson="games">Games</button>
+        <button class="tab" type="button" data-lesson="strokes">Strokes</button>
+      </div>
+    </div>
+    <div class="grid two">
+      <article class="panel">
+        <h3 id="lesson-title">Ego states</h3>
+        <div class="lesson-body" id="lesson-body"></div>
+      </article>
+      <article class="panel">
+        <h3>Spot the ego state</h3>
+        <p class="section-copy" id="quiz-line"></p>
+        <div class="option-grid" id="quiz-options"></div>
+        <div class="result" id="quiz-result">Choose the state that best fits the sentence.</div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section wrap" id="analyze" data-premium-required>
+    <div class="premium-lock-banner"><strong>Premium feature</strong><span>Start a 7-day trial or upgrade to use the analyzer.</span></div>
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Transactions analyzer</div>
+        <h2 class="section-title">Paste a real exchange</h2>
+      </div>
+      <p class="section-copy">Works locally in your browser with transparent rule-based signals. For best results, write each turn on a new line.</p>
+    </div>
+    <div class="grid two premium-feature">
+      <form class="panel" id="analyzer-form">
+        <h3>Conversation text</h3>
+        <div class="field">
+          <label for="conversation">Dialogue</label>
+          <textarea id="conversation" placeholder="Manager: You never send the report on time.&#10;Me: I sent it at 4:45. What deadline should I use next week?"></textarea>
+        </div>
+        <div class="button-row" style="margin-top:.8rem">
+          <button class="btn" type="submit">Analyze</button>
+          <button class="btn secondary" type="button" id="load-example">Load example</button>
+        </div>
+        <div class="score-row" aria-label="Ego state score">
+          <div class="score-line"><b>Parent</b><div class="bar"><span id="bar-parent"></span></div><small id="score-parent">0</small></div>
+          <div class="score-line"><b>Adult</b><div class="bar"><span id="bar-adult"></span></div><small id="score-adult">0</small></div>
+          <div class="score-line"><b>Child</b><div class="bar"><span id="bar-child"></span></div><small id="score-child">0</small></div>
+        </div>
+      </form>
+      <article class="panel">
+        <h3>Transaction map</h3>
+        <div class="diagram" id="transaction-diagram" aria-label="Transaction diagram">
+          <div class="person" aria-label="Person A">
+            <div class="state-dot">Parent</div>
+            <div class="state-dot">Adult</div>
+            <div class="state-dot">Child</div>
+          </div>
+          <div class="person" aria-label="Person B">
+            <div class="state-dot">Parent</div>
+            <div class="state-dot">Adult</div>
+            <div class="state-dot">Child</div>
+          </div>
+          <span class="vector"></span>
+          <span class="vector reply"></span>
+        </div>
+        <div class="result" id="analysis-result">Paste a few lines and run the analyzer.</div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section wrap" id="log" data-premium-required>
+    <div class="premium-lock-banner"><strong>Premium feature</strong><span>Start a 7-day trial or upgrade to keep transaction logs.</span></div>
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Daily transaction log</div>
+        <h2 class="section-title">Capture the pattern quickly</h2>
+      </div>
+      <p class="section-copy">Entries are stored only in this browser. Keep them short so you actually use the tool after difficult moments.</p>
+    </div>
+    <div class="grid two premium-feature">
+      <form class="panel" id="log-form">
+        <h3>New entry</h3>
+        <div class="field">
+          <label for="relationship">Relationship</label>
+          <input id="relationship" list="relationship-options" placeholder="Manager, partner, parent, client">
+          <datalist id="relationship-options">
+            <option value="Manager"></option>
+            <option value="Partner"></option>
+            <option value="Parent"></option>
+            <option value="Client"></option>
+          </datalist>
+        </div>
+        <div class="grid three">
+          <div class="field">
+            <label for="my-state">My state</label>
+            <select id="my-state"><option>Adult</option><option>Parent</option><option>Child</option></select>
+          </div>
+          <div class="field">
+            <label for="their-state">Their state</label>
+            <select id="their-state"><option>Parent</option><option>Adult</option><option>Child</option></select>
+          </div>
+          <div class="field">
+            <label for="outcome">Outcome</label>
+            <select id="outcome"><option>Complementary</option><option>Crossed</option><option>Ulterior</option><option>Unclear</option></select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="moment">Moment</label>
+          <textarea id="moment" placeholder="What happened? What would the Adult in you try next time?"></textarea>
+        </div>
+        <div class="button-row" style="margin-top:.8rem">
+          <button class="btn" type="submit">Save entry</button>
+          <button class="btn secondary" type="button" id="clear-log">Clear all</button>
+        </div>
+      </form>
+      <article class="panel">
+        <h3>Recent entries</h3>
+        <div class="entry-list" id="entry-list"></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section wrap" id="insights" data-premium-required>
+    <div class="premium-lock-banner"><strong>Premium feature</strong><span>Start a 7-day trial or upgrade to review weekly patterns.</span></div>
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Application layer</div>
+        <h2 class="section-title">Weekly insight report</h2>
+      </div>
+      <p class="section-copy">A simple summary of this browser's saved entries, plus quick trackers for strokes and life positions.</p>
+    </div>
+    <div class="metric-grid premium-feature" id="metrics"></div>
+    <div class="grid two premium-feature" style="margin-top:1rem">
+      <article class="panel">
+        <h3>Life position check-in</h3>
+        <p class="section-copy">Tap the position that best describes your current stance in one important relationship.</p>
+        <div class="quadrant" id="life-quadrant">
+          <button class="quad active" type="button" data-position="I'm OK - You're OK">I'm OK<br>You're OK</button>
+          <button class="quad" type="button" data-position="I'm OK - You're not OK">I'm OK<br>You're not OK</button>
+          <button class="quad" type="button" data-position="I'm not OK - You're OK">I'm not OK<br>You're OK</button>
+          <button class="quad" type="button" data-position="I'm not OK - You're not OK">I'm not OK<br>You're not OK</button>
+        </div>
+        <div class="result" id="position-result">Current position: I'm OK - You're OK.</div>
+      </article>
+      <article class="panel">
+        <h3>Stroke economy tracker</h3>
+        <div class="grid two">
+          <div class="field"><label for="positive-strokes">Positive strokes</label><input id="positive-strokes" type="number" min="0" value="3"></div>
+          <div class="field"><label for="negative-strokes">Negative strokes</label><input id="negative-strokes" type="number" min="0" value="1"></div>
+        </div>
+        <div class="result" id="stroke-result">Your balance is currently positive. Add one specific appreciation today.</div>
+        <div class="button-row" style="margin-top:.8rem">
+          <button class="btn secondary" type="button" id="save-strokes">Save stroke balance</button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section wrap" id="reference" data-premium-required>
+    <div class="premium-lock-banner"><strong>Premium feature</strong><span>Start a 7-day trial or upgrade to use games as practice patterns.</span></div>
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Reference</div>
+        <h2 class="section-title">Games people play</h2>
+      </div>
+      <p class="section-copy">Use these as learning patterns, not labels to pin on people. The practical question is: what response exits the pattern?</p>
+    </div>
+    <div class="grid three game-list premium-feature" id="game-list"></div>
+  </section>
+</main>
+
+<footer class="footer">
+  <span>© 2026 Sucha Wellness. Educational TA practice only.</span>
+  <span class="footer-links">
+    <a href="/">Home</a>
+    <a href="/journal">Journal</a>
+    <a href="/legal-disclaimer">Legal disclaimer</a>
+    <a href="mailto:support@suchawellness.com?subject=Sucha%20TA%20Practice%20Lab">Support</a>
+  </span>
+</footer>
+<script src="/transactional-analysis.js" defer></script>
+</body>
+</html>

@@ -69,6 +69,7 @@ Important interpretation notes:
 - [Mental health screening tests](https://www.suchawellness.com/tests): Dedicated landing page for informational Sucha-hosted screening tools and optional premium report unlocks.
 - [Empathy Type Test](https://www.suchawellness.com/empathy-test): Dedicated page for the free 5-question empathy snapshot and separate paid 20Q/50Q empathy reports.
 - [Sucha Journal](https://www.suchawellness.com/journal): Dedicated page for private mental health notes, local journal storage, and optional premium encrypted vault.
+- [Transactional Analysis Practice Lab](https://www.suchawellness.com/transactional-analysis): TA learning and application tool with free PAC lessons, a 7-day local trial, and optional Razorpay premium for transaction analysis, logs, strokes, life positions, and reflection.
 - [Care seeker matching](https://www.suchawellness.com/therapist-matching): Dedicated page for requesting connection to a licensed and vetted therapist or counsellor.
 - [Premium PDF reports](https://www.suchawellness.com/premium-reports): Dedicated page explaining premium account report access, one-time report unlocks, and separate empathy report products.
 - [Provider pages](https://www.suchawellness.com/#provider-page): Provider onboarding for branded pages powered by Sucha Wellness.
@@ -125,6 +126,12 @@ const SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://www.suchawellness.com/transactional-analysis</loc>
+    <lastmod>2026-08-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.suchawellness.com/therapist-matching</loc>
     <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
@@ -161,6 +168,10 @@ const EMPATHY_DEEP_REPORT_PLAN_ID = 'empathy_deep_report_30';
 const EMPATHY_REPORT_PRODUCT = 'SuchaEmpathyReport';
 const TEST_REPORT_PLAN_ID = 'test_report_5';
 const TEST_REPORT_PRODUCT = 'SuchaTestReport';
+const TA_LAB_PLAN_ID = 'ta_lab_yearly_60';
+const TA_LAB_PRODUCT = 'SuchaTALabPremium';
+const TA_LAB_PRICE_LABEL = '$60/year';
+const TA_LAB_ACCESS_DAYS = 365;
 const GUARANTEE_DAYS = 30;
 const VERIFICATION_COOKIE = 'sucha_verified_visitor';
 const WALLET_PRODUCT = 'SuchaCareWallet';
@@ -280,6 +291,14 @@ function validateTestReportCheckoutRequest(body) {
   return email;
 }
 
+function validateTaLabCheckoutRequest(body) {
+  const email = String(body.email || '').trim().toLowerCase();
+  if (body.planId && body.planId !== TA_LAB_PLAN_ID) throw new Error('Unknown TA Lab plan.');
+  if (body.product && body.product !== TA_LAB_PRODUCT) throw new Error('Unknown product.');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('A valid billing email is required.');
+  return email;
+}
+
 function empathyReportPlan(body = {}) {
   const planId = body.planId === EMPATHY_DEEP_REPORT_PLAN_ID ? EMPATHY_DEEP_REPORT_PLAN_ID : EMPATHY_REPORT_PLAN_ID;
   return planId === EMPATHY_DEEP_REPORT_PLAN_ID
@@ -289,6 +308,10 @@ function empathyReportPlan(body = {}) {
 
 function testReportPlan() {
   return { planId: TEST_REPORT_PLAN_ID, label: 'single test PDF report', amount: 500, price: '$5' };
+}
+
+function taLabPlan() {
+  return { planId: TA_LAB_PLAN_ID, label: 'TA Lab Premium', amount: 6000, price: TA_LAB_PRICE_LABEL };
 }
 
 async function hmacSha256Hex(secret, message) {
@@ -1151,6 +1174,57 @@ async function createSuchaJournalCheckout(request, env) {
     });
   }
 
+  if (body.product === TA_LAB_PRODUCT || body.planId === TA_LAB_PLAN_ID) {
+    let email;
+    try {
+      email = validateTaLabCheckoutRequest(body);
+    } catch (error) {
+      return json({ error: error.message }, { status: 400 });
+    }
+
+    const now = Date.now();
+    const guaranteeEndsAt = now + GUARANTEE_DAYS * 24 * 60 * 60 * 1000;
+    const accessExpiresAt = now + TA_LAB_ACCESS_DAYS * 24 * 60 * 60 * 1000;
+    const plan = taLabPlan();
+    const amount = Number(env.SUCHA_TA_LAB_YEARLY_AMOUNT_MINOR || env.SUCHA_TA_LAB_AMOUNT_MINOR || plan.amount);
+    const currency = env.SUCHA_TA_LAB_CURRENCY || 'USD';
+    const response = await fetch('https://api.razorpay.com/v1/orders', {
+      method: 'POST',
+      headers: {
+        Authorization: auth,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount,
+        currency,
+        receipt: `sucha_ta_lab_${now}`,
+        notes: {
+          product: TA_LAB_PRODUCT,
+          planId: plan.planId,
+          email,
+          guaranteeDays: String(GUARANTEE_DAYS),
+          refundPolicy: '30-day cancellation refund policy described on Sucha Wellness',
+          price: `${plan.price} ${plan.label}`,
+          supportEmail: 'support@suchawellness.com',
+        },
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) return json({ error: data.error?.description || 'Could not create Razorpay order.' }, { status: 502 });
+    return json({
+      mode: 'order',
+      keyId: env.RAZORPAY_KEY_ID,
+      orderId: data.id,
+      amount: data.amount,
+      currency: data.currency,
+      planId: plan.planId,
+      product: TA_LAB_PRODUCT,
+      price: plan.price,
+      guaranteeEndsAt,
+      expiresAt: accessExpiresAt,
+    });
+  }
+
   let email;
   try {
     email = validateJournalCheckoutRequest(body);
@@ -1203,13 +1277,16 @@ async function verifySuchaJournalCheckout(request, env) {
   const body = await readJson(request);
   const isEmpathyReport = body.product === EMPATHY_REPORT_PRODUCT || [EMPATHY_REPORT_PLAN_ID, EMPATHY_DEEP_REPORT_PLAN_ID].includes(body.planId);
   const isTestReport = body.product === TEST_REPORT_PRODUCT || body.planId === TEST_REPORT_PLAN_ID;
+  const isTaLab = body.product === TA_LAB_PRODUCT || body.planId === TA_LAB_PLAN_ID;
   let email;
   try {
     email = isEmpathyReport
       ? validateEmpathyReportCheckoutRequest(body)
       : isTestReport
         ? validateTestReportCheckoutRequest(body)
-        : validateJournalCheckoutRequest(body);
+        : isTaLab
+          ? validateTaLabCheckoutRequest(body)
+          : validateJournalCheckoutRequest(body);
   } catch (error) {
     return json({ error: error.message }, { status: 400 });
   }
@@ -1251,6 +1328,23 @@ async function verifySuchaJournalCheckout(request, env) {
       email,
       testKey: cleanText(body.testKey || 'test', 60),
       testTitle: cleanText(body.testTitle || 'Sucha test report', 120),
+      razorpayPaymentId: body.razorpay_payment_id,
+      razorpayOrderId: body.razorpay_order_id,
+      purchasedAt: Date.now(),
+      guaranteeEndsAt: Date.now() + GUARANTEE_DAYS * 24 * 60 * 60 * 1000,
+      expiresAt: Date.now() + TA_LAB_ACCESS_DAYS * 24 * 60 * 60 * 1000,
+      price: plan.price,
+    });
+  }
+
+  if (isTaLab) {
+    const plan = taLabPlan();
+    return json({
+      ok: true,
+      source: 'razorpay_order',
+      planId: plan.planId,
+      product: TA_LAB_PRODUCT,
+      email,
       razorpayPaymentId: body.razorpay_payment_id,
       razorpayOrderId: body.razorpay_order_id,
       purchasedAt: Date.now(),
@@ -1554,6 +1648,7 @@ export default {
       '/tests': '/tests.html',
       '/empathy-test': '/empathy-test.html',
       '/journal': '/journal.html',
+      '/transactional-analysis': '/transactional-analysis.html',
       '/therapist-matching': '/therapist-matching.html',
       '/premium-reports': '/premium-reports.html',
     };

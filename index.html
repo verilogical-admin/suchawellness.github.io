@@ -209,6 +209,12 @@
 
   .nav-links a:hover { color: var(--teal); }
 
+  .nav-tool-tab {
+    border: 1px solid rgba(45,122,107,0.28);
+    color: var(--teal-dark) !important;
+    padding: 0.42rem 0.72rem;
+  }
+
   .nav-cta {
     background: var(--teal);
     color: white !important;
@@ -933,6 +939,50 @@
   }
 
   .screening-card-featured .screening-card-action {
+    background: var(--teal-dark);
+    color: white;
+    display: inline-flex;
+    margin-right: auto;
+    padding: 0.62rem 0.78rem;
+  }
+
+  .screening-card-lab {
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.94), rgba(220,239,233,0.92)),
+      url("/assets/sucha-phone-journal-human.jpg");
+    background-position: center;
+    background-size: cover;
+    border-color: rgba(45,122,107,0.38);
+    box-shadow: 0 18px 44px rgba(22,63,53,0.12);
+    min-height: 250px;
+    position: relative;
+  }
+
+  .screening-card-lab::after {
+    background: rgba(45,122,107,0.92);
+    color: white;
+    content: "New Lab";
+    font-size: 0.58rem;
+    font-weight: 600;
+    letter-spacing: 0.13em;
+    line-height: 1;
+    padding: 0.4rem 0.55rem;
+    position: absolute;
+    right: 1rem;
+    text-transform: uppercase;
+    top: 1rem;
+  }
+
+  .screening-card-lab .screening-card-title {
+    font-size: 1.74rem;
+    max-width: 12rem;
+  }
+
+  .screening-card-lab .screening-card-desc {
+    max-width: 22rem;
+  }
+
+  .screening-card-lab .screening-card-action {
     background: var(--teal-dark);
     color: white;
     display: inline-flex;
@@ -1847,6 +1897,7 @@
   <ul class="nav-links" id="main-menu">
     <li><a href="#take-test">Take Test</a></li>
     <li><a href="#journal">Journal</a></li>
+    <li><a href="/transactional-analysis" class="nav-tool-tab">TA Lab</a></li>
     <li><a href="#care">Care</a></li>
     <li><a href="/account">Account</a></li>
     <li><a href="#research">Research</a></li>
@@ -1864,6 +1915,12 @@
     <p class="screening-disclaimer">These tests are informational only and are not a diagnosis or a substitute for clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance. If you are interested in being connected to qualified licensed doctors or counsellors, or if you are a care provider looking to connect to care seekers, click here.<br><a class="btn-primary care-disclaimer-button" href="#care-seeker-match">Connect with an Expert Licensed Therapist that Sucha Recommends</a></p>
   </div>
   <div class="screening-tools">
+    <a class="screening-card screening-card-lab reveal" href="/transactional-analysis">
+      <span class="screening-card-tag">Transactional Analysis</span>
+      <span class="screening-card-title">TA Lab</span>
+      <span class="screening-card-desc">Learn Parent-Adult-Child for free, then use a 7-day trial or premium to analyze conversations, log patterns, and build Adult responses.</span>
+      <span class="screening-card-action">Open lab</span>
+    </a>
     <button class="screening-card reveal" type="button" data-test="depression">
       <span class="screening-card-tag">BDI-style screen</span>
       <span class="screening-card-title">BDI Depression Quick Screen</span>
@@ -2436,6 +2493,7 @@
   <a href="/tests">Tests</a>
   <a href="/empathy-test">Empathy Test</a>
   <a href="/journal">Journal</a>
+  <a href="/transactional-analysis">TA Lab</a>
   <a href="/therapist-matching">Therapist Matching</a>
   <a href="/premium-reports">Premium Reports</a>
   <a href="/legal-disclaimer">Legal Disclaimer</a>
