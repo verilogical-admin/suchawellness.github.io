@@ -329,6 +329,27 @@
     border-radius: var(--radius);
     padding: .78rem .9rem;
   }
+  .privacy-vault {
+    background:
+      radial-gradient(circle at 1rem 1rem, rgba(47, 125, 112, .13) 0 .12rem, transparent .16rem),
+      linear-gradient(135deg, rgba(220, 239, 233, .86), rgba(255, 250, 239, .95));
+    background-size: 1.25rem 1.25rem, auto;
+    border: 1px solid rgba(47, 125, 112, .2);
+    border-left: .34rem solid var(--teal);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 34px rgba(34, 47, 43, .06);
+    margin-bottom: 1rem;
+    padding: 1rem;
+  }
+  .privacy-vault h3 {
+    margin-bottom: .25rem;
+  }
+  .vault-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .55rem;
+    margin-top: .8rem;
+  }
   .diagram {
     background:
       linear-gradient(90deg, transparent 49.6%, rgba(33,91,79,.18) 49.6%, rgba(33,91,79,.18) 50.4%, transparent 50.4%),
@@ -695,8 +716,27 @@
         <div class="eyebrow">Daily transaction log</div>
         <h2 class="section-title">Capture the pattern quickly</h2>
       </div>
-      <p class="section-copy">Entries are stored only in this browser. Keep them short so you actually use the tool after difficult moments.</p>
+      <p class="section-copy">Entries are stored only in this browser. Premium can encrypt them locally with a passcode before they are saved.</p>
     </div>
+    <article class="privacy-vault premium-feature" id="ta-log-vault">
+      <h3>Encrypted TA log vault</h3>
+      <p class="section-copy">Premium privacy upgrade: set or enter a passcode to encrypt Daily Transaction Log entries on this device. Sucha™ cannot read or recover encrypted log contents.</p>
+      <div class="grid two">
+        <div class="field">
+          <label for="ta-log-passcode">TA log passcode</label>
+          <input id="ta-log-passcode" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters">
+        </div>
+        <div class="field">
+          <label for="ta-log-passcode-confirm">Confirm new passcode</label>
+          <input id="ta-log-passcode-confirm" type="password" autocomplete="new-password" minlength="8" placeholder="Only needed when creating">
+        </div>
+      </div>
+      <div class="vault-actions">
+        <button class="btn" type="button" id="ta-log-vault-open">Create / unlock vault</button>
+        <button class="btn secondary" type="button" id="ta-log-vault-reset">Reset passcode and clear encrypted log</button>
+      </div>
+      <p class="micro" id="ta-log-vault-status">Without unlocking the vault, encrypted logs stay unreadable on this browser.</p>
+    </article>
     <div class="grid two premium-feature">
       <form class="panel" id="log-form">
         <h3>New entry</h3>
@@ -798,6 +838,6 @@
     <a href="mailto:support@suchawellness.com?subject=Sucha%20TA%20Practice%20Lab">Support</a>
   </span>
 </footer>
-<script src="/transactional-analysis.js?v=2026-08-01-optimal-response" defer></script>
+<script src="/transactional-analysis.js?v=2026-08-01-encrypted-ta-log" defer></script>
 </body>
 </html>

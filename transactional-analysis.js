@@ -3,6 +3,7 @@ const strokeKey = "suchaTaStrokes.v1";
 const positionKey = "suchaTaLifePosition.v1";
 const taAccessKey = "suchaTaSupporterAccess.v1";
 const quizHistoryKey = "suchaTaQuizHistory.v1";
+const taLogVaultKey = "suchaTaLogVault.v1";
 const taPlanId = "ta_lab_yearly_60";
 const taProduct = "SuchaTALabPremium";
 const taTrialDays = 7;
@@ -172,6 +173,7 @@ const quizIndexes = { ego: 0, transactions: 0, games: 0, strokes: 0 };
 let selectedQuiz = "";
 let quizAnswered = false;
 let currentTransactionMap = { first: "Adult", second: "Adult", diagram: "" };
+const taLogVaultState = { unlocked: false, key: null, entries: [] };
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -187,6 +189,69 @@ function loadJson(key, fallback) {
 
 function saveJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
+}
+
+function bytesToBase64(bytes) {
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary);
+}
+
+function base64ToBytes(value) {
+  return Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
+}
+
+async function deriveTaLogKey(passcode, salt) {
+  const material = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(passcode),
+    "PBKDF2",
+    false,
+    ["deriveKey"]
+  );
+  return crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt,
+      iterations: 250000,
+      hash: "SHA-256"
+    },
+    material,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["encrypt", "decrypt"]
+  );
+}
+
+async function encryptTaLogEntries(entries, key, salt) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const data = new TextEncoder().encode(JSON.stringify(entries));
+  const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, data);
+  return {
+    version: 1,
+    algorithm: "AES-GCM",
+    kdf: "PBKDF2-SHA256",
+    iterations: 250000,
+    salt: bytesToBase64(salt),
+    iv: bytesToBase64(iv),
+    data: bytesToBase64(new Uint8Array(encrypted)),
+    updatedAt: new Date().toISOString()
+  };
+}
+
+async function decryptTaLogEntries(payload, passcode) {
+  const salt = base64ToBytes(payload.salt);
+  const key = await deriveTaLogKey(passcode, salt);
+  const decrypted = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: base64ToBytes(payload.iv) },
+    key,
+    base64ToBytes(payload.data)
+  );
+  const entries = JSON.parse(new TextDecoder().decode(decrypted));
+  if (!Array.isArray(entries)) throw new Error("Encrypted TA log is not readable.");
+  return { entries, key, salt };
 }
 
 function normalizeEmail(value) {
@@ -374,6 +439,7 @@ function renderTaAccess() {
     }
     if (trialButton) trialButton.disabled = false;
     updatePremiumGate(false);
+    updateTaLogPrivacyUi();
     return;
   }
   const kind = access.source === "trial" ? "Trial" : "Premium";
@@ -383,6 +449,7 @@ function renderTaAccess() {
   if (button && access.source !== "trial") button.disabled = true;
   if (trialButton) trialButton.disabled = true;
   updatePremiumGate(true);
+  updateTaLogPrivacyUi();
 }
 
 function startTaTrial() {
@@ -405,6 +472,107 @@ function updatePremiumGate(unlocked) {
     section.querySelectorAll("input, textarea, select, button").forEach((control) => {
       control.disabled = !unlocked;
     });
+  });
+}
+
+function getTaLogVaultPayload() {
+  return loadJson(taLogVaultKey, null);
+}
+
+function setTaVaultStatus(message) {
+  const status = $("#ta-log-vault-status");
+  if (status) status.textContent = message;
+}
+
+function hasEncryptedTaLogVault() {
+  return Boolean(getTaLogVaultPayload());
+}
+
+function readLegacyEntries() {
+  return loadJson(storageKey, []);
+}
+
+async function writeEncryptedEntries(entries) {
+  const payload = getTaLogVaultPayload();
+  if (!payload || !taLogVaultState.key) throw new Error("Unlock the encrypted TA log vault first.");
+  const encrypted = await encryptTaLogEntries(entries, taLogVaultState.key, base64ToBytes(payload.salt));
+  localStorage.setItem(taLogVaultKey, JSON.stringify(encrypted));
+  taLogVaultState.entries = entries;
+}
+
+function getEntries() {
+  if (hasEncryptedTaLogVault()) return taLogVaultState.unlocked ? taLogVaultState.entries : [];
+  return readLegacyEntries();
+}
+
+async function setEntries(entries) {
+  if (taLogVaultState.unlocked) {
+    await writeEncryptedEntries(entries);
+    return;
+  }
+  if (hasEncryptedTaLogVault()) throw new Error("Unlock the encrypted TA log vault first.");
+  saveJson(storageKey, entries);
+}
+
+async function openTaLogVault(passcode, { createIfMissing = true } = {}) {
+  if (!crypto?.subtle || !window.isSecureContext) {
+    throw new Error("Encrypted TA logs need HTTPS or localhost with Web Crypto support.");
+  }
+  if (!hasTaAccess()) throw new Error("TA Lab Premium is required for encrypted transaction logs.");
+  if (!passcode || passcode.length < 8) throw new Error("Use a TA log passcode of at least 8 characters.");
+  const payload = getTaLogVaultPayload();
+  if (!payload) {
+    if (!createIfMissing) throw new Error("No encrypted TA log vault exists yet.");
+    const confirm = $("#ta-log-passcode-confirm")?.value || "";
+    if (passcode !== confirm) throw new Error("The TA log passcodes do not match.");
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const key = await deriveTaLogKey(passcode, salt);
+    const migratedEntries = readLegacyEntries();
+    const encrypted = await encryptTaLogEntries(migratedEntries, key, salt);
+    localStorage.setItem(taLogVaultKey, JSON.stringify(encrypted));
+    localStorage.removeItem(storageKey);
+    taLogVaultState.unlocked = true;
+    taLogVaultState.key = key;
+    taLogVaultState.entries = migratedEntries;
+    setTaVaultStatus(migratedEntries.length ? "Encrypted vault created. Existing local TA logs were migrated." : "Encrypted TA log vault ready.");
+    return;
+  }
+  const unlocked = await decryptTaLogEntries(payload, passcode);
+  taLogVaultState.unlocked = true;
+  taLogVaultState.key = unlocked.key;
+  taLogVaultState.entries = unlocked.entries;
+  setTaVaultStatus("Encrypted TA log vault unlocked on this browser.");
+}
+
+function resetTaLogVault() {
+  localStorage.removeItem(taLogVaultKey);
+  localStorage.removeItem(storageKey);
+  taLogVaultState.unlocked = false;
+  taLogVaultState.key = null;
+  taLogVaultState.entries = [];
+  const passcode = $("#ta-log-passcode");
+  const confirm = $("#ta-log-passcode-confirm");
+  if (passcode) passcode.value = "";
+  if (confirm) confirm.value = "";
+  setTaVaultStatus("Encrypted TA log vault reset. Old encrypted logs were cleared because the passcode cannot be recovered.");
+  renderEntries();
+  updateTaLogPrivacyUi();
+}
+
+function updateTaLogPrivacyUi() {
+  const hasAccess = hasTaAccess();
+  const vault = hasEncryptedTaLogVault();
+  const locked = hasAccess && (!vault || !taLogVaultState.unlocked);
+  const openButton = $("#ta-log-vault-open");
+  const resetButton = $("#ta-log-vault-reset");
+  if (openButton) openButton.textContent = vault ? "Unlock vault" : "Create encrypted vault";
+  if (resetButton) resetButton.disabled = !hasAccess || !vault;
+  if (hasAccess && vault && taLogVaultState.unlocked) setTaVaultStatus("Encrypted TA log vault unlocked. New Daily Transaction Log entries are encrypted before browser storage.");
+  if (hasAccess && vault && !taLogVaultState.unlocked) setTaVaultStatus("Encrypted TA log vault is locked. Enter your passcode to view or add logs.");
+  if (hasAccess && !vault) setTaVaultStatus("Premium active. Create a passcode before saving Daily Transaction Log entries. Existing local logs will migrate into the encrypted vault.");
+  if (!hasAccess) setTaVaultStatus("TA Lab Premium is required for encrypted transaction logs.");
+  $$("#log-form input, #log-form textarea, #log-form select, #log-form button, #clear-log").forEach((control) => {
+    control.disabled = locked || !hasAccess;
   });
 }
 
@@ -798,17 +966,14 @@ function analyzeConversation(text) {
   `;
 }
 
-function getEntries() {
-  return loadJson(storageKey, []);
-}
-
-function setEntries(entries) {
-  saveJson(storageKey, entries);
-}
-
 function renderEntries() {
   const entries = getEntries();
   const list = $("#entry-list");
+  if (hasEncryptedTaLogVault() && !taLogVaultState.unlocked) {
+    list.innerHTML = `<p class="empty">Encrypted TA log vault is locked. Enter your passcode to view saved transaction logs.</p>`;
+    renderMetrics();
+    return;
+  }
   if (!entries.length) {
     list.innerHTML = `<p class="empty">No TA entries yet. Log one small moment today.</p>`;
   } else {
@@ -894,9 +1059,9 @@ function updateStrokeResult() {
 function boot() {
   $("#daily-prompt").textContent = prompts[new Date().getDay() % prompts.length];
   renderLesson("ego");
-  renderEntries();
   renderGames();
   renderTaAccess();
+  renderEntries();
   renderTransactionMap();
 
   const strokes = loadJson(strokeKey, { positive: 3, negative: 1 });
@@ -926,7 +1091,7 @@ function boot() {
     event.preventDefault();
     analyzeConversation($("#conversation").value.trim());
   });
-  $("#log-form").addEventListener("submit", (event) => {
+  $("#log-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     const entries = getEntries();
     entries.unshift({
@@ -938,23 +1103,58 @@ function boot() {
       moment: $("#moment").value.trim(),
       createdAt: new Date().toISOString()
     });
-    setEntries(entries);
-    event.target.reset();
-    $("#my-state").value = "Adult";
-    $("#their-state").value = "Parent";
-    $("#outcome").value = "Complementary";
-    renderEntries();
+    try {
+      await setEntries(entries);
+      event.target.reset();
+      $("#my-state").value = "Adult";
+      $("#their-state").value = "Parent";
+      $("#outcome").value = "Complementary";
+      setTaVaultStatus(taLogVaultState.unlocked ? "Encrypted TA log entry saved in this browser." : "TA log entry saved locally in this browser.");
+      renderEntries();
+    } catch (error) {
+      setTaVaultStatus(error.message || "Could not save TA log entry.");
+    }
   });
-  $("#entry-list").addEventListener("click", (event) => {
+  $("#entry-list").addEventListener("click", async (event) => {
     const button = event.target.closest("[data-delete-entry]");
     if (!button) return;
-    setEntries(getEntries().filter((entry) => entry.id !== button.dataset.deleteEntry));
-    renderEntries();
-  });
-  $("#clear-log").addEventListener("click", () => {
-    if (getEntries().length && window.confirm("Clear all local TA log entries from this browser?")) {
-      setEntries([]);
+    try {
+      await setEntries(getEntries().filter((entry) => entry.id !== button.dataset.deleteEntry));
+      setTaVaultStatus(taLogVaultState.unlocked ? "Encrypted TA log entry deleted." : "TA log entry deleted.");
       renderEntries();
+    } catch (error) {
+      setTaVaultStatus(error.message || "Could not delete TA log entry.");
+    }
+  });
+  $("#clear-log").addEventListener("click", async () => {
+    const clearMessage = taLogVaultState.unlocked
+      ? "Clear all encrypted TA log entries from this browser vault?"
+      : "Clear all local TA log entries from this browser?";
+    if (getEntries().length && window.confirm(clearMessage)) {
+      try {
+        await setEntries([]);
+        setTaVaultStatus(taLogVaultState.unlocked ? "Encrypted TA log cleared." : "Local TA log cleared.");
+        renderEntries();
+      } catch (error) {
+        setTaVaultStatus(error.message || "Could not clear TA log.");
+      }
+    }
+  });
+  $("#ta-log-vault-open")?.addEventListener("click", async () => {
+    const passcode = $("#ta-log-passcode")?.value || "";
+    try {
+      await openTaLogVault(passcode, { createIfMissing: true });
+      $("#ta-log-passcode").value = "";
+      $("#ta-log-passcode-confirm").value = "";
+      updateTaLogPrivacyUi();
+      renderEntries();
+    } catch (error) {
+      setTaVaultStatus(error.message || "Could not unlock encrypted TA log vault.");
+    }
+  });
+  $("#ta-log-vault-reset")?.addEventListener("click", () => {
+    if (window.confirm("Reset the encrypted TA log vault? This permanently clears encrypted transaction logs on this browser because the passcode cannot be recovered.")) {
+      resetTaLogVault();
     }
   });
   $("#life-quadrant").addEventListener("click", (event) => {
