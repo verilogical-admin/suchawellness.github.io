@@ -121,37 +121,53 @@ const practiceBanks = {
   }
 };
 
+const gameCategories = [
+  { key: "life", title: "Life games" },
+  { key: "marital", title: "Marital games" },
+  { key: "party", title: "Party games" },
+  { key: "sexual", title: "Sexual games" },
+  { key: "underworld", title: "Underworld games" },
+  { key: "consulting", title: "Consulting room games" },
+  { key: "good", title: "Good games" }
+];
+
 const games = [
-  {
-    name: "Why Don't You, Yes But",
-    cue: "One person asks for help, then defeats every suggestion.",
-    exit: "Ask what kind of help is wanted: ideas, listening, or a decision."
-  },
-  {
-    name: "Now I've Got You",
-    cue: "A small mistake becomes proof that the other person is bad.",
-    exit: "Name the specific issue and refuse the character trial."
-  },
-  {
-    name: "Kick Me",
-    cue: "Someone behaves in a way that invites rejection, then feels confirmed.",
-    exit: "Respond to the need without accepting the invitation to punish."
-  },
-  {
-    name: "If It Weren't For You",
-    cue: "A limitation is placed entirely on another person's existence.",
-    exit: "Separate real constraints from chosen postponements."
-  },
-  {
-    name: "See What You Made Me Do",
-    cue: "Responsibility for one's action is shifted to another person.",
-    exit: "Return agency gently: what will each person own next?"
-  },
-  {
-    name: "Poor Me",
-    cue: "Distress is repeated but change is avoided because sympathy is the payoff.",
-    exit: "Offer care and one concrete next step, not endless rescue."
-  }
+  { category: "life", name: "Alcoholic", cue: "A repeated problem orbit forms around accusation, rescue, temptation, and remorse.", exit: "Discuss one specific next support step without joining rescue, blame, or moral trial." },
+  { category: "life", name: "Debtor", cue: "Debt, obligation, or repayment becomes the recurring relationship drama.", exit: "Turn the drama into a dated agreement: amount, owner, boundary, and next review." },
+  { category: "life", name: "Kick Me", cue: "Someone behaves in ways that invite rejection, then feels confirmed by being rejected.", exit: "Respond to the real need without accepting the invitation to punish." },
+  { category: "life", name: "Now I've Got You, You SOB", cue: "A small mistake becomes proof that the other person is bad or deserves attack.", exit: "Name only the specific issue and refuse the character trial." },
+  { category: "life", name: "See What You Made Me Do", cue: "Responsibility for one's action is shifted onto another person.", exit: "Return agency gently: what will each person own next?" },
+  { category: "marital", name: "Corner", cue: "Every available answer seems to become wrong, trapping the other person.", exit: "Pause the trap and ask for the actual request or boundary in one sentence." },
+  { category: "marital", name: "Courtroom", cue: "A relationship conflict is performed for a judge, jury, friend, or therapist.", exit: "Move from winning the case to naming the shared problem and next agreement." },
+  { category: "marital", name: "Frigid Woman", cue: "Closeness and rejection cycle into blame, pursuit, withdrawal, and payoff.", exit: "Slow down, ask for consent and desire directly, and avoid pursuing a verdict." },
+  { category: "marital", name: "Harried", cue: "Overload becomes the repeated proof that nobody helps enough.", exit: "Separate sympathy from logistics: list tasks, owners, and what can be dropped." },
+  { category: "marital", name: "If It Weren't For You", cue: "A limitation is placed entirely on another person's existence.", exit: "Separate real constraints from chosen postponements." },
+  { category: "marital", name: "Look How Hard I've Tried", cue: "Effort is displayed while the relationship outcome stays unchanged.", exit: "Shift from effort as evidence to one measurable behavior change." },
+  { category: "marital", name: "Sweetheart", cue: "A critical jab is softened with affection or humor so it cannot be challenged.", exit: "Respond to the hidden criticism plainly: what do you want me to hear?" },
+  { category: "party", name: "Ain't It Awful", cue: "People bond by escalating complaint, outrage, or gloom.", exit: "Acknowledge the concern, then ask what action or limit is useful now." },
+  { category: "party", name: "Blemish", cue: "The focus goes to finding defects in a person, plan, or object.", exit: "Ask what standard matters and whether the flaw changes the decision." },
+  { category: "party", name: "Schlemiel", cue: "A clumsy or intrusive act is followed by apology that pressures forgiveness.", exit: "Accept repair only with a concrete change, not apology as a reset button." },
+  { category: "party", name: "Why Don't You, Yes But", cue: "One person asks for help, then defeats every suggestion.", exit: "Ask what kind of help is wanted: ideas, listening, or a decision." },
+  { category: "sexual", name: "Let's You and Him Fight", cue: "Two people are maneuvered into rivalry while a third gains payoff.", exit: "Refuse the triangle and speak directly to the person involved." },
+  { category: "sexual", name: "Perversion", cue: "Sexual behavior becomes the repeated drama rather than a direct conversation about consent and needs.", exit: "Keep the response consent-based, specific, and outside shame or secrecy games." },
+  { category: "sexual", name: "Rapo", cue: "A historical Berne term for a pursuit, accusation, or rejection game around sexual attention.", exit: "Do not pursue ambiguity. Use direct consent, direct refusal, and clear boundaries." },
+  { category: "sexual", name: "The Stocking Game", cue: "A provocative display invites attention while preserving deniability.", exit: "Do not take the bait. Bring the exchange back to the actual topic or consent." },
+  { category: "sexual", name: "Uproar", cue: "Sexual or relational tension is displaced into a noisy fight.", exit: "Lower intensity and ask what the conflict is really about now." },
+  { category: "underworld", name: "Cops and Robbers", cue: "Rule-breaking and pursuit repeat as a familiar role pattern.", exit: "Leave the chase. Talk only about choices, consequences, and next legal action." },
+  { category: "underworld", name: "How Do You Get Out of Here", cue: "Escape is discussed while the pattern that keeps someone stuck continues.", exit: "Ask for one concrete exit step and what support makes it real." },
+  { category: "underworld", name: "Let's Pull a Fast One on Joey", cue: "Shared cleverness is built around exploiting a third person.", exit: "Refuse collusion and name the fair process before acting." },
+  { category: "consulting", name: "Greenhouse", cue: "Emotions are cultivated and displayed, but practical movement stays limited.", exit: "Respect the feeling and ask what decision or experiment follows." },
+  { category: "consulting", name: "I'm Only Trying to Help You", cue: "Help becomes controlling, rescuing, or self-justifying.", exit: "Ask permission, define the requested help, and let the other person own the choice." },
+  { category: "consulting", name: "Indigence", cue: "Need and helplessness become a stable identity within the helping system.", exit: "Offer care with one bounded next step and clear responsibility." },
+  { category: "consulting", name: "Peasant", cue: "Admiration or deference keeps the expert in charge while Adult ownership is avoided.", exit: "Return competence: what do you understand, choose, and want to try?" },
+  { category: "consulting", name: "Psychiatry", cue: "Insight talk becomes a performance that replaces behavior change.", exit: "Translate insight into one observable action before the next conversation." },
+  { category: "consulting", name: "Stupid", cue: "Someone presents as incapable to invite rescue, contempt, or lowered expectations.", exit: "Avoid insult and rescue. Ask what information or practice is needed." },
+  { category: "consulting", name: "Wooden Leg", cue: "A real limitation is used to exempt all present responsibility.", exit: "Honor the limitation and ask what remains possible today." },
+  { category: "good", name: "Busman's Holiday", cue: "A person recreates work roles during leisure because the familiar role pays off.", exit: "Name the role switch and choose rest, play, or real consent to help." },
+  { category: "good", name: "Cavalier", cue: "Warm admiration or courtly attention is offered as a socially graceful exchange.", exit: "Enjoy it if it stays respectful, direct, and free of hidden obligation." },
+  { category: "good", name: "Happy to Help", cue: "Helping creates genuine satisfaction without covert rescue or debt.", exit: "Keep help bounded and freely chosen so it stays clean." },
+  { category: "good", name: "Homely Sage", cue: "Plain practical wisdom is offered without superiority.", exit: "Receive the useful part, test it in reality, and keep Adult judgment." },
+  { category: "good", name: "They'll Be Glad They Knew Me", cue: "A person aims to leave others better off through contact or contribution.", exit: "Keep the contribution mutual, humble, and connected to real impact." }
 ];
 
 const prompts = [
@@ -1040,13 +1056,26 @@ function escapeHtml(value) {
 }
 
 function renderGames() {
-  $("#game-list").innerHTML = games.map((game) => `
-    <article class="game">
-      <b>${game.name}</b>
-      <p class="micro">${game.cue}</p>
-      <p>${game.exit}</p>
-    </article>
-  `).join("");
+  $("#game-list").innerHTML = gameCategories.map((category) => {
+    const items = games.filter((game) => game.category === category.key);
+    return `
+      <section class="game-category">
+        <div class="game-category-head">
+          <h3>${category.title}</h3>
+          <span>${items.length} games</span>
+        </div>
+        <div class="game-category-grid">
+          ${items.map((game) => `
+            <article class="game">
+              <b>${game.name}</b>
+              <p class="micro"><strong>Watch for:</strong> ${game.cue}</p>
+              <p><strong>Adult exit:</strong> ${game.exit}</p>
+            </article>
+          `).join("")}
+        </div>
+      </section>
+    `;
+  }).join("");
 }
 
 function updateStrokeResult() {

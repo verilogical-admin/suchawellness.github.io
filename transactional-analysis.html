@@ -511,7 +511,38 @@
     text-align: left;
   }
   .quad.active { background: rgba(47, 125, 112, .15); }
-  .game-list { display: grid; gap: .7rem; }
+  .game-list { display: grid; gap: 1rem; }
+  .game-category {
+    background: rgba(255, 253, 250, .62);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1rem;
+  }
+  .game-category-head {
+    align-items: center;
+    display: flex;
+    gap: .8rem;
+    justify-content: space-between;
+    margin-bottom: .8rem;
+  }
+  .game-category-head h3 { margin: 0; }
+  .game-category-head span {
+    background: rgba(47, 125, 112, .1);
+    border: 1px solid rgba(47, 125, 112, .18);
+    border-radius: 999px;
+    color: #1f6b5e;
+    font-size: .72rem;
+    font-weight: 850;
+    letter-spacing: .08em;
+    padding: .32rem .58rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .game-category-grid {
+    display: grid;
+    gap: .7rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
   .game {
     background: #fff;
     border: 1px solid var(--line);
@@ -549,7 +580,7 @@
     pointer-events: none;
   }
   @media (max-width: 920px) {
-    .hero, .two, .three { grid-template-columns: 1fr; }
+    .hero, .two, .three, .game-category-grid { grid-template-columns: 1fr; }
     .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   @media (max-width: 680px) {
@@ -825,7 +856,7 @@
       </div>
       <p class="section-copy">Use these as learning patterns, not labels to pin on people. The practical question is: what response exits the pattern?</p>
     </div>
-    <div class="grid three game-list premium-feature" id="game-list"></div>
+    <div class="game-list premium-feature" id="game-list"></div>
   </section>
 </main>
 
@@ -838,6 +869,6 @@
     <a href="mailto:support@suchawellness.com?subject=Sucha%20TA%20Practice%20Lab">Support</a>
   </span>
 </footer>
-<script src="/transactional-analysis.js?v=2026-08-01-buddha-report-logo" defer></script>
+<script src="/transactional-analysis.js?v=2026-08-01-berne-games-library" defer></script>
 </body>
 </html>
