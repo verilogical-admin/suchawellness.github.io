@@ -372,6 +372,12 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
     margin-top: .8rem;
   }
+  .quiz-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+    margin-top: .8rem;
+  }
   .choice {
     background: #fff;
     border: 1px solid var(--line);
@@ -578,6 +584,10 @@
         <p class="section-copy" id="quiz-line"></p>
         <div class="option-grid" id="quiz-options"></div>
         <div class="result" id="quiz-result">Choose the state that best fits the sentence.</div>
+        <div class="quiz-actions">
+          <button class="btn secondary" type="button" id="quiz-next" disabled>Next question</button>
+          <button class="btn secondary" type="button" id="quiz-download">Download Q&amp;A</button>
+        </div>
       </article>
     </div>
   </section>
@@ -739,6 +749,6 @@
     <a href="mailto:support@suchawellness.com?subject=Sucha%20TA%20Practice%20Lab">Support</a>
   </span>
 </footer>
-<script src="/transactional-analysis.js?v=2026-08-01-ta-coupons" defer></script>
+<script src="/transactional-analysis.js?v=2026-08-01-quiz-reflection" defer></script>
 </body>
 </html>

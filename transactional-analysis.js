@@ -2,6 +2,7 @@ const storageKey = "suchaTaEntries.v1";
 const strokeKey = "suchaTaStrokes.v1";
 const positionKey = "suchaTaLifePosition.v1";
 const taAccessKey = "suchaTaSupporterAccess.v1";
+const quizHistoryKey = "suchaTaQuizHistory.v1";
 const taPlanId = "ta_lab_yearly_60";
 const taProduct = "SuchaTALabPremium";
 const taTrialDays = 7;
@@ -46,7 +47,21 @@ const quizItems = [
   { text: "What deadline did we agree on, and what changed this week?", answer: "Adult", why: "It asks for observable facts and shared reality." },
   { text: "I hate this. Nobody listens to me anyway.", answer: "Child", why: "The sentence carries hurt, protest, and global feeling." },
   { text: "Let's pause for five minutes and come back with two options.", answer: "Adult", why: "It creates structure, timing, and options." },
-  { text: "Fine, I'll just do everything myself.", answer: "Child", why: "It sounds like adaptation, resentment, and indirect protest." }
+  { text: "Fine, I'll just do everything myself.", answer: "Child", why: "It sounds like adaptation, resentment, and indirect protest." },
+  { text: "What do you need from me before Friday?", answer: "Adult", why: "It asks a specific present-focused question without blame." },
+  { text: "A good team member would not question this.", answer: "Parent", why: "It uses a rule and moral pressure instead of shared evidence." },
+  { text: "Can we separate the facts from the frustration for a minute?", answer: "Adult", why: "It invites reality testing while acknowledging emotion." },
+  { text: "Please don't be angry. I'll do whatever you want.", answer: "Child", why: "It carries compliance, fear, and a wish to avoid disapproval." },
+  { text: "That is unacceptable. This is the standard here.", answer: "Parent", why: "It speaks from authority, rules, and evaluation." },
+  { text: "I want to say no, and I am nervous about your reaction.", answer: "Child", why: "It directly names desire and feeling from the Child state." },
+  { text: "Let's define the next action, owner, and time.", answer: "Adult", why: "It converts tension into observable agreements." },
+  { text: "You are being dramatic again.", answer: "Parent", why: "It labels and judges the other person from a one-up position." },
+  { text: "This feels unfair, and I need a minute.", answer: "Child", why: "It expresses feeling and need without yet moving into problem solving." },
+  { text: "What would make this conversation useful for both of us?", answer: "Adult", why: "It checks purpose and mutual usefulness in the present." },
+  { text: "When I was your age, we did not complain like this.", answer: "Parent", why: "It borrows tradition and comparison as authority." },
+  { text: "I forgot the attachment. I can send it now or at 3 pm.", answer: "Adult", why: "It owns a fact and offers practical options." },
+  { text: "Nobody ever chooses me for the important work.", answer: "Child", why: "It carries hurt, globalizing language, and a wish to be seen." },
+  { text: "You must apologize before we continue.", answer: "Parent", why: "It sets a rule from authority rather than negotiating a process." }
 ];
 
 const games = [
@@ -98,6 +113,7 @@ const lexicon = {
 
 let quizIndex = 0;
 let selectedQuiz = "";
+let quizAnswered = false;
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -378,26 +394,75 @@ function renderLesson(name) {
 function renderQuiz() {
   const item = quizItems[quizIndex % quizItems.length];
   selectedQuiz = "";
+  quizAnswered = false;
   $("#quiz-line").textContent = item.text;
   $("#quiz-result").textContent = "Choose the state that best fits the sentence.";
+  $("#quiz-next").disabled = true;
   $("#quiz-options").innerHTML = ["Parent", "Adult", "Child"].map((state) => (
     `<button class="choice" type="button" data-quiz-choice="${state}">${state}</button>`
   )).join("");
 }
 
 function chooseQuiz(state) {
+  if (quizAnswered) return;
   selectedQuiz = state;
   const item = quizItems[quizIndex % quizItems.length];
+  const correct = state === item.answer;
+  quizAnswered = true;
   $$("[data-quiz-choice]").forEach((button) => button.classList.toggle("selected", button.dataset.quizChoice === state));
-  $("#quiz-result").innerHTML = state === item.answer
-    ? `<strong>Correct: ${item.answer}.</strong> ${item.why} Next sentence loaded.`
-    : `<strong>Try again.</strong> This is closer to ${item.answer}. ${item.why}`;
-  if (state === item.answer) {
-    window.setTimeout(() => {
-      quizIndex += 1;
-      renderQuiz();
-    }, 1100);
+  $$("[data-quiz-choice]").forEach((button) => {
+    button.disabled = true;
+    if (button.dataset.quizChoice === item.answer) button.classList.add("selected");
+  });
+  $("#quiz-result").innerHTML = correct
+    ? `<strong>Correct: ${item.answer}.</strong> ${item.why}`
+    : `<strong>Your answer: ${state}. Correct answer: ${item.answer}.</strong> ${item.why}`;
+  $("#quiz-next").disabled = false;
+  saveQuizAttempt({ question: item.text, selected: state, correctAnswer: item.answer, correct, explanation: item.why });
+}
+
+function saveQuizAttempt(attempt) {
+  const history = loadJson(quizHistoryKey, []);
+  history.push({ ...attempt, answeredAt: new Date().toISOString() });
+  saveJson(quizHistoryKey, history.slice(-200));
+}
+
+function downloadQuizHistory() {
+  if (!hasTaAccess()) {
+    $("#quiz-result").innerHTML = "<strong>Premium feature.</strong> Start a trial, redeem a coupon, or upgrade to download your TA quiz Q&A.";
+    return;
   }
+  const history = loadJson(quizHistoryKey, []);
+  if (!history.length) {
+    $("#quiz-result").innerHTML = "<strong>No answers yet.</strong> Answer a few questions, then download your Q&A reflection file.";
+    return;
+  }
+  const correct = history.filter((item) => item.correct).length;
+  const lines = [
+    "TA Lab Q&A Reflection",
+    "Sucha™ Wellness",
+    `Downloaded: ${new Date().toLocaleString()}`,
+    `Score: ${correct}/${history.length}`,
+    "",
+    ...history.flatMap((item, index) => [
+      `${index + 1}. ${item.question}`,
+      `Your answer: ${item.selected}`,
+      `Correct answer: ${item.correctAnswer}`,
+      `Result: ${item.correct ? "Correct" : "Review"}`,
+      `Explanation: ${item.explanation}`,
+      `Answered: ${new Date(item.answeredAt).toLocaleString()}`,
+      ""
+    ])
+  ];
+  const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `sucha-ta-lab-qa-${new Date().toISOString().slice(0, 10)}.txt`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 function renderScores(scores) {
@@ -538,6 +603,11 @@ function boot() {
     const button = event.target.closest("[data-quiz-choice]");
     if (button) chooseQuiz(button.dataset.quizChoice);
   });
+  $("#quiz-next").addEventListener("click", () => {
+    quizIndex += 1;
+    renderQuiz();
+  });
+  $("#quiz-download").addEventListener("click", downloadQuizHistory);
   $("#load-example").addEventListener("click", () => {
     $("#conversation").value = "Manager: You never send the report on time.\nMe: I sent it at 4:45. What deadline should I use next week?";
     analyzeConversation($("#conversation").value);
