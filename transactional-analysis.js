@@ -190,6 +190,40 @@ async function verifyTaCheckout(email, checkout, response) {
   return data;
 }
 
+async function redeemTaCoupon() {
+  const email = normalizeEmail($("#ta-billing-email")?.value);
+  const code = String($("#ta-coupon-code")?.value || "").trim().toUpperCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Enter a valid billing email.");
+  if (!code) throw new Error("Enter a TA Lab premium coupon code.");
+  const button = $("#ta-coupon-button");
+  button.disabled = true;
+  setPaymentStatus("Checking TA Lab coupon...");
+  try {
+    const response = await fetch("/api/ta-lab/redeem-coupon", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, email, product: taProduct })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.ok === false) throw new Error(data.error || "Coupon could not be redeemed.");
+    saveJson(taAccessKey, {
+      source: data.source || "admin_coupon",
+      product: data.product || taProduct,
+      planId: data.planId || taPlanId,
+      email: data.email || email,
+      couponHash: data.couponHash,
+      redeemedAt: data.redeemedAt || Date.now(),
+      expiresAt: data.expiresAt,
+      accessDays: data.accessDays,
+      price: "Coupon"
+    });
+    if ($("#ta-coupon-code")) $("#ta-coupon-code").value = "";
+    renderTaAccess();
+  } finally {
+    button.disabled = false;
+  }
+}
+
 async function startTaCheckout() {
   if (location.protocol === "file:" || location.hostname === "localhost" || location.hostname === "127.0.0.1") {
     throw new Error("Open the live site to use Razorpay Checkout.");
@@ -566,6 +600,13 @@ function boot() {
     }
   });
   $("#ta-trial-button")?.addEventListener("click", startTaTrial);
+  $("#ta-coupon-button")?.addEventListener("click", async () => {
+    try {
+      await redeemTaCoupon();
+    } catch (error) {
+      setPaymentStatus(error.message || "Coupon could not be redeemed.");
+    }
+  });
 }
 
 function setPosition(position) {

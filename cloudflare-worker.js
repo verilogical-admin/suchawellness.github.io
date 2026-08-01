@@ -699,16 +699,18 @@ function publicCoupon(hash, state = {}, fallback = {}) {
     updatedAt: state.updatedAt || '',
     createdAt: state.createdAt || '',
     note: state.note || '',
+    product: state.product || JOURNAL_PRODUCT,
     requestId: state.requestId || '',
   };
 }
 
-async function redeemCoupon(request, env) {
+async function redeemCoupon(request, env, forcedProduct = '') {
   const kv = getKv(env);
   if (!kv) return json({ error: 'Coupon storage is not configured.' }, { status: 501 });
   const body = await readJson(request);
   const code = String(body.code || '').trim().toUpperCase();
   const email = String(body.email || '').trim().toLowerCase();
+  const requestedProduct = forcedProduct || cleanText(body.product || JOURNAL_PRODUCT, 80);
   if (!code) return json({ error: 'Enter a coupon code.' }, { status: 400 });
   if (!normalizeEmail(email)) return json({ error: 'Enter a valid email for this coupon.' }, { status: 400 });
   const hash = await sha256Hex(code);
@@ -718,14 +720,17 @@ async function redeemCoupon(request, env) {
   if (state.usedAt) return json({ error: 'Coupon has already been used.' }, { status: 409 });
   if (state.expiresAt && Date.parse(state.expiresAt) < Date.now()) return json({ error: 'Coupon has expired.' }, { status: 410 });
   if (state.email && state.email !== email) return json({ error: 'This coupon is assigned to a different email.' }, { status: 403 });
+  const couponProduct = state.product || JOURNAL_PRODUCT;
+  if (couponProduct !== requestedProduct) return json({ error: 'This coupon is for a different Sucha product.' }, { status: 403 });
 
   const now = Date.now();
-  const accessDays = clampNumber(state.accessDays, 1, JOURNAL_ACCESS_DAYS, JOURNAL_ACCESS_DAYS);
+  const maxAccessDays = couponProduct === TA_LAB_PRODUCT ? TA_LAB_ACCESS_DAYS : JOURNAL_ACCESS_DAYS;
+  const accessDays = clampNumber(state.accessDays, 1, maxAccessDays, maxAccessDays);
   const access = {
     ok: true,
     source: state.source || 'admin_coupon',
-    planId: JOURNAL_PLAN_ID,
-    product: JOURNAL_PRODUCT,
+    planId: couponProduct === TA_LAB_PRODUCT ? TA_LAB_PLAN_ID : JOURNAL_PLAN_ID,
+    product: couponProduct,
     email,
     couponHash: hash,
     redeemedAt: now,
@@ -989,7 +994,9 @@ async function adminCreateCoupon(request, env) {
   const body = await readJson(request);
   const email = body.email ? normalizeEmail(body.email) : '';
   if (body.email && !email) return json({ error: 'Enter a valid email or leave email blank.' }, { status: 400 });
-  const accessDays = clampNumber(body.accessDays, 1, JOURNAL_ACCESS_DAYS, 1);
+  const product = cleanText(body.product || JOURNAL_PRODUCT, 80);
+  if (![JOURNAL_PRODUCT, TA_LAB_PRODUCT].includes(product)) return json({ error: 'Unknown coupon product.' }, { status: 400 });
+  const accessDays = clampNumber(body.accessDays, 1, product === TA_LAB_PRODUCT ? TA_LAB_ACCESS_DAYS : JOURNAL_ACCESS_DAYS, 1);
   const validHours = clampNumber(body.validHours, 1, 24 * 30, 48);
   const now = new Date();
   let code = '';
@@ -1010,6 +1017,7 @@ async function adminCreateCoupon(request, env) {
     createdAt: now.toISOString(),
     createdBy: 'admin',
     source: 'admin_manual_coupon',
+    product,
     note: cleanText(body.note || '', 240),
     requestId: cleanText(body.requestId || '', 80),
   };
@@ -1590,7 +1598,11 @@ export default {
     }
 
     if (request.method === 'POST' && url.pathname === '/api/sucha-journal/redeem-coupon') {
-      return redeemCoupon(request, env);
+      return redeemCoupon(request, env, JOURNAL_PRODUCT);
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/ta-lab/redeem-coupon') {
+      return redeemCoupon(request, env, TA_LAB_PRODUCT);
     }
 
     if (request.method === 'POST' && url.pathname === '/api/sucha-journal/free-day-request') {
