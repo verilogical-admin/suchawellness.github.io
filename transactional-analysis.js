@@ -738,6 +738,37 @@ function renderScores(scores) {
   });
 }
 
+function optimalAdultResponse(tx) {
+  if (!tx.second) {
+    return {
+      response: "Can you share the other person's reply too? I can map the transaction more accurately with both turns.",
+      explanation: "A transaction has a stimulus and a response. With only one line, the safest Adult move is to gather the missing data before interpreting the pattern."
+    };
+  }
+  if (tx.type === "Crossed") {
+    return {
+      response: "I want to stay with the specific issue. The fact I see is ___. What would be a workable next step for both of us?",
+      explanation: "This returns the exchange to Adult-to-Adult. It avoids defending the whole self, names one observable fact, and invites a concrete next action."
+    };
+  }
+  if (tx.type === "Ulterior") {
+    return {
+      response: "I may be hearing two messages here. Can we say the direct request plainly, so I know what you need from me?",
+      explanation: "Ulterior transactions carry a surface message and a hidden psychological message. This response respectfully brings the hidden layer into Adult awareness."
+    };
+  }
+  if (tx.type === "Complementary") {
+    return {
+      response: "Thanks. Let me confirm: the next step is ___, owned by ___, by ___. Is that right?",
+      explanation: "A complementary Adult exchange is already workable. This keeps it clean by turning the conversation into a shared agreement."
+    };
+  }
+  return {
+    response: "Let me slow this down. What is the main fact, what is the feeling, and what decision do we need now?",
+    explanation: "When the pattern is unclear, separating facts, feelings, and decisions helps the Adult ego state lead the next move."
+  };
+}
+
 function analyzeConversation(text) {
   const scores = scoreText(text);
   const tx = classifyTransaction(text, scores);
@@ -748,7 +779,23 @@ function analyzeConversation(text) {
     : tx.type === "Ulterior"
       ? "Adult shift: surface the hidden message gently. Try: I want to check what you need from me directly."
       : "Keep it Adult by staying specific, time-bound, and open to correction.";
-  $("#analysis-result").innerHTML = `<strong>${tx.type} transaction likely.</strong> Opening signal: ${tx.first}. Reply signal: ${tx.second || "not enough data"}. ${adultSuggestion}`;
+  const practice = optimalAdultResponse(tx);
+  $("#analysis-result").innerHTML = `
+    <div class="analysis-card">
+      <section>
+        <h4>Analysis</h4>
+        <p><strong>${tx.type} transaction likely.</strong> Opening signal: ${tx.first}. Reply signal: ${tx.second || "not enough data"}. ${adultSuggestion}</p>
+      </section>
+      <section class="analysis-response">
+        <h4>Optimal response</h4>
+        <blockquote>${escapeHtml(practice.response)}</blockquote>
+      </section>
+      <section class="analysis-note">
+        <h4>Why this helps</h4>
+        <p>${escapeHtml(practice.explanation)}</p>
+      </section>
+    </div>
+  `;
 }
 
 function getEntries() {
