@@ -42,27 +42,83 @@ const lessons = {
   }
 };
 
-const quizItems = [
-  { text: "You always do this. You should know better by now.", answer: "Parent", why: "The sentence leans on judgment, absolutes, and rule enforcement." },
-  { text: "What deadline did we agree on, and what changed this week?", answer: "Adult", why: "It asks for observable facts and shared reality." },
-  { text: "I hate this. Nobody listens to me anyway.", answer: "Child", why: "The sentence carries hurt, protest, and global feeling." },
-  { text: "Let's pause for five minutes and come back with two options.", answer: "Adult", why: "It creates structure, timing, and options." },
-  { text: "Fine, I'll just do everything myself.", answer: "Child", why: "It sounds like adaptation, resentment, and indirect protest." },
-  { text: "What do you need from me before Friday?", answer: "Adult", why: "It asks a specific present-focused question without blame." },
-  { text: "A good team member would not question this.", answer: "Parent", why: "It uses a rule and moral pressure instead of shared evidence." },
-  { text: "Can we separate the facts from the frustration for a minute?", answer: "Adult", why: "It invites reality testing while acknowledging emotion." },
-  { text: "Please don't be angry. I'll do whatever you want.", answer: "Child", why: "It carries compliance, fear, and a wish to avoid disapproval." },
-  { text: "That is unacceptable. This is the standard here.", answer: "Parent", why: "It speaks from authority, rules, and evaluation." },
-  { text: "I want to say no, and I am nervous about your reaction.", answer: "Child", why: "It directly names desire and feeling from the Child state." },
-  { text: "Let's define the next action, owner, and time.", answer: "Adult", why: "It converts tension into observable agreements." },
-  { text: "You are being dramatic again.", answer: "Parent", why: "It labels and judges the other person from a one-up position." },
-  { text: "This feels unfair, and I need a minute.", answer: "Child", why: "It expresses feeling and need without yet moving into problem solving." },
-  { text: "What would make this conversation useful for both of us?", answer: "Adult", why: "It checks purpose and mutual usefulness in the present." },
-  { text: "When I was your age, we did not complain like this.", answer: "Parent", why: "It borrows tradition and comparison as authority." },
-  { text: "I forgot the attachment. I can send it now or at 3 pm.", answer: "Adult", why: "It owns a fact and offers practical options." },
-  { text: "Nobody ever chooses me for the important work.", answer: "Child", why: "It carries hurt, globalizing language, and a wish to be seen." },
-  { text: "You must apologize before we continue.", answer: "Parent", why: "It sets a rule from authority rather than negotiating a process." }
-];
+const practiceBanks = {
+  ego: {
+    title: "Spot the ego state",
+    prompt: "Choose the state that best fits the sentence.",
+    options: ["Parent", "Adult", "Child"],
+    items: [
+      { text: "You always do this. You should know better by now.", answer: "Parent", why: "The sentence leans on judgment, absolutes, and rule enforcement." },
+      { text: "What deadline did we agree on, and what changed this week?", answer: "Adult", why: "It asks for observable facts and shared reality." },
+      { text: "I hate this. Nobody listens to me anyway.", answer: "Child", why: "The sentence carries hurt, protest, and global feeling." },
+      { text: "Let's pause for five minutes and come back with two options.", answer: "Adult", why: "It creates structure, timing, and options." },
+      { text: "Fine, I'll just do everything myself.", answer: "Child", why: "It sounds like adaptation, resentment, and indirect protest." },
+      { text: "What do you need from me before Friday?", answer: "Adult", why: "It asks a specific present-focused question without blame." },
+      { text: "A good team member would not question this.", answer: "Parent", why: "It uses a rule and moral pressure instead of shared evidence." },
+      { text: "Can we separate the facts from the frustration for a minute?", answer: "Adult", why: "It invites reality testing while acknowledging emotion." },
+      { text: "Please don't be angry. I'll do whatever you want.", answer: "Child", why: "It carries compliance, fear, and a wish to avoid disapproval." },
+      { text: "That is unacceptable. This is the standard here.", answer: "Parent", why: "It speaks from authority, rules, and evaluation." },
+      { text: "I want to say no, and I am nervous about your reaction.", answer: "Child", why: "It directly names desire and feeling from the Child state." },
+      { text: "Let's define the next action, owner, and time.", answer: "Adult", why: "It converts tension into observable agreements." },
+      { text: "You are being dramatic again.", answer: "Parent", why: "It labels and judges the other person from a one-up position." },
+      { text: "This feels unfair, and I need a minute.", answer: "Child", why: "It expresses feeling and need without yet moving into problem solving." },
+      { text: "What would make this conversation useful for both of us?", answer: "Adult", why: "It checks purpose and mutual usefulness in the present." },
+      { text: "When I was your age, we did not complain like this.", answer: "Parent", why: "It borrows tradition and comparison as authority." },
+      { text: "I forgot the attachment. I can send it now or at 3 pm.", answer: "Adult", why: "It owns a fact and offers practical options." },
+      { text: "Nobody ever chooses me for the important work.", answer: "Child", why: "It carries hurt, globalizing language, and a wish to be seen." },
+      { text: "You must apologize before we continue.", answer: "Parent", why: "It sets a rule from authority rather than negotiating a process." }
+    ]
+  },
+  transactions: {
+    title: "Spot the transaction",
+    prompt: "Choose the transaction pattern in this exchange.",
+    options: ["Complementary", "Crossed", "Ulterior"],
+    items: [
+      { text: "A: What time is the client call?\nB: It starts at 3:00, and the notes are in the drive.", answer: "Complementary", why: "The Adult question receives an Adult factual answer, so the channel stays open." },
+      { text: "A: Did you send the invoice?\nB: Why are you always checking on me?", answer: "Crossed", why: "An Adult request for information receives a defensive Child or Parent response, crossing the expected channel." },
+      { text: "A: Nice of you to finally join us.\nB: I was only five minutes late.", answer: "Ulterior", why: "The surface message sounds polite, but the psychological message carries criticism." },
+      { text: "A: Can we agree on one next step?\nB: Yes. I will draft it and send it by 6.", answer: "Complementary", why: "Both people stay in Adult: specific request, specific agreement." },
+      { text: "A: The report has two missing numbers.\nB: You think I am useless, don't you?", answer: "Crossed", why: "A specific Adult observation is received as a global emotional judgment." },
+      { text: "A: If you really cared about the team, you would stay late.\nB: I can stay thirty minutes, not two hours.", answer: "Ulterior", why: "The social request is about staying late, while the hidden psychological message pressures loyalty." },
+      { text: "A: Please close the door.\nB: Sure, closing it now.", answer: "Complementary", why: "A simple request gets the expected simple response." },
+      { text: "A: What changed since yesterday?\nB: Stop acting like my parent.", answer: "Crossed", why: "A fact-finding Adult prompt receives a reactive response to perceived authority." },
+      { text: "A: I suppose some people need reminders.\nB: I saw the reminder and will finish by noon.", answer: "Ulterior", why: "The wording carries a hidden one-up criticism beneath a practical reminder." },
+      { text: "A: I need quiet for ten minutes.\nB: Okay. I will come back at 2:10.", answer: "Complementary", why: "A clear need receives a clear agreement without escalation." }
+    ]
+  },
+  games: {
+    title: "Spot the game",
+    prompt: "Choose the likely game pattern.",
+    options: ["Why Don't You, Yes But", "Now I've Got You", "If It Weren't For You", "See What You Made Me Do"],
+    items: [
+      { text: "Someone asks for advice, then rejects every option: too expensive, too hard, too late, too risky.", answer: "Why Don't You, Yes But", why: "The invitation looks like problem solving, but each solution is defeated to preserve the stuck position." },
+      { text: "A small typo becomes proof that the whole project and the person behind it are careless.", answer: "Now I've Got You", why: "A minor error is used as a character trial or emotional victory." },
+      { text: "I could have built my career, but my partner needed too much from me.", answer: "If It Weren't For You", why: "A life limitation is placed entirely on another person instead of separating constraints from choices." },
+      { text: "I shouted because you made me so angry.", answer: "See What You Made Me Do", why: "Responsibility for one's action is shifted onto the other person." },
+      { text: "Every suggestion is met with, yes, but my situation is different.", answer: "Why Don't You, Yes But", why: "The payoff is often proving there is no workable help while still receiving attention." },
+      { text: "The person waits for a mistake, then pounces: I knew you could not be trusted.", answer: "Now I've Got You", why: "The emotional prize is catching the other person out." },
+      { text: "If my boss were not so demanding, I would finally start the course I keep postponing.", answer: "If It Weren't For You", why: "The obstacle may be real, but the pattern gives all agency to the obstacle." },
+      { text: "I missed the deadline because you kept asking questions.", answer: "See What You Made Me Do", why: "It avoids ownership by making another person's behavior the cause of one's choice." }
+    ]
+  },
+  strokes: {
+    title: "Spot the stroke",
+    prompt: "Choose the type of recognition being given.",
+    options: ["Positive conditional", "Positive unconditional", "Negative conditional", "Negative unconditional"],
+    items: [
+      { text: "Your summary was clear and useful.", answer: "Positive conditional", why: "The recognition is positive and tied to a specific behavior or output." },
+      { text: "I am glad you are here.", answer: "Positive unconditional", why: "The recognition is positive and offered to the person, not earned by performance." },
+      { text: "This draft missed the agreed format.", answer: "Negative conditional", why: "The feedback is negative but focused on a specific behavior or result." },
+      { text: "You are hopeless.", answer: "Negative unconditional", why: "The negative recognition targets the person's worth, not a specific action." },
+      { text: "Thanks for staying calm in that meeting.", answer: "Positive conditional", why: "It appreciates a specific response in a specific context." },
+      { text: "You matter to me, even when the day is messy.", answer: "Positive unconditional", why: "It offers warm recognition independent of performance." },
+      { text: "The numbers in section two need correction.", answer: "Negative conditional", why: "It names a problem in the work without making the person bad." },
+      { text: "Nobody can rely on you.", answer: "Negative unconditional", why: "It globalizes the person as unreliable instead of naming one missed agreement." },
+      { text: "I like how you asked before deciding.", answer: "Positive conditional", why: "The positive stroke is connected to an observable behavior." },
+      { text: "You are welcome here.", answer: "Positive unconditional", why: "It recognizes belonging without a task attached." }
+    ]
+  }
+};
 
 const games = [
   {
@@ -111,7 +167,8 @@ const lexicon = {
   Child: ["want", "hate", "unfair", "scared", "please", "fine", "whatever", "can't", "nobody", "everyone", "sorry", "alone", "mad"]
 };
 
-let quizIndex = 0;
+let currentLesson = "ego";
+const quizIndexes = { ego: 0, transactions: 0, games: 0, strokes: 0 };
 let selectedQuiz = "";
 let quizAnswered = false;
 
@@ -385,28 +442,35 @@ function classifyTransaction(text, scores) {
 }
 
 function renderLesson(name) {
-  const lesson = lessons[name];
+  const lesson = lessons[name] || lessons.ego;
+  currentLesson = lessons[name] ? name : "ego";
   $("#lesson-title").textContent = lesson.title;
   $("#lesson-body").innerHTML = lesson.body.map((item) => `<p>${item}</p>`).join("");
-  $$(".tab").forEach((tab) => tab.classList.toggle("active", tab.dataset.lesson === name));
+  $$(".tab").forEach((tab) => tab.classList.toggle("active", tab.dataset.lesson === currentLesson));
+  renderQuiz();
 }
 
 function renderQuiz() {
-  const item = quizItems[quizIndex % quizItems.length];
+  const bank = practiceBanks[currentLesson] || practiceBanks.ego;
+  const index = quizIndexes[currentLesson] || 0;
+  const item = bank.items[index % bank.items.length];
   selectedQuiz = "";
   quizAnswered = false;
+  $("#quiz-title").textContent = bank.title;
   $("#quiz-line").textContent = item.text;
-  $("#quiz-result").textContent = "Choose the state that best fits the sentence.";
+  $("#quiz-result").textContent = bank.prompt;
   $("#quiz-next").disabled = true;
-  $("#quiz-options").innerHTML = ["Parent", "Adult", "Child"].map((state) => (
-    `<button class="choice" type="button" data-quiz-choice="${state}">${state}</button>`
+  $("#quiz-options").innerHTML = bank.options.map((state) => (
+    `<button class="choice" type="button" data-quiz-choice="${escapeHtml(state)}">${escapeHtml(state)}</button>`
   )).join("");
 }
 
 function chooseQuiz(state) {
   if (quizAnswered) return;
+  const bank = practiceBanks[currentLesson] || practiceBanks.ego;
+  const index = quizIndexes[currentLesson] || 0;
+  const item = bank.items[index % bank.items.length];
   selectedQuiz = state;
-  const item = quizItems[quizIndex % quizItems.length];
   const correct = state === item.answer;
   quizAnswered = true;
   $$("[data-quiz-choice]").forEach((button) => button.classList.toggle("selected", button.dataset.quizChoice === state));
@@ -418,7 +482,14 @@ function chooseQuiz(state) {
     ? `<strong>Correct: ${item.answer}.</strong> ${item.why}`
     : `<strong>Your answer: ${state}. Correct answer: ${item.answer}.</strong> ${item.why}`;
   $("#quiz-next").disabled = false;
-  saveQuizAttempt({ question: item.text, selected: state, correctAnswer: item.answer, correct, explanation: item.why });
+  saveQuizAttempt({
+    topic: bank.title,
+    question: item.text,
+    selected: state,
+    correctAnswer: item.answer,
+    correct,
+    explanation: item.why
+  });
 }
 
 function saveQuizAttempt(attempt) {
@@ -445,6 +516,7 @@ function downloadQuizHistory() {
       <div>
         <h2>${escapeHtml(item.question)}</h2>
         <dl>
+          <div><dt>Topic</dt><dd>${escapeHtml(item.topic || "Spot the ego state")}</dd></div>
           <div><dt>Your answer</dt><dd>${escapeHtml(item.selected)}</dd></div>
           <div><dt>Correct answer</dt><dd>${escapeHtml(item.correctAnswer)}</dd></div>
           <div><dt>Result</dt><dd>${item.correct ? "Correct" : "Review"}</dd></div>
@@ -641,7 +713,6 @@ function updateStrokeResult() {
 function boot() {
   $("#daily-prompt").textContent = prompts[new Date().getDay() % prompts.length];
   renderLesson("ego");
-  renderQuiz();
   renderEntries();
   renderGames();
   renderTaAccess();
@@ -660,7 +731,7 @@ function boot() {
     if (button) chooseQuiz(button.dataset.quizChoice);
   });
   $("#quiz-next").addEventListener("click", () => {
-    quizIndex += 1;
+    quizIndexes[currentLesson] = (quizIndexes[currentLesson] || 0) + 1;
     renderQuiz();
   });
   $("#quiz-download").addEventListener("click", downloadQuizHistory);
