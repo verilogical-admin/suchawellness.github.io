@@ -526,17 +526,17 @@ function reportDonut(percent) {
 function renderReportRows(items, emptyText) {
   if (!items.length) return `<p class="empty-report">${emptyText}</p>`;
   return items.map((item, index) => `
-    <article class="qa-card">
+    <article class="qa-card ${item.correct ? "is-correct" : "is-review"}">
       <div class="qa-number">${index + 1}</div>
       <div>
         <h3>${escapeHtml(item.question)}</h3>
         <dl>
           <div><dt>Your answer</dt><dd>${escapeHtml(item.selected)}</dd></div>
           <div><dt>Correct answer</dt><dd>${escapeHtml(item.correctAnswer)}</dd></div>
-          <div><dt>Result</dt><dd>${item.correct ? "Correct" : "Review"}</dd></div>
+          <div><dt>Result</dt><dd><span class="result-chip">${item.correct ? "Correct" : "Review"}</span></dd></div>
           <div><dt>Answered</dt><dd>${escapeHtml(new Date(item.answeredAt).toLocaleString())}</dd></div>
         </dl>
-        <p><strong>Explanation:</strong> ${escapeHtml(item.explanation)}</p>
+        <div class="explanation"><span>Explanation</span><p>${escapeHtml(item.explanation)}</p></div>
       </div>
     </article>
   `).join("");
@@ -617,12 +617,24 @@ function downloadQuizHistory() {
   .topic-score { align-items: center; display: flex; gap: 12px; }
   .topic-score strong { color: #163f35; display: block; font-family: Georgia, serif; font-size: 28px; font-weight: 400; }
   .topic-score span { color: #657067; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
-  .qa-card { border-top: 1px solid rgba(33,91,79,.18); display: grid; gap: 18px; grid-template-columns: 44px 1fr; padding: 24px 0; }
-  .qa-number { align-items: center; background: #2f7d70; border-radius: 50%; color: #fff; display: flex; font-weight: 700; height: 38px; justify-content: center; width: 38px; }
+  .qa-card { background: linear-gradient(135deg, rgba(220,239,233,.95), rgba(255,250,239,.96)); border: 1px solid rgba(33,91,79,.14); border-left: 7px solid #2f7d70; box-shadow: 0 14px 34px rgba(22,63,53,.08); display: grid; gap: 18px; grid-template-columns: 44px 1fr; margin: 18px 0; overflow: hidden; padding: 22px; position: relative; }
+  .qa-card::before { background: radial-gradient(circle at 14px 14px, rgba(199,154,75,.16) 0 2px, transparent 3px); background-size: 22px 22px; content: ""; inset: 0; opacity: .55; pointer-events: none; position: absolute; }
+  .qa-card > * { position: relative; }
+  .qa-card.is-review { background: linear-gradient(135deg, rgba(255,241,219,.98), rgba(255,250,239,.96)); border-left-color: #c79a4b; }
+  .qa-number { align-items: center; background: #2f7d70; border-radius: 50%; box-shadow: 0 8px 18px rgba(22,63,53,.16); color: #fff; display: flex; font-weight: 700; height: 38px; justify-content: center; width: 38px; }
+  .is-review .qa-number { background: #b9812f; }
   h3 { color: #18231f; font-size: 20px; margin: 0 0 12px; }
-  dl { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0 0 12px; }
+  dl { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0 0 14px; }
+  dl div { background: rgba(255,253,250,.72); border: 1px solid rgba(33,91,79,.1); padding: 10px 12px; }
   dt { color: #657067; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
   dd { margin: 2px 0 0; }
+  .result-chip { background: #2f7d70; color: #fff; display: inline-block; font-size: 12px; font-weight: 800; letter-spacing: .08em; padding: 4px 9px; text-transform: uppercase; }
+  .is-review .result-chip { background: #b9812f; }
+  .explanation { background: linear-gradient(135deg, rgba(255,253,250,.9), rgba(236,247,243,.92)); border: 1px solid rgba(47,125,112,.18); padding: 14px 16px; }
+  .explanation span { color: #1f6b5e; display: block; font-size: 12px; font-weight: 800; letter-spacing: .12em; margin-bottom: 5px; text-transform: uppercase; }
+  .explanation p { margin: 0; }
+  .is-review .explanation { background: linear-gradient(135deg, rgba(255,253,250,.92), rgba(255,243,223,.94)); border-color: rgba(199,154,75,.24); }
+  .is-review .explanation span { color: #986a27; }
   .empty-report { color: #657067; margin: 12px 0 24px; }
   .signature { border-top: 1px solid rgba(33,91,79,.18); margin-top: 28px; padding-top: 22px; }
   .signature-name { color: #163f35; font-family: Georgia, serif; font-size: 26px; }
