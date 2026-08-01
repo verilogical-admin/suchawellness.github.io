@@ -171,6 +171,7 @@ let currentLesson = "ego";
 const quizIndexes = { ego: 0, transactions: 0, games: 0, strokes: 0 };
 let selectedQuiz = "";
 let quizAnswered = false;
+let currentTransactionMap = { first: "Adult", second: "Adult", diagram: "" };
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -430,7 +431,7 @@ function dominant(scores) {
 function classifyTransaction(text, scores) {
   const lines = text.split(/\n+/).map((line) => line.trim()).filter(Boolean);
   const first = dominant(scoreText(lines[0] || text));
-  const second = dominant(scoreText(lines[1] || ""));
+  const second = lines[1] ? dominant(scoreText(lines[1])) : "";
   const hasHiddenCue = /\b(just joking|obviously|after all|if you cared|everyone knows|no offense)\b/i.test(text);
   const hasBlameThenFacts = /\b(always|never|should|fault|lazy|careless)\b/i.test(lines[0] || "") && /\b(what|when|deadline|specific|agree|option)\b/i.test(lines[1] || "");
   if (hasHiddenCue) return { type: "Ulterior", first, second, diagram: "ulterior" };
@@ -439,6 +440,53 @@ function classifyTransaction(text, scores) {
   }
   if (scores.Adult >= scores.Parent && scores.Adult >= scores.Child) return { type: "Complementary", first, second: second || "Adult", diagram: "" };
   return { type: "Unclear", first, second, diagram: "ulterior" };
+}
+
+function positionVector(vector, startDot, endDot, diagram, offset = 0) {
+  if (!vector || !startDot || !endDot || !diagram) return;
+  const diagramBox = diagram.getBoundingClientRect();
+  const startBox = startDot.getBoundingClientRect();
+  const endBox = endDot.getBoundingClientRect();
+  const rawStartX = startBox.left + startBox.width / 2 - diagramBox.left;
+  const rawStartY = startBox.top + startBox.height / 2 - diagramBox.top;
+  const rawEndX = endBox.left + endBox.width / 2 - diagramBox.left;
+  const rawEndY = endBox.top + endBox.height / 2 - diagramBox.top;
+  const rawDistance = Math.max(1, Math.hypot(rawEndX - rawStartX, rawEndY - rawStartY));
+  const normalX = -(rawEndY - rawStartY) / rawDistance;
+  const normalY = (rawEndX - rawStartX) / rawDistance;
+  const startX = rawStartX + normalX * offset;
+  const startY = rawStartY + normalY * offset;
+  const endX = rawEndX + normalX * offset;
+  const endY = rawEndY + normalY * offset;
+  const distance = Math.hypot(endX - startX, endY - startY);
+  const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
+  vector.style.left = `${startX}px`;
+  vector.style.top = `${startY}px`;
+  vector.style.width = `${distance}px`;
+  vector.style.transform = `rotate(${angle}deg)`;
+}
+
+function renderTransactionMap(tx = currentTransactionMap) {
+  currentTransactionMap = tx;
+  const diagram = $("#transaction-diagram");
+  if (!diagram) return;
+  const first = tx.first || "Adult";
+  const second = tx.second || first;
+  diagram.classList.toggle("ulterior", tx.diagram === "ulterior");
+  diagram.classList.toggle("crossed", tx.diagram === "crossed");
+  $$(".state-dot").forEach((dot) => {
+    dot.classList.remove("opening", "replying");
+  });
+  const openingStart = diagram.querySelector(`[data-person="a"][data-state="${first}"]`);
+  const openingEnd = diagram.querySelector(`[data-person="b"][data-state="${second}"]`);
+  const replyStart = diagram.querySelector(`[data-person="b"][data-state="${second}"]`);
+  const replyEnd = diagram.querySelector(`[data-person="a"][data-state="${first}"]`);
+  openingStart?.classList.add("opening");
+  openingEnd?.classList.add("replying");
+  replyStart?.classList.add("replying");
+  replyEnd?.classList.add("opening");
+  positionVector($(".vector:not(.reply)"), openingStart, openingEnd, diagram, -7);
+  positionVector($(".vector.reply"), replyStart, replyEnd, diagram, -7);
 }
 
 function renderLesson(name) {
@@ -694,9 +742,7 @@ function analyzeConversation(text) {
   const scores = scoreText(text);
   const tx = classifyTransaction(text, scores);
   renderScores(scores);
-  const diagram = $("#transaction-diagram");
-  diagram.classList.remove("crossed", "ulterior");
-  if (tx.diagram) diagram.classList.add(tx.diagram);
+  renderTransactionMap(tx);
   const adultSuggestion = tx.type === "Crossed"
     ? "Adult shift: name one fact, ask one clear question, and avoid defending your whole character."
     : tx.type === "Ulterior"
@@ -804,6 +850,7 @@ function boot() {
   renderEntries();
   renderGames();
   renderTaAccess();
+  renderTransactionMap();
 
   const strokes = loadJson(strokeKey, { positive: 3, negative: 1 });
   $("#positive-strokes").value = strokes.positive;
@@ -823,6 +870,7 @@ function boot() {
     renderQuiz();
   });
   $("#quiz-download").addEventListener("click", downloadQuizHistory);
+  window.addEventListener("resize", () => renderTransactionMap());
   $("#load-example").addEventListener("click", () => {
     $("#conversation").value = "Manager: You never send the report on time.\nMe: I sent it at 4:45. What deadline should I use next week?";
     analyzeConversation($("#conversation").value);

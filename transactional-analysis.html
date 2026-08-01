@@ -317,17 +317,30 @@
     font-weight: 800;
     height: 3.2rem;
     justify-content: center;
+    transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+  }
+  .state-dot.opening {
+    background: rgba(211, 109, 92, .12);
+    border-color: rgba(211, 109, 92, .52);
+    color: #8f392d;
+    transform: translateX(.18rem);
+  }
+  .state-dot.replying {
+    background: rgba(47, 125, 112, .12);
+    border-color: rgba(47, 125, 112, .5);
+    color: #1f6b5e;
+    transform: translateX(-.18rem);
   }
   .vector {
     background: var(--rose);
     border-radius: 999px;
     height: 3px;
-    left: 20%;
+    left: 25%;
     position: absolute;
-    top: 42%;
-    transform: rotate(10deg);
+    top: 50%;
+    transform: rotate(0deg);
     transform-origin: left center;
-    width: 60%;
+    width: 50%;
   }
   .vector::after {
     border-bottom: 6px solid transparent;
@@ -338,11 +351,9 @@
     right: -6px;
     top: -4.5px;
   }
-  .vector.reply { background: var(--blue); top: 58%; transform: rotate(170deg); }
+  .vector.reply { background: var(--blue); }
   .vector.reply::after { border-left-color: var(--blue); }
-  .diagram.crossed .vector { transform: rotate(23deg); }
-  .diagram.crossed .vector.reply { transform: rotate(205deg); }
-  .diagram.ulterior .vector { box-shadow: 0 10px 0 rgba(185, 139, 85, .75); }
+  .diagram.ulterior .vector { box-shadow: 0 9px 0 rgba(185, 139, 85, .68); }
   .tabs, .segmented {
     background: rgba(255, 255, 255, .6);
     border: 1px solid var(--line);
@@ -622,14 +633,14 @@
         <h3>Transaction map</h3>
         <div class="diagram" id="transaction-diagram" aria-label="Transaction diagram">
           <div class="person" aria-label="Person A">
-            <div class="state-dot">Parent</div>
-            <div class="state-dot">Adult</div>
-            <div class="state-dot">Child</div>
+            <div class="state-dot" data-person="a" data-state="Parent">Parent</div>
+            <div class="state-dot" data-person="a" data-state="Adult">Adult</div>
+            <div class="state-dot" data-person="a" data-state="Child">Child</div>
           </div>
           <div class="person" aria-label="Person B">
-            <div class="state-dot">Parent</div>
-            <div class="state-dot">Adult</div>
-            <div class="state-dot">Child</div>
+            <div class="state-dot" data-person="b" data-state="Parent">Parent</div>
+            <div class="state-dot" data-person="b" data-state="Adult">Adult</div>
+            <div class="state-dot" data-person="b" data-state="Child">Child</div>
           </div>
           <span class="vector"></span>
           <span class="vector reply"></span>
@@ -749,6 +760,6 @@
     <a href="mailto:support@suchawellness.com?subject=Sucha%20TA%20Practice%20Lab">Support</a>
   </span>
 </footer>
-<script src="/transactional-analysis.js?v=2026-08-01-report-cards" defer></script>
+<script src="/transactional-analysis.js?v=2026-08-01-transaction-map" defer></script>
 </body>
 </html>
