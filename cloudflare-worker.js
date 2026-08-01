@@ -11,6 +11,8 @@ const SECURITY_HEADERS = {
   'Permissions-Policy': 'accelerometer=(), autoplay=(), camera=(), clipboard-read=(), clipboard-write=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(self), usb=()',
 };
 
+const STATIC_ASSET_VERSION = '2026-08-01-ta-coupons-tm';
+
 const ROBOTS_TXT = `# Sucha™ Wellness allows responsible search and AI discovery so people can find
 # mental wellness screening, private journaling, and care-navigation resources.
 # Public pages may be crawled and referenced. Private account, payment, and
@@ -1665,7 +1667,7 @@ export default {
       '/premium-reports': '/premium-reports.html',
     };
     const staticPath = cleanPageMap[url.pathname] || (url.pathname === '/' ? '/index.html' : url.pathname);
-    const rawUrl = `https://raw.githubusercontent.com/verilogical-admin/suchawellness.github.io/main${staticPath}`;
+    const rawUrl = `https://raw.githubusercontent.com/verilogical-admin/suchawellness.github.io/main${staticPath}?v=${STATIC_ASSET_VERSION}`;
     const response = await fetch(rawUrl, {
       headers: { 'User-Agent': 'suchawellness-edge-worker' },
     });
