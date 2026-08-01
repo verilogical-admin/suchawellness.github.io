@@ -1,6 +1,6 @@
 # suchawellness.github.io
 
-Static site for Sucha Wellness.
+Static site for Sucha™ Wellness.
 
 ## Security headers
 
@@ -19,14 +19,14 @@ continues to be served by GitHub Pages, deploy `cloudflare-worker.js` on both ro
 The Worker applies CSP, HSTS, Referrer-Policy, X-Content-Type-Options, X-Frame-Options,
 Cross-Origin-Resource-Policy, and the same-host HTTPS redirect needed for HSTS scanners.
 
-## Sucha Journal premium
+## Sucha™ Journal premium
 
 The premium journal UI uses the existing Verilogical payment Worker, currently called from
 `https://praivasipdf-api.verilogical.com` with `https://payment-worker.verilogical.com` as
 a fallback custom domain. That Worker owns Razorpay Checkout, payment verification, Sucha
 one-time coupons, coarse aggregate analytics, and the admin API.
 
-The payment Worker uses its existing Razorpay settings and `ADMIN_TOKEN`. Sucha coupon and
+The payment Worker uses its existing Razorpay settings and `ADMIN_TOKEN`. Sucha™ coupon and
 analytics data is stored under `sucha:*` keys in the payment Worker KV store, using
 `SUCHA_ADMIN_KV` if it is bound or falling back to `FEEDBACK_KV`.
 
@@ -39,9 +39,9 @@ coupons, coupon revocation, and coarse usage analytics: page views, screening to
 journal events, and Cloudflare-provided country/region summaries. Journal text and
 screening answers are not sent to analytics.
 
-## Sucha email verification
+## Sucha™ email verification
 
-Tests and journal usage are gated by a single Sucha-branded email verification flow. The
+Tests and journal usage are gated by a single Sucha™-branded email verification flow. The
 same verified email can also be used for updates/notifications when the checked-by-default
 subscribe option is left enabled. The Worker stores verified email, consent state, country,
 region/city, date, and tool usage metadata in KV; it does not store screening answers or
@@ -76,7 +76,7 @@ inside each request card and are encrypted with that same local request key; cro
 sharing should wait for the payment-gated matching flow.
 
 The account wallet supports Razorpay top-ups in USD and INR. Balances are tracked per
-currency so provider payments can later be settled from the Sucha wallet without putting
+currency so provider payments can later be settled from the Sucha™ wallet without putting
 care details into card, UPI, or Razorpay payment metadata.
 
 The account page also supports an optional browser-local dashboard lock. The passcode is

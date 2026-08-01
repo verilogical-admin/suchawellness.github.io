@@ -241,7 +241,7 @@ async function sendAccountCode(email) {
   return apiPost('/api/verification/request-code', {
     email,
     subscribed: false,
-    tool: 'Sucha Account',
+    tool: 'Sucha™ Account',
     toolType: 'account',
   }, 'Could not send login code.');
 }
@@ -250,7 +250,7 @@ async function verifyAccountCode(email, code) {
   return apiPost('/api/verification/verify-code', {
     email,
     code,
-    tool: 'Sucha Account',
+    tool: 'Sucha™ Account',
     toolType: 'account',
   }, 'Could not verify login code.');
 }
@@ -644,15 +644,15 @@ async function startWalletTopUp() {
     const checkout = await createWalletCheckout(amount, currency);
     const options = {
       key: checkout.keyId,
-      name: 'Sucha Wellness',
-      description: `Sucha wallet top-up (${checkout.currency || currency})`,
+      name: 'Sucha™ Wellness',
+      description: `Sucha™ wallet top-up (${checkout.currency || currency})`,
       amount: checkout.amount,
       currency: checkout.currency || 'INR',
       order_id: checkout.orderId,
       prefill: email ? { email } : {},
       theme: { color: '#2D7A6B' },
       notes: {
-        product: 'Sucha Wallet',
+        product: 'Sucha™ Wallet',
       },
       handler: async (response) => {
         try {
@@ -807,7 +807,7 @@ codeForm?.addEventListener('submit', (event) => {
   const email = (emailInput.value.trim() || localStorage.getItem(verificationEmailKey) || '').toLowerCase();
   const code = codeInput.value.trim();
   if (!email || !/^\d{6}$/.test(code)) {
-    setLoginStatus('Enter your email and the 6-digit code from Sucha.', true);
+    setLoginStatus('Enter your email and the 6-digit code from Sucha™.', true);
     return;
   }
   setLoginStatus('Verifying and loading dashboard...');

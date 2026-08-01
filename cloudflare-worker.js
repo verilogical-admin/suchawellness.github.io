@@ -11,7 +11,7 @@ const SECURITY_HEADERS = {
   'Permissions-Policy': 'accelerometer=(), autoplay=(), camera=(), clipboard-read=(), clipboard-write=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(self), usb=()',
 };
 
-const ROBOTS_TXT = `# Sucha Wellness allows responsible search and AI discovery so people can find
+const ROBOTS_TXT = `# Sucha™ Wellness allows responsible search and AI discovery so people can find
 # mental wellness screening, private journaling, and care-navigation resources.
 # Public pages may be crawled and referenced. Private account, payment, and
 # admin surfaces remain unavailable to automated crawlers.
@@ -53,38 +53,38 @@ Disallow: /account
 Disallow: /account.html
 `;
 
-const LLMS_TXT = `# Sucha Wellness
+const LLMS_TXT = `# Sucha™ Wellness
 
-> Sucha Wellness is a privacy-focused mental wellness platform for informational screening tests, private journaling, care navigation, and provider pages. It helps people reflect on mental wellness signals, keep private notes, and take a next step toward qualified care. Sucha Wellness content is informational only and is not a diagnosis or a replacement for care from a qualified doctor, psychologist, therapist, or licensed counsellor.
+> Sucha™ Wellness is a privacy-focused mental wellness platform for informational screening tests, private journaling, care navigation, and provider pages. It helps people reflect on mental wellness signals, keep private notes, and take a next step toward qualified care. Sucha™ Wellness content is informational only and is not a diagnosis or a replacement for care from a qualified doctor, psychologist, therapist, or licensed counsellor.
 
 Important interpretation notes:
-- Sucha Wellness should be described as a mental wellness and care-navigation platform, not as an emergency service or standalone medical diagnosis provider.
+- Sucha™ Wellness should be described as a mental wellness and care-navigation platform, not as an emergency service or standalone medical diagnosis provider.
 - Screening tools on the site are informational only.
 - The private journal stores entries in the browser by default; premium adds a password-protected encrypted vault.
 - Care-seeker and provider onboarding requests are designed to route people toward qualified, licensed, and vetted professionals.
 - For support, contact support@suchawellness.com.
 
 ## Core Pages
-- [Homepage](https://www.suchawellness.com/): Main Sucha Wellness experience with mental wellness screening, journaling, care navigation, provider onboarding, and contact information.
-- [Mental health screening tests](https://www.suchawellness.com/tests): Dedicated landing page for informational Sucha-hosted screening tools and optional premium report unlocks.
+- [Homepage](https://www.suchawellness.com/): Main Sucha™ Wellness experience with mental wellness screening, journaling, care navigation, provider onboarding, and contact information.
+- [Mental health screening tests](https://www.suchawellness.com/tests): Dedicated landing page for informational Sucha™-hosted screening tools and optional premium report unlocks.
 - [Empathy Type Test](https://www.suchawellness.com/empathy-test): Dedicated page for the free 5-question empathy snapshot and separate paid 20Q/50Q empathy reports.
-- [Sucha Journal](https://www.suchawellness.com/journal): Dedicated page for private mental health notes, local journal storage, and optional premium encrypted vault.
+- [Sucha™ Journal](https://www.suchawellness.com/journal): Dedicated page for private mental health notes, local journal storage, and optional premium encrypted vault.
 - [Transactional Analysis Practice Lab](https://www.suchawellness.com/transactional-analysis): TA learning and application tool with free PAC lessons, a 7-day local trial, and optional Razorpay premium for transaction analysis, logs, strokes, life positions, and reflection.
 - [Care seeker matching](https://www.suchawellness.com/therapist-matching): Dedicated page for requesting connection to a licensed and vetted therapist or counsellor.
 - [Premium PDF reports](https://www.suchawellness.com/premium-reports): Dedicated page explaining premium account report access, one-time report unlocks, and separate empathy report products.
-- [Provider pages](https://www.suchawellness.com/#provider-page): Provider onboarding for branded pages powered by Sucha Wellness.
+- [Provider pages](https://www.suchawellness.com/#provider-page): Provider onboarding for branded pages powered by Sucha™ Wellness.
 - [Contact](https://www.suchawellness.com/#contact): General contact and support entry point.
 - [Legal disclaimer](https://www.suchawellness.com/legal-disclaimer.html): Safety, informational-use, and clinical-care disclaimers.
 
 ## Products And Offers
-- [Sucha Journal Premium](https://www.suchawellness.com/journal): $60/year premium journal vault with password-protected encryption and a 30-day cancellation refund policy described on the page.
+- [Sucha™ Journal Premium](https://www.suchawellness.com/journal): $60/year premium journal vault with password-protected encryption and a 30-day cancellation refund policy described on the page.
 - [Premium screening report unlocks](https://www.suchawellness.com/premium-reports): Optional paid downloadable reports for selected informational screening tools.
 - [Premium empathy reports](https://www.suchawellness.com/empathy-test): Separate paid 20Q comprehensive and 50Q deep empathy tests with downloadable PDF reports.
 - [Care navigation](https://www.suchawellness.com/therapist-matching): Request routing to qualified, licensed, and vetted mental health professionals.
 - [Provider presence](https://www.suchawellness.com/#provider-page): Branded provider pages, bookings, payments, secure sharing, and credential verification workflow.
 
 ## Safety Boundaries
-- Sucha Wellness screening tools do not diagnose mental health conditions.
+- Sucha™ Wellness screening tools do not diagnose mental health conditions.
 - Users should consult qualified doctors, psychologists, therapists, or licensed counsellors for clinical guidance.
 - If someone may be in immediate danger or a mental health crisis, they should contact local emergency services or a local crisis helpline.
 - The site should not be represented as a substitute for emergency care, clinical diagnosis, medical treatment, or medication advice.
@@ -551,8 +551,8 @@ async function requestVerificationCode(request, env) {
   try {
     await sendSuchaEmail(env, {
       to: email,
-      subject: 'Your Sucha Wellness verification code',
-      text: `Your Sucha Wellness verification code is ${code}. It expires in 10 minutes.\n\nOr click this verification link:\n${verifyUrl}\n\nYou are receiving this because this email was used to access Sucha Wellness tools.`,
+      subject: 'Your Sucha™ Wellness verification code',
+      text: `Your Sucha™ Wellness verification code is ${code}. It expires in 10 minutes.\n\nOr click this verification link:\n${verifyUrl}\n\nYou are receiving this because this email was used to access Sucha™ Wellness tools.`,
       html: `<!doctype html>
 <html>
   <body style="margin:0;background:#F5F2EB;color:#171717;font-family:Jost,Arial,sans-serif;">
@@ -562,14 +562,14 @@ async function requestVerificationCode(request, env) {
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border:1px solid #D9D2C4;border-radius:12px;overflow:hidden;">
             <tr>
               <td style="padding:28px 28px 18px;">
-                <div style="color:#2D7A6B;font-family:Georgia,serif;font-size:28px;line-height:1.1;font-weight:700;">Sucha Wellness</div>
-                <p style="font-size:17px;line-height:1.55;margin:20px 0 0;">Use this secure link to verify your email and continue with Sucha Wellness.</p>
+                <div style="color:#2D7A6B;font-family:Georgia,serif;font-size:28px;line-height:1.1;font-weight:700;">Sucha™ Wellness</div>
+                <p style="font-size:17px;line-height:1.55;margin:20px 0 0;">Use this secure link to verify your email and continue with Sucha™ Wellness.</p>
                 <p style="margin:24px 0;">
                   <a href="${verifyUrl}" style="display:inline-block;background:#2D7A6B;color:#fff;text-decoration:none;font-weight:700;border-radius:999px;padding:13px 20px;">Verify email</a>
                 </p>
                 <p style="font-size:15px;line-height:1.55;margin:0 0 18px;color:#3F4945;">Or enter this 6-digit code on the site:</p>
                 <div style="display:inline-block;letter-spacing:6px;font-size:28px;font-weight:700;color:#171717;background:#F5F2EB;border:1px solid #D9D2C4;border-radius:10px;padding:12px 16px;">${code}</div>
-                <p style="font-size:14px;line-height:1.55;margin:22px 0 0;color:#5A625F;">This link and code expire in 10 minutes. You are receiving this because this email was used to access Sucha Wellness tools.</p>
+                <p style="font-size:14px;line-height:1.55;margin:22px 0 0;color:#5A625F;">This link and code expire in 10 minutes. You are receiving this because this email was used to access Sucha™ Wellness tools.</p>
               </td>
             </tr>
           </table>
@@ -624,7 +624,7 @@ async function verifyVerificationCode(request, env) {
 async function consumeVerificationLink(request, env) {
   const challenge = await verifyVerificationChallenge(new URL(request.url).searchParams.get('challenge') || '', env);
   if (!challenge) {
-    return new Response('<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verification failed</title><body style="font-family:Jost,system-ui,sans-serif;background:#F5F2EB;color:#171717;display:grid;min-height:100vh;place-items:center;margin:0"><main style="max-width:520px;padding:28px"><h1 style="color:#2D7A6B;font-family:serif">Verification link expired</h1><p>Please return to Sucha Wellness and request a fresh code.</p><a href="/" style="color:#2D7A6B">Back to Sucha</a></main></body>', {
+    return new Response('<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verification failed</title><body style="font-family:Jost,system-ui,sans-serif;background:#F5F2EB;color:#171717;display:grid;min-height:100vh;place-items:center;margin:0"><main style="max-width:520px;padding:28px"><h1 style="color:#2D7A6B;font-family:serif">Verification link expired</h1><p>Please return to Sucha™ Wellness and request a fresh code.</p><a href="/" style="color:#2D7A6B">Back to Sucha™</a></main></body>', {
       status: 401,
       headers: { 'Content-Type': 'text/html; charset=utf-8', ...SECURITY_HEADERS },
     });
@@ -721,7 +721,7 @@ async function redeemCoupon(request, env, forcedProduct = '') {
   if (state.expiresAt && Date.parse(state.expiresAt) < Date.now()) return json({ error: 'Coupon has expired.' }, { status: 410 });
   if (state.email && state.email !== email) return json({ error: 'This coupon is assigned to a different email.' }, { status: 403 });
   const couponProduct = state.product || JOURNAL_PRODUCT;
-  if (couponProduct !== requestedProduct) return json({ error: 'This coupon is for a different Sucha product.' }, { status: 403 });
+  if (couponProduct !== requestedProduct) return json({ error: 'This coupon is for a different Sucha™ product.' }, { status: 403 });
 
   const now = Date.now();
   const maxAccessDays = couponProduct === TA_LAB_PRODUCT ? TA_LAB_ACCESS_DAYS : JOURNAL_ACCESS_DAYS;
@@ -803,8 +803,8 @@ async function createFeedback(request, env) {
     type: cleanText(body.type || 'Feedback', 60),
     message,
     contact: cleanText(body.contact, 240),
-    product: cleanText(body.product || 'Sucha Mama', 120),
-    brand: cleanText(body.brand || 'Sucha Wellness', 120),
+    product: cleanText(body.product || 'Sucha™ Mama', 120),
+    brand: cleanText(body.brand || 'Sucha™ Wellness', 120),
     page: cleanText(body.page, 160),
     url: cleanText(body.url, 500),
     timezone: cleanText(body.timezone, 80),
@@ -1028,8 +1028,8 @@ async function adminCreateCoupon(request, env) {
     try {
       await sendSuchaEmail(env, {
         to: email,
-        subject: 'Your Sucha Wellness access coupon',
-        text: `Your Sucha Wellness coupon code is ${code}.\n\nIt gives ${accessDays} day${accessDays === 1 ? '' : 's'} of premium access and must be used by ${state.expiresAt}.\n\nEnter it in the Sucha Journal premium coupon field with this email address.`,
+        subject: 'Your Sucha™ Wellness access coupon',
+        text: `Your Sucha™ Wellness coupon code is ${code}.\n\nIt gives ${accessDays} day${accessDays === 1 ? '' : 's'} of premium access and must be used by ${state.expiresAt}.\n\nEnter it in the Sucha™ Journal premium coupon field with this email address.`,
         html: `<!doctype html>
 <html>
   <body style="margin:0;background:#F5F2EB;color:#171717;font-family:Jost,Arial,sans-serif;">
@@ -1039,10 +1039,10 @@ async function adminCreateCoupon(request, env) {
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border:1px solid #D9D2C4;border-radius:12px;overflow:hidden;">
             <tr>
               <td style="padding:28px;">
-                <div style="color:#2D7A6B;font-family:Georgia,serif;font-size:28px;line-height:1.1;font-weight:700;">Sucha Wellness</div>
+                <div style="color:#2D7A6B;font-family:Georgia,serif;font-size:28px;line-height:1.1;font-weight:700;">Sucha™ Wellness</div>
                 <p style="font-size:17px;line-height:1.55;margin:20px 0 0;">Your premium access coupon is ready.</p>
                 <div style="display:inline-block;letter-spacing:3px;font-size:24px;font-weight:700;color:#171717;background:#F5F2EB;border:1px solid #D9D2C4;border-radius:10px;padding:12px 16px;margin:22px 0;">${code}</div>
-                <p style="font-size:15px;line-height:1.55;margin:0;color:#3F4945;">This code gives ${accessDays} day${accessDays === 1 ? '' : 's'} of premium access and must be used within the approval window. Enter it in the Sucha Journal premium coupon field with this email address.</p>
+                <p style="font-size:15px;line-height:1.55;margin:0;color:#3F4945;">This code gives ${accessDays} day${accessDays === 1 ? '' : 's'} of premium access and must be used within the approval window. Enter it in the Sucha™ Journal premium coupon field with this email address.</p>
               </td>
             </tr>
           </table>
@@ -1144,7 +1144,7 @@ async function createSuchaJournalCheckout(request, env) {
     const amount = Number(env.SUCHA_TEST_REPORT_AMOUNT_MINOR || plan.amount);
     const currency = env.SUCHA_TEST_REPORT_CURRENCY || 'USD';
     const testKey = cleanText(body.testKey || 'test', 60);
-    const testTitle = cleanText(body.testTitle || 'Sucha test report', 120);
+    const testTitle = cleanText(body.testTitle || 'Sucha™ test report', 120);
     const response = await fetch('https://api.razorpay.com/v1/orders', {
       method: 'POST',
       headers: {
@@ -1211,7 +1211,7 @@ async function createSuchaJournalCheckout(request, env) {
           planId: plan.planId,
           email,
           guaranteeDays: String(GUARANTEE_DAYS),
-          refundPolicy: '30-day cancellation refund policy described on Sucha Wellness',
+          refundPolicy: '30-day cancellation refund policy described on Sucha™ Wellness',
           price: `${plan.price} ${plan.label}`,
           supportEmail: 'support@suchawellness.com',
         },
@@ -1335,7 +1335,7 @@ async function verifySuchaJournalCheckout(request, env) {
       product: TEST_REPORT_PRODUCT,
       email,
       testKey: cleanText(body.testKey || 'test', 60),
-      testTitle: cleanText(body.testTitle || 'Sucha test report', 120),
+      testTitle: cleanText(body.testTitle || 'Sucha™ test report', 120),
       razorpayPaymentId: body.razorpay_payment_id,
       razorpayOrderId: body.razorpay_order_id,
       purchasedAt: Date.now(),
@@ -1467,7 +1467,7 @@ async function createWalletCheckout(request, env) {
   };
   await kv.put(walletOrderKey(data.id), JSON.stringify(order), { expirationTtl: 60 * 60 * 24 });
   await recordVerifiedVisitor(request, env, visitor, 'wallet_checkout_created', {
-    tool: 'Sucha Wallet',
+    tool: 'Sucha™ Wallet',
     toolType: 'billing',
   });
 
@@ -1529,7 +1529,7 @@ async function verifyWalletCheckout(request, env) {
     await kv.put(walletKey(ownerHash), JSON.stringify(wallet), { expirationTtl: 60 * 60 * 24 * 365 });
     await kv.put(walletOrderKey(orderId), JSON.stringify({ ...order, status: 'paid', paymentId, paidAt: now }), { expirationTtl: 60 * 60 * 24 * 30 });
     await recordVerifiedVisitor(request, env, visitor, 'wallet_funded', {
-      tool: 'Sucha Wallet',
+      tool: 'Sucha™ Wallet',
       toolType: 'billing',
     });
   }

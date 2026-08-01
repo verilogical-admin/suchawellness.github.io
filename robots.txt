@@ -1,4 +1,4 @@
-# Sucha Wellness allows responsible search and AI discovery so people can find
+# Sucha™ Wellness allows responsible search and AI discovery so people can find
 # mental wellness screening, private journaling, and care-navigation resources.
 # Public pages may be crawled and referenced. Private account, payment, and
 # admin surfaces remain unavailable to automated crawlers.

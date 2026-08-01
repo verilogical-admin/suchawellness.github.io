@@ -43,18 +43,18 @@
   root.innerHTML =
     '<div id="sucha-genie-toast"></div>' +
     '<div id="sucha-genie-panel" aria-hidden="true">' +
-      '<div id="sucha-genie-head"><div><b>Sucha Mama</b><br><span>Site feedback, feature requests, experience issues</span></div><button id="sucha-genie-close" type="button" aria-label="Close feedback panel">x</button></div>' +
+      '<div id="sucha-genie-head"><div><b>Sucha™ Mama</b><br><span>Site feedback, feature requests, experience issues</span></div><button id="sucha-genie-close" type="button" aria-label="Close feedback panel">x</button></div>' +
       '<form id="sucha-genie-form">' +
         '<div class="sucha-genie-row"><label for="sucha-genie-type">Type</label><select id="sucha-genie-type"><option>Feedback</option><option>Feature request</option><option>Issue</option><option>Care platform feedback</option><option>Brand widget request</option></select></div>' +
         '<div class="sucha-genie-row"><label for="sucha-genie-message">Message</label><textarea id="sucha-genie-message" required placeholder="Tell us about the site or product experience. Please do not include medical details here."></textarea></div>' +
         '<div class="sucha-genie-row"><label for="sucha-genie-contact">Contact for reply (optional)</label><input id="sucha-genie-contact" placeholder="Email, phone, or leave blank"></div>' +
         '<button id="sucha-genie-send" type="submit">Send feedback</button>' +
         '<div id="sucha-genie-status" role="status" aria-live="polite"></div>' +
-        '<p id="sucha-genie-note">For care matching or clinical support, use the care forms. This feedback widget is for Sucha site and product feedback.</p>' +
+        '<p id="sucha-genie-note">For care matching or clinical support, use the care forms. This feedback widget is for Sucha™ site and product feedback.</p>' +
         '<p id="sucha-genie-brand">Want a widget like this for your brand? <button type="button" id="sucha-genie-brand-request">Ask FeedbackMama™</button> · <a href="https://feedbackmama.com" target="_blank" rel="noopener">Visit feedbackmama.com</a></p>' +
       '</form>' +
     '</div>' +
-    '<button id="sucha-genie-button" type="button" aria-label="Open Sucha feedback genie">S</button>';
+    '<button id="sucha-genie-button" type="button" aria-label="Open Sucha™ feedback genie">S</button>';
   document.body.appendChild(root);
 
   var panel = document.getElementById("sucha-genie-panel");
@@ -142,10 +142,10 @@
       text: text,
       tag: "Brand widget request",
       authorName: contact.value.trim(),
-      temporaryHandle: "Sucha Mama widget",
+      temporaryHandle: "Sucha™ Mama widget",
       anonymous: !contact.value.trim(),
       submittedAt: new Date().toISOString(),
-      source: "Sucha Wellness feedback widget",
+      source: "Sucha™ Wellness feedback widget",
       url: location.href
     });
     var response = await fetch(FEEDBACK_MAMA_API + "/feedback", {
@@ -186,7 +186,7 @@
     send.disabled = true;
     send.textContent = "Sending...";
     var isBrandWidgetRequest = type.value === "Brand widget request";
-    showStatus(isBrandWidgetRequest ? "Sending to Chand Mama..." : "Sending to Sucha Mama...", "ok");
+    showStatus(isBrandWidgetRequest ? "Sending to Chand Mama..." : "Sending to Sucha™ Mama...", "ok");
     try {
       if (isBrandWidgetRequest) {
         var chandData = await sendBrandRequestToChandMama(text);
@@ -203,8 +203,8 @@
           type: type.value,
           message: text,
           contact: contact.value.trim(),
-          product: "Sucha Mama",
-          brand: "Sucha Wellness",
+          product: "Sucha™ Mama",
+          brand: "Sucha™ Wellness",
           page: page,
           url: location.href,
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || ""
@@ -213,9 +213,9 @@
       var data = await response.json().catch(function () { return {}; });
       if (!response.ok || data.ok === false) throw new Error(data.error || "Could not send feedback.");
       form.reset();
-      showStatus("Thanks. Sucha Mama received your note. Ref: " + data.id, "ok");
+      showStatus("Thanks. Sucha™ Mama received your note. Ref: " + data.id, "ok");
       togglePanel(false);
-      showToast("Thanks. Sucha Mama received your note. Ref: " + data.id);
+      showToast("Thanks. Sucha™ Mama received your note. Ref: " + data.id);
     } catch (error) {
       showStatus(error.message || "Feedback service is not ready yet. Please try again.", "err");
       showToast(error.message || "Feedback service is not ready yet.");

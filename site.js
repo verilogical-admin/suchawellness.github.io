@@ -625,14 +625,14 @@ function ensureVerificationModal() {
   modal.setAttribute('aria-hidden', 'true');
   modal.innerHTML = `
     <div class="sucha-verify-card" role="dialog" aria-modal="true" aria-labelledby="sucha-verify-title">
-      <div class="sucha-verify-mark"><span>S</span><span>Sucha Wellness</span></div>
+      <div class="sucha-verify-mark"><span>S</span><span>Sucha™ Wellness</span></div>
       <h2 id="sucha-verify-title">Verify your email to continue</h2>
       <p id="sucha-verify-copy">Use one verified email for Sucha tests, journal access, and optional updates.</p>
       <div class="sucha-verify-grid">
         <input id="sucha-verify-email" type="email" autocomplete="email" placeholder="Email address">
         <label class="sucha-verify-check">
           <input id="sucha-verify-subscribe" type="checkbox" checked>
-          <span>Send me occasional Sucha updates and wellness notifications.</span>
+          <span>Send me occasional Sucha™ updates and wellness notifications.</span>
         </label>
         <input id="sucha-verify-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code">
         <div class="sucha-verify-status" id="sucha-verify-status" role="status" aria-live="polite"></div>
@@ -758,9 +758,9 @@ function openSuchaVerification(context = {}) {
   const code = document.querySelector('#sucha-verify-code');
   const title = document.querySelector('#sucha-verify-title');
   const copy = document.querySelector('#sucha-verify-copy');
-  title.textContent = context.mode === 'subscribe' ? 'Subscribe to Sucha updates' : 'Verify your email to continue';
+  title.textContent = context.mode === 'subscribe' ? 'Subscribe to Sucha™ updates' : 'Verify your email to continue';
   copy.textContent = context.mode === 'subscribe'
-    ? 'Use one verified email for Sucha updates, wellness notifications, tests, and journal access.'
+    ? 'Use one verified email for Sucha™ updates, wellness notifications, tests, and journal access.'
     : `Verify once to use ${context.tool || 'Sucha tools'} on this browser.`;
   email.value = localStorage.getItem(suchaVerificationEmailKey) || '';
   code.value = '';
@@ -795,7 +795,7 @@ async function requireSuchaVerification(context = {}) {
 async function sendSuchaVerificationCode() {
   const email = document.querySelector('#sucha-verify-email');
   const subscribe = document.querySelector('#sucha-verify-subscribe');
-  const context = suchaVerificationPending?.context || { mode: 'subscribe', tool: 'Sucha updates', toolType: 'subscribe' };
+  const context = suchaVerificationPending?.context || { mode: 'subscribe', tool: 'Sucha™ updates', toolType: 'subscribe' };
   const value = (email?.value || '').trim();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
     setSuchaVerifyStatus('Enter a valid email address.', true);
@@ -825,7 +825,7 @@ async function sendSuchaVerificationCode() {
 async function confirmSuchaVerificationCode() {
   const email = document.querySelector('#sucha-verify-email');
   const code = document.querySelector('#sucha-verify-code');
-  const context = suchaVerificationPending?.context || { mode: 'subscribe', tool: 'Sucha updates', toolType: 'subscribe' };
+  const context = suchaVerificationPending?.context || { mode: 'subscribe', tool: 'Sucha™ updates', toolType: 'subscribe' };
   setSuchaVerifyStatus('Verifying...');
   try {
     const response = await fetch('/api/verification/verify-code', {
@@ -907,7 +907,7 @@ document.querySelectorAll('[data-care-form]').forEach((form) => {
     if (status) status.textContent = 'Encrypting this request in your browser...';
     const ok = await requireSuchaVerification({
       mode: 'tool',
-      tool: type === 'provider' ? 'Sucha provider onboarding' : 'Sucha care matching',
+      tool: type === 'provider' ? 'Sucha provider onboarding' : 'Sucha™ care matching',
       toolType: 'care',
     });
     if (!ok) {
@@ -916,7 +916,7 @@ document.querySelectorAll('[data-care-form]').forEach((form) => {
     }
 
     try {
-      if (status) status.textContent = 'Saving encrypted request. Sucha stores ciphertext only.';
+      if (status) status.textContent = 'Saving encrypted request. Sucha™ stores ciphertext only.';
       const saved = await postCareRequest(type, {
         type,
         fields: payload,
@@ -939,7 +939,7 @@ document.addEventListener('click', (event) => {
   const subscribeLink = event.target.closest?.('[data-sucha-subscribe]');
   if (!subscribeLink) return;
   event.preventDefault();
-  requireSuchaVerification({ mode: 'subscribe', tool: 'Sucha updates', toolType: 'subscribe' }).then((ok) => {
+  requireSuchaVerification({ mode: 'subscribe', tool: 'Sucha™ updates', toolType: 'subscribe' }).then((ok) => {
     if (ok) document.querySelector('#take-test')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 });
@@ -963,28 +963,28 @@ document.querySelectorAll('.step-card, .why-card, .screening-card').forEach((ele
 
 const screeningCardData = [
   ['depression', 'BDI-style screen', 'BDI Depression Quick Screen', 'For overwhelming sadness, despair, low energy, or negative self-image.', 'Start test'],
-  ['bai', 'Sucha screen', 'Beck Anxiety Inventory (BAI) Quick Screen', 'A BAI-informed anxiety symptom check for recent physical and panic-like symptoms.', 'Start test'],
+  ['bai', 'Sucha™ screen', 'Beck Anxiety Inventory (BAI) Quick Screen', 'A BAI-informed anxiety symptom check for recent physical and panic-like symptoms.', 'Start test'],
   ['empathy', 'Highly recommended', 'Empathy Type Test', 'A special 5-question reflection on how you tend to understand people through thinking, feeling, helping, or attuning.', 'Start test'],
   ['careerRiasec', 'Career guidance', 'Career Pathway RIASEC Quiz', 'A one-question-at-a-time interest quiz to identify your top Holland Code career themes.', 'Start quiz'],
   ['selfEsteem', 'Self-esteem scale', 'Rosenberg Self-Esteem Scale (RSE)', 'A 10-item self-esteem scale for reflecting on self-worth, self-respect, and overall self-attitude.', 'Start test'],
-  ['universal', 'Universal screen', 'Universal Mental Health Screen', 'A broader Sucha-hosted screen for common mental health signals.', 'Start test'],
-  ['adhd', 'Sucha screen', 'ADHD Test', 'For trouble focusing, remembering things, completing tasks, or sitting still.', 'Start test'],
-  ['anxiety', 'Sucha screen', 'Anxiety Test', 'For worry or fear that affects day-to-day functioning.', 'Start test'],
-  ['ocd', 'Sucha screen', 'OCD Test', 'For repetitive thoughts and behaviors, including checking or rituals, that interfere with life.', 'Start test'],
-  ['bipolar', 'Sucha screen', 'Bipolar Test', 'For extreme mood swings or unusual shifts in mood and energy.', 'Start test'],
-  ['psychosis', 'Sucha screen', 'Psychosis & Schizophrenia Test', 'For experiences that feel unreal, confusing, or like the brain is playing tricks.', 'Start test'],
-  ['eating', 'Sucha screen', 'Eating Disorder Test', 'For unhealthy relationships with food that affect health and well-being.', 'Start test'],
-  ['ptsd', 'Sucha screen', 'PTSD Test', 'For ongoing distress after a traumatic life event.', 'Start test'],
-  ['addiction', 'Sucha screen', 'Addiction Test', 'For concerns about alcohol, drugs, gambling, self-harm, or other hard-to-control behaviors.', 'Start test'],
-  ['gambling', 'Sucha screen', 'Gambling Addiction Test', 'For people concerned about gambling behaviors.', 'Start test'],
-  ['socialAnxiety', 'Sucha screen', 'Social Anxiety Test', 'For extreme worry or fear in social situations.', 'Start test'],
-  ['postpartum', 'Sucha screen', 'Postpartum Depression Test', 'For new and expecting parents experiencing overwhelming sadness during or after pregnancy.', 'Start test'],
-  ['parent', 'Sucha screen', "Parent Test: Your Child's Mental Health", "For parents worried about a child's emotions, attention, or behaviors.", 'Start test'],
-  ['youth', 'Sucha screen', 'Youth Mental Health Test', 'For young people ages 11-17 concerned about emotions, attention, or behaviors.', 'Start test'],
-  ['goodDay', 'Sucha survey', 'Survey: What Makes a Good Day?', 'A reflection survey about what helps people have more good days.', 'Start survey'],
-  ['psychedelics', 'Sucha survey', 'Psychedelics & Mental Health Survey', 'A reflection survey about opinions on psychedelics and mental health.', 'Start survey'],
-  ['aiMentalHealth', 'Sucha survey', 'AI & Mental Health Survey', 'A reflection survey about opinions on artificial intelligence and mental health.', 'Start survey'],
-  ['selfInjury', 'Sucha survey', 'Self-Injury Survey', 'A support-oriented survey for people who have hurt themselves on purpose without trying to die.', 'Start survey']
+  ['universal', 'Universal screen', 'Universal Mental Health Screen', 'A broader Sucha™-hosted screen for common mental health signals.', 'Start test'],
+  ['adhd', 'Sucha™ screen', 'ADHD Test', 'For trouble focusing, remembering things, completing tasks, or sitting still.', 'Start test'],
+  ['anxiety', 'Sucha™ screen', 'Anxiety Test', 'For worry or fear that affects day-to-day functioning.', 'Start test'],
+  ['ocd', 'Sucha™ screen', 'OCD Test', 'For repetitive thoughts and behaviors, including checking or rituals, that interfere with life.', 'Start test'],
+  ['bipolar', 'Sucha™ screen', 'Bipolar Test', 'For extreme mood swings or unusual shifts in mood and energy.', 'Start test'],
+  ['psychosis', 'Sucha™ screen', 'Psychosis & Schizophrenia Test', 'For experiences that feel unreal, confusing, or like the brain is playing tricks.', 'Start test'],
+  ['eating', 'Sucha™ screen', 'Eating Disorder Test', 'For unhealthy relationships with food that affect health and well-being.', 'Start test'],
+  ['ptsd', 'Sucha™ screen', 'PTSD Test', 'For ongoing distress after a traumatic life event.', 'Start test'],
+  ['addiction', 'Sucha™ screen', 'Addiction Test', 'For concerns about alcohol, drugs, gambling, self-harm, or other hard-to-control behaviors.', 'Start test'],
+  ['gambling', 'Sucha™ screen', 'Gambling Addiction Test', 'For people concerned about gambling behaviors.', 'Start test'],
+  ['socialAnxiety', 'Sucha™ screen', 'Social Anxiety Test', 'For extreme worry or fear in social situations.', 'Start test'],
+  ['postpartum', 'Sucha™ screen', 'Postpartum Depression Test', 'For new and expecting parents experiencing overwhelming sadness during or after pregnancy.', 'Start test'],
+  ['parent', 'Sucha™ screen', "Parent Test: Your Child's Mental Health", "For parents worried about a child's emotions, attention, or behaviors.", 'Start test'],
+  ['youth', 'Sucha™ screen', 'Youth Mental Health Test', 'For young people ages 11-17 concerned about emotions, attention, or behaviors.', 'Start test'],
+  ['goodDay', 'Sucha™ survey', 'Survey: What Makes a Good Day?', 'A reflection survey about what helps people have more good days.', 'Start survey'],
+  ['psychedelics', 'Sucha™ survey', 'Psychedelics & Mental Health Survey', 'A reflection survey about opinions on psychedelics and mental health.', 'Start survey'],
+  ['aiMentalHealth', 'Sucha™ survey', 'AI & Mental Health Survey', 'A reflection survey about opinions on artificial intelligence and mental health.', 'Start survey'],
+  ['selfInjury', 'Sucha™ survey', 'Self-Injury Survey', 'A support-oriented survey for people who have hurt themselves on purpose without trying to die.', 'Start survey']
 ];
 
 const screeningGroups = [
@@ -1579,7 +1579,7 @@ function ensureScreeningMarkup() {
   const takeTest = document.querySelector('#take-test');
   const subtitle = takeTest?.querySelector('.section-subtitle');
   if (subtitle) {
-    subtitle.textContent = 'Choose a quick, confidential Sucha-hosted screening tool. Answers stay in your browser and results are informational only, not a diagnosis or a replacement for care from a qualified clinician.';
+    subtitle.textContent = 'Choose a quick, confidential Sucha™-hosted screening tool. Answers stay in your browser and results are informational only, not a diagnosis or a replacement for care from a qualified clinician.';
   }
   ensureScreeningDisclaimer(takeTest);
 
@@ -1599,7 +1599,7 @@ function ensureScreeningMarkup() {
     panel.innerHTML = `
       <div class="inline-test-head">
         <div>
-          <div class="section-eyebrow">Sucha-hosted screen</div>
+          <div class="section-eyebrow">Sucha™-hosted screen</div>
           <h3 class="inline-test-title" id="screening-title">Choose a test</h3>
           <p class="inline-test-desc" id="screening-desc">Select a screening tool above to begin.</p>
           <div class="empathy-visual" id="screening-visual" hidden></div>
@@ -1931,7 +1931,7 @@ function ensureJournalMarkup() {
   journal.id = 'journal';
   journal.innerHTML = `
     <div class="section-eyebrow">Journal</div>
-    <h2 class="section-title">Sucha Journal</h2>
+    <h2 class="section-title">Sucha™ Journal</h2>
     <p class="section-subtitle">A private reflection space for mood notes, therapy takeaways, and small signals worth remembering. Entries stay in this browser.</p>
     <div class="journal-shell reveal visible">
       <aside class="journal-sidebar">
@@ -2106,7 +2106,7 @@ addReadabilityStyles();
 const screeningTests = {
   universal: {
     title: 'Universal Mental Health Screen',
-    description: 'A broad Sucha-hosted check across mood, anxiety, attention, reality testing, sleep, and coping patterns.',
+    description: 'A broad Sucha™-hosted check across mood, anxiety, attention, reality testing, sleep, and coping patterns.',
     questions: [
       'Mood felt unusually low, heavy, or hopeless.',
       'Worry, panic, or fear felt hard to control.',
@@ -2118,7 +2118,7 @@ const screeningTests = {
   },
   depression: {
     title: 'BDI Depression Quick Screen',
-    description: 'A BDI-style Sucha screen for low mood, loss of interest, energy changes, and self-critical thinking.',
+    description: 'A BDI-style Sucha™ screen for low mood, loss of interest, energy changes, and self-critical thinking.',
     questions: [
       'You felt down, empty, tearful, or hopeless.',
       'Things that usually matter to you felt flat or uninteresting.',
@@ -2129,7 +2129,7 @@ const screeningTests = {
   },
   adhd: {
     title: 'ADHD Test',
-    description: 'A brief Sucha screen for attention, follow-through, restlessness, and impulsive patterns.',
+    description: 'A brief Sucha™ screen for attention, follow-through, restlessness, and impulsive patterns.',
     questions: [
       'You had trouble staying focused on tasks or conversations.',
       'You forgot details, appointments, or where you put things.',
@@ -2140,7 +2140,7 @@ const screeningTests = {
   },
   anxiety: {
     title: 'Anxiety Test',
-    description: 'A brief Sucha screen for worry, tension, avoidance, and physical anxiety symptoms.',
+    description: 'A brief Sucha™ screen for worry, tension, avoidance, and physical anxiety symptoms.',
     questions: [
       'You felt nervous, keyed up, or on edge.',
       'Worry kept returning even when you tried to set it aside.',
@@ -2181,7 +2181,7 @@ const screeningTests = {
   },
   ocd: {
     title: 'OCD Test',
-    description: 'A brief Sucha screen for intrusive thoughts, rituals, checking, and time-consuming compulsions.',
+    description: 'A brief Sucha™ screen for intrusive thoughts, rituals, checking, and time-consuming compulsions.',
     questions: [
       'Unwanted thoughts or images got stuck in your mind.',
       'You repeated checking, cleaning, ordering, counting, or reassurance-seeking.',
@@ -2192,7 +2192,7 @@ const screeningTests = {
   },
   bipolar: {
     title: 'Bipolar Test',
-    description: 'A brief Sucha screen for periods of unusually elevated energy, reduced sleep, and risky behavior.',
+    description: 'A brief Sucha™ screen for periods of unusually elevated energy, reduced sleep, and risky behavior.',
     questions: [
       'You had periods of unusually high, wired, or expansive mood.',
       'You needed much less sleep but still felt energized.',
@@ -2203,7 +2203,7 @@ const screeningTests = {
   },
   psychosis: {
     title: 'Psychosis & Schizophrenia Test',
-    description: 'A brief Sucha screen for unusual perceptions, suspiciousness, disorganized thinking, or feeling detached from reality.',
+    description: 'A brief Sucha™ screen for unusual perceptions, suspiciousness, disorganized thinking, or feeling detached from reality.',
     questions: [
       'You heard, saw, or sensed things other people did not seem to notice.',
       'You felt unusually suspicious or watched.',
@@ -2214,7 +2214,7 @@ const screeningTests = {
   },
   eating: {
     title: 'Eating Disorder Test',
-    description: 'A brief Sucha screen for food, body image, restriction, bingeing, and compensatory behaviors.',
+    description: 'A brief Sucha™ screen for food, body image, restriction, bingeing, and compensatory behaviors.',
     questions: [
       'Thoughts about food, weight, or body shape took up a lot of mental space.',
       'You restricted food, skipped meals, or followed rigid rules to change your body.',
@@ -2225,7 +2225,7 @@ const screeningTests = {
   },
   ptsd: {
     title: 'PTSD Test',
-    description: 'A brief Sucha screen for trauma reminders, avoidance, hypervigilance, and emotional numbing.',
+    description: 'A brief Sucha™ screen for trauma reminders, avoidance, hypervigilance, and emotional numbing.',
     questions: [
       'Memories, nightmares, or body reactions pulled you back toward a traumatic event.',
       'You avoided reminders, conversations, places, or feelings connected to trauma.',
@@ -2236,7 +2236,7 @@ const screeningTests = {
   },
   addiction: {
     title: 'Addiction Test',
-    description: 'A brief Sucha screen for loss of control, cravings, consequences, and difficulty cutting back.',
+    description: 'A brief Sucha™ screen for loss of control, cravings, consequences, and difficulty cutting back.',
     questions: [
       'You used a substance or behavior more than you intended.',
       'Cravings or urges felt strong or distracting.',
@@ -2247,7 +2247,7 @@ const screeningTests = {
   },
   gambling: {
     title: 'Gambling Addiction Test',
-    description: 'A brief Sucha screen for gambling urges, chasing losses, secrecy, and financial strain.',
+    description: 'A brief Sucha™ screen for gambling urges, chasing losses, secrecy, and financial strain.',
     questions: [
       'You gambled with more money or time than planned.',
       'You tried to win back losses by gambling again.',
@@ -2258,7 +2258,7 @@ const screeningTests = {
   },
   socialAnxiety: {
     title: 'Social Anxiety Test',
-    description: 'A brief Sucha screen for fear of judgment, avoidance, and after-the-fact rumination.',
+    description: 'A brief Sucha™ screen for fear of judgment, avoidance, and after-the-fact rumination.',
     questions: [
       'You feared being judged, embarrassed, or visibly anxious around others.',
       'You avoided conversations, meetings, calls, events, or public tasks.',
@@ -2269,7 +2269,7 @@ const screeningTests = {
   },
   postpartum: {
     title: 'Postpartum Depression Test',
-    description: 'A brief Sucha screen for new or expecting parents noticing mood, anxiety, overwhelm, or safety concerns.',
+    description: 'A brief Sucha™ screen for new or expecting parents noticing mood, anxiety, overwhelm, or safety concerns.',
     safety: true,
     questions: [
       'You felt persistently sad, tearful, numb, or unlike yourself.',
@@ -2281,7 +2281,7 @@ const screeningTests = {
   },
   parent: {
     title: "Parent Test: Your Child's Mental Health",
-    description: 'A brief Sucha screen for parents noticing emotional, attention, behavioral, social, or safety changes in a child.',
+    description: 'A brief Sucha™ screen for parents noticing emotional, attention, behavioral, social, or safety changes in a child.',
     safety: true,
     questions: [
       'Your child seemed unusually sad, worried, angry, or withdrawn.',
@@ -2293,7 +2293,7 @@ const screeningTests = {
   },
   youth: {
     title: 'Youth Mental Health Test',
-    description: 'A brief Sucha screen for ages 11-17 noticing mood, anxiety, focus, relationships, or safety concerns.',
+    description: 'A brief Sucha™ screen for ages 11-17 noticing mood, anxiety, focus, relationships, or safety concerns.',
     safety: true,
     questions: [
       'You felt sad, worried, angry, numb, or overwhelmed.',
@@ -2341,7 +2341,7 @@ const screeningTests = {
   },
   selfInjury: {
     title: 'Self-Injury Survey',
-    description: 'A support-oriented Sucha survey for people noticing self-injury urges, triggers, or recent harm.',
+    description: 'A support-oriented Sucha™ survey for people noticing self-injury urges, triggers, or recent harm.',
     safety: true,
     survey: true,
     questions: [
@@ -2571,7 +2571,7 @@ screeningTests.careerRiasec = {
 
 screeningTests.empathy = {
   title: 'Empathy Type Test',
-  description: 'A 5-question Sucha-hosted reflection on how you tend to understand other people: through thinking, feeling, helping, or bodily attuning. Answers stay in your browser.',
+  description: 'A 5-question Sucha™-hosted reflection on how you tend to understand other people: through thinking, feeling, helping, or bodily attuning. Answers stay in your browser.',
   empathy: true,
   questions: empathyQuestions.slice(0, 5)
 };
@@ -2847,7 +2847,7 @@ function testReportOfferMarkup(testKey, testTitle) {
       <div class="report-download-row">
         <span class="premium-offer-badge">PDF report ready</span>
         <h4 class="premium-offer-title">Download your Sucha PDF report.</h4>
-        <p class="premium-offer-copy">Your premium access is active for this report. The PDF is generated in this browser with your current test result and Sucha Wellness branding.</p>
+        <p class="premium-offer-copy">Your premium access is active for this report. The PDF is generated in this browser with your current test result and Sucha™ Wellness branding.</p>
         <div class="premium-offer-actions single">
           <button class="test-submit" type="button" data-test-report-download="${testKey}">Download PDF report</button>
         </div>
@@ -2881,7 +2881,7 @@ function downloadGenericTestReport(report) {
   stream += 'q 1 0.996 0.976 rg 36 42 540 708 re f Q\n';
   stream += 'q 0.176 0.478 0.420 rg 52 696 44 44 re f Q\n';
   stream += pdfLine('S', 66, 711, 22, '#FFF8E9', 'F2');
-  stream += pdfLine('Sucha Wellness', 108, 724, 16, '#163F35', 'F2');
+  stream += pdfLine('Sucha™ Wellness', 108, 724, 16, '#163F35', 'F2');
   stream += pdfLine(`${report.title} | ${generatedAt}`, 108, 706, 9, '#65736C');
   stream += pdfLine(report.title, 52, 662, 23, '#163F35', 'F2');
   stream += pdfLine(report.subtitle || 'Sucha informational test report', 52, 640, 10, '#65736C');
@@ -2920,7 +2920,7 @@ function downloadGenericTestReport(report) {
     stream += pdfLine(line, 52, 70 - (index * 11), 8, '#65736C');
   });
   stream += 'q 0.820 0.790 0.730 RG 1 w 52 34 m 560 34 l S Q\n';
-  stream += pdfLine('Sucha Wellness | https://www.suchawellness.com', 52, 20, 8, '#65736C');
+  stream += pdfLine('Sucha™ Wellness | https://www.suchawellness.com', 52, 20, 8, '#65736C');
   savePdfStream(stream, `sucha-${slugReportName(report.title)}-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
@@ -3008,7 +3008,7 @@ async function unlockTestReport(testKey, testTitle, button, onUnlocked) {
   const checkout = await createTestReportCheckout(email, testKey, testTitle);
   const options = {
     key: checkout.keyId,
-    name: 'Sucha Wellness',
+    name: 'Sucha™ Wellness',
     description: `${testTitle} PDF Report - ${testReportPrice}`,
     amount: checkout.amount,
     currency: checkout.currency || 'USD',
@@ -3134,7 +3134,7 @@ function downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest,
   stream += 'q 1 0.996 0.976 rg 36 42 540 708 re f Q\n';
   stream += 'q 0.176 0.478 0.420 rg 52 696 44 44 re f Q\n';
   stream += pdfLine('S', 66, 711, 22, '#FFF8E9', 'F2');
-  stream += pdfLine('Sucha Wellness', 108, 724, 16, '#163F35', 'F2');
+  stream += pdfLine('Sucha™ Wellness', 108, 724, 16, '#163F35', 'F2');
   stream += pdfLine(`Empathy Type Test Report | ${generatedAt}`, 108, 706, 9, '#65736C');
   stream += pdfLine('Empathy Type Test Report', 52, 662, 25, '#163F35', 'F2');
   stream += pdfLine(`${reportLength}-question Sucha reflection on thinking, feeling, helping, and bodily attuning.`, 52, 640, 10, '#65736C');
@@ -3187,7 +3187,7 @@ function downloadEmpathyReport(scores, order, dominant, nextStrongest, quietest,
     stream += pdfLine(line, 52, 70 - (index * 11), 8, '#65736C');
   });
   stream += 'q 0.820 0.790 0.730 RG 1 w 52 34 m 560 34 l S Q\n';
-  stream += pdfLine('Sucha Wellness | https://www.suchawellness.com', 52, 20, 8, '#65736C');
+  stream += pdfLine('Sucha™ Wellness | https://www.suchawellness.com', 52, 20, 8, '#65736C');
 
   const objects = [
     '<< /Type /Catalog /Pages 2 0 R >>',
@@ -3339,7 +3339,7 @@ async function unlockAndStartEmpathyTest(length, button) {
   const checkout = await createEmpathyReportCheckout(email, length);
   const options = {
     key: checkout.keyId,
-    name: 'Sucha Wellness',
+    name: 'Sucha™ Wellness',
     description: `${plan.label} - ${plan.price}`,
     amount: checkout.amount,
     currency: checkout.currency || 'USD',
@@ -3560,14 +3560,14 @@ function showEmpathyResult(test) {
         ${canDownloadEmpathyReport ? `
           <span class="premium-offer-badge">Report ready</span>
           <h4 class="premium-offer-title">Your comprehensive ${screeningStepState.empathyLength}-question result is ready.</h4>
-          <p class="premium-offer-copy">Download your Sucha-branded PDF report with your score map, style descriptions, strengths, watch-outs, and practice suggestions${screeningStepState.empathyLength >= 50 ? ', plus deep reflection prompts' : ''}. The premium empathy tests are separate paid products and are not included in the general premium account.</p>
+          <p class="premium-offer-copy">Download your Sucha™-branded PDF report with your score map, style descriptions, strengths, watch-outs, and practice suggestions${screeningStepState.empathyLength >= 50 ? ', plus deep reflection prompts' : ''}. The premium empathy tests are separate paid products and are not included in the general premium account.</p>
           <div class="premium-offer-actions">
             <button class="test-submit" type="button" id="empathy-report-download">Download PDF report</button>
           </div>
         ` : `
           <span class="premium-offer-badge">Premium insight</span>
           <h4 class="premium-offer-title">Go beyond this 5-question snapshot.</h4>
-          <p class="premium-offer-copy">The premium empathy tests are separate from the general premium account. Unlock a larger empathy test with a downloadable Sucha-branded PDF report you can save, reflect on, or share with a counsellor or coach. The 50-question version adds deeper reflection prompts for a more complete read.</p>
+          <p class="premium-offer-copy">The premium empathy tests are separate from the general premium account. Unlock a larger empathy test with a downloadable Sucha™-branded PDF report you can save, reflect on, or share with a counsellor or coach. The 50-question version adds deeper reflection prompts for a more complete read.</p>
           <div class="premium-offer-points">
             <span>More questions for a steadier pattern</span>
             <span>Score-share visual map</span>
@@ -3794,7 +3794,7 @@ screeningCards.forEach((card) => {
     }
     const ok = await requireSuchaVerification({
       mode: 'tool',
-      tool: test?.title || 'Sucha screening test',
+      tool: test?.title || 'Sucha™ screening test',
       toolType: 'test',
     });
     if (ok) renderScreeningTest(key);
@@ -4088,7 +4088,7 @@ function showJournalReminderIfDue() {
   localStorage.setItem(journalReminderLastShownKey, todayKey());
   setJournalStatus('Gentle reminder: write one sentence in your journal today.');
   if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification('Sucha Journal', {
+    new Notification('Sucha™ Journal', {
       body: 'A gentle reminder to write one sentence today.',
       icon: '/assets/sucha-web-icon-180.png',
     });
@@ -4483,8 +4483,8 @@ async function startJournalPremiumTrial() {
     const checkout = await createJournalCheckout(email);
     const options = {
       key: checkout.keyId,
-      name: 'Sucha Wellness',
-      description: `Sucha Premium - ${journalPremiumPrice}, 30-day cancellation refund minus downloaded report charges`,
+      name: 'Sucha™ Wellness',
+      description: `Sucha™ Premium - ${journalPremiumPrice}, 30-day cancellation refund minus downloaded report charges`,
       prefill: { email },
       theme: { color: '#2D7A6B' },
       handler: async (response) => {
@@ -4640,7 +4640,7 @@ async function unlockJournalFromInput(input) {
 if (journalForm && journalTitle && journalMood && journalBody) {
   journalForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const ok = await requireSuchaVerification({ mode: 'tool', tool: 'Sucha Journal', toolType: 'journal' });
+    const ok = await requireSuchaVerification({ mode: 'tool', tool: 'Sucha™ Journal', toolType: 'journal' });
     if (!ok) {
       setJournalStatus('Verify your email to save journal entries.');
       return;

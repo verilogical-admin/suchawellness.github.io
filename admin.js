@@ -256,14 +256,14 @@ function renderFeedback(items = []) {
   if (!feedbackEl) return;
   feedbackEl.replaceChildren();
   if (!items.length) {
-    feedbackEl.innerHTML = '<tr><td colspan="6">No Sucha Mama feedback yet.</td></tr>';
+    feedbackEl.innerHTML = '<tr><td colspan="6">No Sucha™ Mama feedback yet.</td></tr>';
     return;
   }
   items.slice(0, 200).forEach((item) => {
     const row = document.createElement('tr');
     row.innerHTML = `
       <td>${fmt(item.createdAt)}</td>
-      <td>${item.type || 'Feedback'}<br><span class="label">${item.product || 'Sucha Mama'}</span></td>
+      <td>${item.type || 'Feedback'}<br><span class="label">${item.product || 'Sucha™ Mama'}</span></td>
       <td style="max-width:360px;white-space:pre-wrap"></td>
       <td>${item.contact || '-'}</td>
       <td><code>${item.page || '-'}</code><br><span class="label">${item.url || ''}</span></td>

@@ -240,7 +240,7 @@ async function startTaCheckout() {
     const checkout = await createTaCheckout(email);
     const rz = new Razorpay({
       key: checkout.keyId,
-      name: "Sucha Wellness",
+      name: "Sucha™ Wellness",
     description: "TA Lab Premium - $60/year",
       amount: checkout.amount,
       currency: checkout.currency || "USD",
