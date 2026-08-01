@@ -438,27 +438,83 @@ function downloadQuizHistory() {
     return;
   }
   const correct = history.filter((item) => item.correct).length;
-  const lines = [
-    "TA Lab Q&A Reflection",
-    "Sucha™ Wellness",
-    `Downloaded: ${new Date().toLocaleString()}`,
-    `Score: ${correct}/${history.length}`,
-    "",
-    ...history.flatMap((item, index) => [
-      `${index + 1}. ${item.question}`,
-      `Your answer: ${item.selected}`,
-      `Correct answer: ${item.correctAnswer}`,
-      `Result: ${item.correct ? "Correct" : "Review"}`,
-      `Explanation: ${item.explanation}`,
-      `Answered: ${new Date(item.answeredAt).toLocaleString()}`,
-      ""
-    ])
-  ];
-  const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+  const percent = Math.round((correct / history.length) * 100);
+  const rows = history.map((item, index) => `
+    <article class="qa-card">
+      <div class="qa-number">${index + 1}</div>
+      <div>
+        <h2>${escapeHtml(item.question)}</h2>
+        <dl>
+          <div><dt>Your answer</dt><dd>${escapeHtml(item.selected)}</dd></div>
+          <div><dt>Correct answer</dt><dd>${escapeHtml(item.correctAnswer)}</dd></div>
+          <div><dt>Result</dt><dd>${item.correct ? "Correct" : "Review"}</dd></div>
+          <div><dt>Answered</dt><dd>${escapeHtml(new Date(item.answeredAt).toLocaleString())}</dd></div>
+        </dl>
+        <p><strong>Explanation:</strong> ${escapeHtml(item.explanation)}</p>
+      </div>
+    </article>
+  `).join("");
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TA Lab Q&A Reflection | Sucha™ Wellness</title>
+<style>
+  * { box-sizing: border-box; }
+  body { background: #f7f2e8; color: #18231f; font-family: Inter, Arial, sans-serif; line-height: 1.55; margin: 0; padding: 32px; }
+  .document { background: #fffdfa; border: 1px solid rgba(33,91,79,.18); margin: 0 auto; max-width: 920px; padding: 34px; }
+  .brand { align-items: center; border-bottom: 1px solid rgba(33,91,79,.18); display: flex; gap: 14px; padding-bottom: 22px; }
+  .brand img { border-radius: 50%; height: 58px; object-fit: contain; width: 58px; }
+  .brand-title { color: #163f35; font-family: Georgia, serif; font-size: 30px; line-height: 1; }
+  .brand-subtitle { color: #657067; font-size: 13px; letter-spacing: .12em; margin-top: 5px; text-transform: uppercase; }
+  h1 { color: #163f35; font-family: Georgia, serif; font-size: 46px; font-weight: 400; line-height: 1; margin: 32px 0 8px; }
+  .meta { color: #657067; margin: 0 0 22px; }
+  .score { background: #dcefe9; border: 1px solid rgba(47,125,112,.2); display: grid; gap: 6px; grid-template-columns: repeat(3, 1fr); margin: 24px 0; padding: 18px; }
+  .score span { color: #4d5a54; display: block; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+  .score strong { color: #163f35; display: block; font-family: Georgia, serif; font-size: 28px; font-weight: 400; }
+  .qa-card { border-top: 1px solid rgba(33,91,79,.18); display: grid; gap: 18px; grid-template-columns: 44px 1fr; padding: 24px 0; }
+  .qa-number { align-items: center; background: #2f7d70; border-radius: 50%; color: #fff; display: flex; font-weight: 700; height: 38px; justify-content: center; width: 38px; }
+  h2 { color: #18231f; font-size: 20px; margin: 0 0 12px; }
+  dl { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0 0 12px; }
+  dt { color: #657067; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+  dd { margin: 2px 0 0; }
+  .signature { border-top: 1px solid rgba(33,91,79,.18); margin-top: 28px; padding-top: 22px; }
+  .signature-name { color: #163f35; font-family: Georgia, serif; font-size: 26px; }
+  .disclaimer { color: #657067; font-size: 13px; margin-top: 18px; }
+  @media print { body { background: #fff; padding: 0; } .document { border: 0; } }
+</style>
+</head>
+<body>
+<main class="document">
+  <header class="brand">
+    <img src="https://www.suchawellness.com/assets/sucha-web-icon-180.png" alt="Sucha™ Wellness logo">
+    <div>
+      <div class="brand-title">Sucha™ Wellness</div>
+      <div class="brand-subtitle">TA Lab Premium Reflection</div>
+    </div>
+  </header>
+  <h1>TA Lab Q&amp;A Reflection</h1>
+  <p class="meta">Downloaded ${escapeHtml(new Date().toLocaleString())}. This report captures your local quiz answers and the learning explanations shown in TA Lab.</p>
+  <section class="score">
+    <div><span>Score</span><strong>${correct}/${history.length}</strong></div>
+    <div><span>Accuracy</span><strong>${percent}%</strong></div>
+    <div><span>Questions</span><strong>${history.length}</strong></div>
+  </section>
+  ${rows}
+  <footer class="signature">
+    <div class="signature-name">Sucha™ Wellness</div>
+    <p>Digitally prepared by TA Lab Premium</p>
+    <p class="disclaimer">Educational reflection only. This document is not therapy, diagnosis, medical advice, or a substitute for care from a qualified professional.</p>
+  </footer>
+</main>
+</body>
+</html>`;
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `sucha-ta-lab-qa-${new Date().toISOString().slice(0, 10)}.txt`;
+  link.download = `sucha-ta-lab-qa-${new Date().toISOString().slice(0, 10)}.html`;
   document.body.append(link);
   link.click();
   link.remove();
