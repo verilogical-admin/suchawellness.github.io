@@ -789,16 +789,21 @@ function downloadQuizHistory() {
     `;
   }).join("");
   const logoMark = `
-    <svg class="brand-mark" viewBox="0 0 72 72" role="img" aria-label="Sucha Wellness logo">
+    <svg class="brand-mark" viewBox="0 0 64 64" role="img" aria-label="Sucha Wellness Buddha icon">
       <defs>
-        <linearGradient id="logoGradient" x1="12" x2="62" y1="10" y2="64" gradientUnits="userSpaceOnUse">
-          <stop stop-color="#2f7d70"></stop>
-          <stop offset="1" stop-color="#c79a4b"></stop>
+        <linearGradient id="leaf" x1="10" y1="10" x2="54" y2="54" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#36b58b"></stop>
+          <stop offset="1" stop-color="#16806f"></stop>
         </linearGradient>
       </defs>
-      <circle cx="36" cy="36" r="34" fill="#fffdfa" stroke="url(#logoGradient)" stroke-width="3"></circle>
-      <path d="M22 42c7 10 23 10 29-1 4-8-2-15-11-14-8 1-13-2-12-7" fill="none" stroke="#2f7d70" stroke-width="5" stroke-linecap="round"></path>
-      <path d="M25 50c8 4 18 4 25-2" fill="none" stroke="#c79a4b" stroke-width="3" stroke-linecap="round"></path>
+      <rect width="64" height="64" rx="16" fill="#fff8e9"></rect>
+      <circle cx="32" cy="32" r="24" fill="none" stroke="#2a9d7f" stroke-width="2.8"></circle>
+      <path d="M16 40c8-2 12-7 16-16 4 9 8 14 16 16-7 4-13 7-16 13-3-6-9-9-16-13Z" fill="url(#leaf)" opacity=".18"></path>
+      <path d="M21 24c-2.7-5.2-2.1-10.2 1.5-14.7 3.8 4.3 4.5 9.4 1.9 15.1M43 24c2.7-5.2 2.1-10.2-1.5-14.7-3.8 4.3-4.5 9.4-1.9 15.1" fill="none" stroke="#2a9d7f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path>
+      <path d="M24.5 31.5c1.6-1.8 4.1-1.8 5.7 0M33.8 31.5c1.6-1.8 4.1-1.8 5.7 0M27.8 42.2c2.7 2.1 5.7 2.1 8.4 0" fill="none" stroke="#16806f" stroke-width="2.4" stroke-linecap="round"></path>
+      <path d="M32 25v9.2c0 1.4-.9 2.4-2.2 2.7" fill="none" stroke="#16806f" stroke-width="2.4" stroke-linecap="round"></path>
+      <circle cx="32" cy="15" r="2.4" fill="#2a9d7f"></circle>
+      <text x="32" y="59" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="9" font-weight="700" fill="#16806f">S</text>
     </svg>
   `;
   const html = `<!DOCTYPE html>
