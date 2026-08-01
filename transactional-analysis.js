@@ -498,6 +498,50 @@ function saveQuizAttempt(attempt) {
   saveJson(quizHistoryKey, history.slice(-200));
 }
 
+const reportTopics = [
+  { topic: "Spot the ego state", heading: "Ego States" },
+  { topic: "Spot the transaction", heading: "Transactions" },
+  { topic: "Spot the game", heading: "Games" },
+  { topic: "Spot the stroke", heading: "Strokes" }
+];
+
+function scoreSummary(items) {
+  const total = items.length;
+  const correct = items.filter((item) => item.correct).length;
+  const percent = total ? Math.round((correct / total) * 100) : 0;
+  return { total, correct, percent };
+}
+
+function reportDonut(percent) {
+  const review = 100 - percent;
+  return `
+    <svg class="donut" viewBox="0 0 120 120" role="img" aria-label="${percent}% correct">
+      <circle class="donut-bg" cx="60" cy="60" r="44"></circle>
+      <circle class="donut-ring" cx="60" cy="60" r="44" pathLength="100" stroke-dasharray="${percent} ${review}"></circle>
+      <text x="60" y="65" text-anchor="middle">${percent}%</text>
+    </svg>
+  `;
+}
+
+function renderReportRows(items, emptyText) {
+  if (!items.length) return `<p class="empty-report">${emptyText}</p>`;
+  return items.map((item, index) => `
+    <article class="qa-card">
+      <div class="qa-number">${index + 1}</div>
+      <div>
+        <h3>${escapeHtml(item.question)}</h3>
+        <dl>
+          <div><dt>Your answer</dt><dd>${escapeHtml(item.selected)}</dd></div>
+          <div><dt>Correct answer</dt><dd>${escapeHtml(item.correctAnswer)}</dd></div>
+          <div><dt>Result</dt><dd>${item.correct ? "Correct" : "Review"}</dd></div>
+          <div><dt>Answered</dt><dd>${escapeHtml(new Date(item.answeredAt).toLocaleString())}</dd></div>
+        </dl>
+        <p><strong>Explanation:</strong> ${escapeHtml(item.explanation)}</p>
+      </div>
+    </article>
+  `).join("");
+}
+
 function downloadQuizHistory() {
   if (!hasTaAccess()) {
     $("#quiz-result").innerHTML = "<strong>Premium feature.</strong> Start a trial, redeem a coupon, or upgrade to download your TA quiz Q&A.";
@@ -508,24 +552,39 @@ function downloadQuizHistory() {
     $("#quiz-result").innerHTML = "<strong>No answers yet.</strong> Answer a few questions, then download your Q&A reflection file.";
     return;
   }
-  const correct = history.filter((item) => item.correct).length;
-  const percent = Math.round((correct / history.length) * 100);
-  const rows = history.map((item, index) => `
-    <article class="qa-card">
-      <div class="qa-number">${index + 1}</div>
-      <div>
-        <h2>${escapeHtml(item.question)}</h2>
-        <dl>
-          <div><dt>Topic</dt><dd>${escapeHtml(item.topic || "Spot the ego state")}</dd></div>
-          <div><dt>Your answer</dt><dd>${escapeHtml(item.selected)}</dd></div>
-          <div><dt>Correct answer</dt><dd>${escapeHtml(item.correctAnswer)}</dd></div>
-          <div><dt>Result</dt><dd>${item.correct ? "Correct" : "Review"}</dd></div>
-          <div><dt>Answered</dt><dd>${escapeHtml(new Date(item.answeredAt).toLocaleString())}</dd></div>
-        </dl>
-        <p><strong>Explanation:</strong> ${escapeHtml(item.explanation)}</p>
-      </div>
-    </article>
-  `).join("");
+  const overall = scoreSummary(history);
+  const groupedSections = reportTopics.map((group) => {
+    const items = history.filter((item) => (item.topic || "Spot the ego state") === group.topic);
+    const summary = scoreSummary(items);
+    return `
+      <section class="topic-section">
+        <div class="topic-heading">
+          <div>
+            <p class="eyebrow">Core learning</p>
+            <h2>${group.heading}</h2>
+          </div>
+          <div class="topic-score">
+            ${reportDonut(summary.percent)}
+            <div><strong>${summary.correct}/${summary.total}</strong><span>correct</span></div>
+          </div>
+        </div>
+        ${renderReportRows(items, `No ${group.heading.toLowerCase()} answers yet.`)}
+      </section>
+    `;
+  }).join("");
+  const logoMark = `
+    <svg class="brand-mark" viewBox="0 0 72 72" role="img" aria-label="Sucha Wellness logo">
+      <defs>
+        <linearGradient id="logoGradient" x1="12" x2="62" y1="10" y2="64" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#2f7d70"></stop>
+          <stop offset="1" stop-color="#c79a4b"></stop>
+        </linearGradient>
+      </defs>
+      <circle cx="36" cy="36" r="34" fill="#fffdfa" stroke="url(#logoGradient)" stroke-width="3"></circle>
+      <path d="M22 42c7 10 23 10 29-1 4-8-2-15-11-14-8 1-13-2-12-7" fill="none" stroke="#2f7d70" stroke-width="5" stroke-linecap="round"></path>
+      <path d="M25 50c8 4 18 4 25-2" fill="none" stroke="#c79a4b" stroke-width="3" stroke-linecap="round"></path>
+    </svg>
+  `;
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -537,30 +596,45 @@ function downloadQuizHistory() {
   body { background: #f7f2e8; color: #18231f; font-family: Inter, Arial, sans-serif; line-height: 1.55; margin: 0; padding: 32px; }
   .document { background: #fffdfa; border: 1px solid rgba(33,91,79,.18); margin: 0 auto; max-width: 920px; padding: 34px; }
   .brand { align-items: center; border-bottom: 1px solid rgba(33,91,79,.18); display: flex; gap: 14px; padding-bottom: 22px; }
-  .brand img { border-radius: 50%; height: 58px; object-fit: contain; width: 58px; }
+  .brand-mark { flex: 0 0 auto; height: 62px; width: 62px; }
   .brand-title { color: #163f35; font-family: Georgia, serif; font-size: 30px; line-height: 1; }
   .brand-subtitle { color: #657067; font-size: 13px; letter-spacing: .12em; margin-top: 5px; text-transform: uppercase; }
   h1 { color: #163f35; font-family: Georgia, serif; font-size: 46px; font-weight: 400; line-height: 1; margin: 32px 0 8px; }
   .meta { color: #657067; margin: 0 0 22px; }
-  .score { background: #dcefe9; border: 1px solid rgba(47,125,112,.2); display: grid; gap: 6px; grid-template-columns: repeat(3, 1fr); margin: 24px 0; padding: 18px; }
+  .website { color: #3a5049; display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0 0 22px; }
+  .website a { color: #1f6b5e; font-weight: 700; text-decoration: none; }
+  .score { background: #dcefe9; border: 1px solid rgba(47,125,112,.2); display: grid; gap: 14px; grid-template-columns: 120px repeat(3, 1fr); margin: 24px 0; padding: 18px; }
   .score span { color: #4d5a54; display: block; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
   .score strong { color: #163f35; display: block; font-family: Georgia, serif; font-size: 28px; font-weight: 400; }
+  .donut { height: 104px; overflow: visible; width: 104px; }
+  .donut-bg { fill: none; stroke: #edf7f3; stroke-width: 16; }
+  .donut-ring { fill: none; stroke: #2f7d70; stroke-linecap: round; stroke-width: 16; transform: rotate(-90deg); transform-origin: 60px 60px; }
+  .donut text { fill: #163f35; font-family: Georgia, serif; font-size: 22px; }
+  .topic-section { border-top: 1px solid rgba(33,91,79,.2); padding: 30px 0 4px; }
+  .topic-heading { align-items: center; display: flex; gap: 18px; justify-content: space-between; margin-bottom: 8px; }
+  .topic-heading h2 { color: #163f35; font-family: Georgia, serif; font-size: 34px; font-weight: 400; margin: 0; }
+  .eyebrow { color: #657067; font-size: 12px; font-weight: 700; letter-spacing: .12em; margin: 0 0 4px; text-transform: uppercase; }
+  .topic-score { align-items: center; display: flex; gap: 12px; }
+  .topic-score strong { color: #163f35; display: block; font-family: Georgia, serif; font-size: 28px; font-weight: 400; }
+  .topic-score span { color: #657067; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
   .qa-card { border-top: 1px solid rgba(33,91,79,.18); display: grid; gap: 18px; grid-template-columns: 44px 1fr; padding: 24px 0; }
   .qa-number { align-items: center; background: #2f7d70; border-radius: 50%; color: #fff; display: flex; font-weight: 700; height: 38px; justify-content: center; width: 38px; }
-  h2 { color: #18231f; font-size: 20px; margin: 0 0 12px; }
+  h3 { color: #18231f; font-size: 20px; margin: 0 0 12px; }
   dl { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0 0 12px; }
   dt { color: #657067; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
   dd { margin: 2px 0 0; }
+  .empty-report { color: #657067; margin: 12px 0 24px; }
   .signature { border-top: 1px solid rgba(33,91,79,.18); margin-top: 28px; padding-top: 22px; }
   .signature-name { color: #163f35; font-family: Georgia, serif; font-size: 26px; }
   .disclaimer { color: #657067; font-size: 13px; margin-top: 18px; }
+  @media (max-width: 720px) { body { padding: 16px; } .document { padding: 22px; } .score { grid-template-columns: 1fr; } .topic-heading { align-items: flex-start; flex-direction: column; } dl { grid-template-columns: 1fr; } }
   @media print { body { background: #fff; padding: 0; } .document { border: 0; } }
 </style>
 </head>
 <body>
 <main class="document">
   <header class="brand">
-    <img src="https://www.suchawellness.com/assets/sucha-web-icon-180.png" alt="Sucha™ Wellness logo">
+    ${logoMark}
     <div>
       <div class="brand-title">Sucha™ Wellness</div>
       <div class="brand-subtitle">TA Lab Premium Reflection</div>
@@ -568,12 +642,14 @@ function downloadQuizHistory() {
   </header>
   <h1>TA Lab Q&amp;A Reflection</h1>
   <p class="meta">Downloaded ${escapeHtml(new Date().toLocaleString())}. This report captures your local quiz answers and the learning explanations shown in TA Lab.</p>
+  <p class="website"><span>Website: <a href="https://www.suchawellness.com">www.suchawellness.com</a></span><span>TA Lab: <a href="https://www.suchawellness.com/transactional-analysis">suchawellness.com/transactional-analysis</a></span><span>Support: support@suchawellness.com</span></p>
   <section class="score">
-    <div><span>Score</span><strong>${correct}/${history.length}</strong></div>
-    <div><span>Accuracy</span><strong>${percent}%</strong></div>
-    <div><span>Questions</span><strong>${history.length}</strong></div>
+    <div>${reportDonut(overall.percent)}</div>
+    <div><span>Overall score</span><strong>${overall.correct}/${overall.total}</strong></div>
+    <div><span>Accuracy</span><strong>${overall.percent}%</strong></div>
+    <div><span>Questions</span><strong>${overall.total}</strong></div>
   </section>
-  ${rows}
+  ${groupedSections}
   <footer class="signature">
     <div class="signature-name">Sucha™ Wellness</div>
     <p>Digitally prepared by TA Lab Premium</p>
