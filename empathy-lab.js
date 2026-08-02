@@ -180,6 +180,10 @@ function escapeHtml(value) {
   }[char]));
 }
 
+function escapeXml(value) {
+  return escapeHtml(value);
+}
+
 function normalizeEmail(value) {
   return String(value || "").trim().toLowerCase();
 }
@@ -439,6 +443,69 @@ function dominantComponent(character) {
   return Object.entries(character.scores).sort((a, b) => b[1] - a[1])[0][0];
 }
 
+function portraitForCharacter(character, index, palette) {
+  const hairColors = ["#211815", "#4b3026", "#d7b76f", "#e8d7b0", "#161616", "#8b5a37", "#c9c9c2", "#6e4a35"];
+  const skinColors = ["#d7a47b", "#c58f69", "#e2b890", "#b98261", "#f0c9a1", "#a66f55"];
+  const cloakColors = ["#1f3f38", "#5a2f34", "#243752", "#6b5529", "#3e354e", "#26323c", "#783b32", "#425449"];
+  const hair = hairColors[index % hairColors.length];
+  const skin = skinColors[(index + character.name.length) % skinColors.length];
+  const cloak = cloakColors[(index + character.house.length) % cloakColors.length];
+  const longHair = /Daenerys|Sansa|Cersei|Catelyn|Margaery|Olenna|Melisandre|Missandei|Ygritte|Ellaria|Arya|Yara/.test(character.name);
+  const beard = /Jon|Ned|Tywin|Davos|Jorah|Sandor|Bronn|Tormund|Oberyn|Ramsay/.test(character.name);
+  const crown = /Daenerys|Cersei|Joffrey|Margaery/.test(character.name);
+  const scar = /Tyrion|Sandor|Theon|Arya|Brienne/.test(character.name);
+  const sigil = character.house.includes("Stark") ? "wolf"
+    : character.house.includes("Lannister") ? "lion"
+      : character.house.includes("Targaryen") ? "dragon"
+        : character.house.includes("Tyrell") ? "rose"
+          : character.house.includes("Greyjoy") ? "kraken"
+            : character.house.includes("Martell") || character.house.includes("Dorne") ? "sun"
+              : character.house.includes("Bolton") ? "blade"
+                : "star";
+  const motif = {
+    wolf: `<path d="M60 62l18 14 18-14 10 38-28 24-28-24z" fill="rgba(255,255,255,.18)"/>`,
+    lion: `<circle cx="78" cy="88" r="32" fill="rgba(255,255,255,.16)"/><path d="M62 78h34l-7 32H69z" fill="rgba(255,255,255,.18)"/>`,
+    dragon: `<path d="M48 98c22-54 64-32 70-4-22-8-34 6-45 24-4-18-14-24-25-20z" fill="rgba(255,255,255,.18)"/>`,
+    rose: `<g fill="rgba(255,255,255,.18)"><circle cx="78" cy="88" r="12"/><circle cx="62" cy="88" r="12"/><circle cx="94" cy="88" r="12"/><circle cx="78" cy="72" r="12"/><circle cx="78" cy="104" r="12"/></g>`,
+    kraken: `<path d="M78 56c23 22 23 48 0 78-23-30-23-56 0-78zm-28 36c-16 2-24 10-30 24m86-24c16 2 24 10 30 24" stroke="rgba(255,255,255,.2)" stroke-width="10" fill="none" stroke-linecap="round"/>`,
+    sun: `<circle cx="78" cy="88" r="18" fill="rgba(255,255,255,.18)"/><path d="M78 48v20M78 108v20M38 88h20M98 88h20M50 60l14 14M92 102l14 14M106 60L92 74M64 102l-14 14" stroke="rgba(255,255,255,.2)" stroke-width="8" stroke-linecap="round"/>`,
+    blade: `<path d="M76 42l9 72-9 24-9-24z" fill="rgba(255,255,255,.2)"/>`,
+    star: `<path d="M78 48l12 28 30 2-23 19 7 30-26-16-26 16 7-30-23-19 30-2z" fill="rgba(255,255,255,.16)"/>`
+  }[sigil];
+  const svg = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 400" role="img" aria-label="Stylized fantasy portrait of ${escapeXml(character.name)}">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="${palette[0]}" offset="0"/>
+      <stop stop-color="${palette[1]}" offset="1"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="26%" r="68%">
+      <stop stop-color="rgba(255,255,255,.72)" offset="0"/>
+      <stop stop-color="rgba(255,255,255,0)" offset="1"/>
+    </radialGradient>
+  </defs>
+  <rect width="320" height="400" rx="10" fill="url(#bg)"/>
+  <rect width="320" height="400" fill="url(#glow)"/>
+  <g transform="translate(4 8) scale(1.45)">${motif}</g>
+  <path d="M50 382c16-84 64-126 110-126s94 42 110 126z" fill="${cloak}"/>
+  <path d="M86 392c18-72 46-102 74-102s56 30 74 102z" fill="rgba(255,253,246,.18)"/>
+  ${longHair ? `<path d="M78 156c0-72 38-106 84-106s82 34 82 106c0 62-20 108-42 136H120c-24-34-42-76-42-136z" fill="${hair}"/>` : `<path d="M88 132c12-56 45-82 74-82 46 0 76 30 78 84-40-24-92-26-152-2z" fill="${hair}"/>`}
+  <path d="M104 150c0-46 24-78 58-78s58 32 58 78v44c0 42-26 78-58 78s-58-36-58-78z" fill="${skin}"/>
+  <path d="M112 150c20-34 54-45 104-28 0-40-25-68-58-68-35 0-58 29-58 72 0 8 4 17 12 24z" fill="${hair}"/>
+  ${longHair ? `<path d="M88 150c-20 68-14 124 28 168-14-60-6-114 14-162zM234 150c20 68 14 124-28 168 14-60 6-114-14-162z" fill="${hair}"/>` : ""}
+  <ellipse cx="137" cy="171" rx="8" ry="5" fill="#241f1d"/>
+  <ellipse cx="184" cy="171" rx="8" ry="5" fill="#241f1d"/>
+  <path d="M145 207c12 8 24 8 36 0" stroke="#6f4435" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <path d="M160 178l-7 22 12 2" stroke="#855d48" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  ${beard ? `<path d="M117 207c14 42 72 42 88 0-12 60-78 68-88 0z" fill="${hair}" opacity=".72"/>` : ""}
+  ${scar ? `<path d="M199 138l-24 60" stroke="#8c4a43" stroke-width="5" stroke-linecap="round" opacity=".8"/>` : ""}
+  ${crown ? `<path d="M112 78l22 20 27-28 27 28 22-20 4 36H108z" fill="#d7b66e" stroke="rgba(70,47,18,.35)" stroke-width="3"/>` : ""}
+  <path d="M86 336c24-26 48-38 74-38s50 12 74 38" stroke="rgba(255,253,246,.34)" stroke-width="10" stroke-linecap="round" fill="none"/>
+  <text x="160" y="366" text-anchor="middle" font-family="Georgia, serif" font-size="42" fill="rgba(255,253,246,.9)" opacity=".92">${escapeXml(character.initials)}</text>
+</svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
 function renderCharacters() {
   const grid = $("#character-grid");
   if (!grid) return;
@@ -449,6 +516,7 @@ function renderCharacters() {
   grid.innerHTML = filtered.map((character, index) => {
     const palette = characterPalette[index % characterPalette.length];
     const dominant = dominantComponent(character);
+    const portrait = portraitForCharacter(character, index, palette);
     const scores = [
       ["Cognitive", "cognitive", "#2f7d70"],
       ["Emotional", "emotional", "#d98f83"],
@@ -463,7 +531,7 @@ function renderCharacters() {
     `).join("");
     return `
       <button class="character-card ${dominant === "syncretic" ? "featured" : ""}" type="button" data-character="${escapeHtml(character.name)}" style="--portrait-a:${palette[0]};--portrait-b:${palette[1]}">
-        <div class="character-photo" aria-hidden="true"><span class="character-initials">${escapeHtml(character.initials)}</span></div>
+        <img class="character-photo" src="${portrait}" alt="Stylized fantasy portrait of ${escapeHtml(character.name)}" loading="lazy">
         <h3>${escapeHtml(character.name)}</h3>
         <div class="character-house">${escapeHtml(character.house)} · ${dominant}</div>
         <div class="character-scores">${scores}</div>

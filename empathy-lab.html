@@ -389,49 +389,14 @@
     box-shadow: 0 22px 54px rgba(81, 58, 21, .13);
   }
   .character-photo {
-    align-items: end;
     aspect-ratio: 4 / 5;
-    background:
-      radial-gradient(circle at 50% 26%, rgba(255, 253, 248, .82) 0 10%, transparent 10.5%),
-      radial-gradient(circle at 48% 34%, rgba(24, 35, 31, .7) 0 2.8%, transparent 3.2%),
-      radial-gradient(circle at 57% 34%, rgba(24, 35, 31, .7) 0 2.8%, transparent 3.2%),
-      linear-gradient(145deg, var(--portrait-a), var(--portrait-b));
     border: 1px solid rgba(24, 35, 31, .12);
     border-radius: var(--radius);
-    color: rgba(255, 253, 250, .9);
-    display: flex;
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: clamp(2rem, 6vw, 3.7rem);
-    justify-content: center;
-    line-height: 1;
+    display: block;
     margin-bottom: .72rem;
-    overflow: hidden;
-    padding: 0 0 .9rem;
-    position: relative;
+    object-fit: cover;
+    width: 100%;
   }
-  .character-photo::before {
-    background:
-      radial-gradient(ellipse at center, rgba(255, 253, 248, .78) 0 28%, transparent 29%),
-      linear-gradient(160deg, rgba(255, 253, 248, .42), rgba(24, 35, 31, .14));
-    border-radius: 44% 44% 38% 38%;
-    content: "";
-    height: 41%;
-    left: 31%;
-    position: absolute;
-    top: 18%;
-    width: 38%;
-  }
-  .character-photo::after {
-    background: linear-gradient(160deg, rgba(24, 35, 31, .28), rgba(255, 253, 250, .18));
-    border-radius: 50% 50% 18% 18%;
-    bottom: 0;
-    content: "";
-    height: 40%;
-    left: 16%;
-    position: absolute;
-    width: 68%;
-  }
-  .character-initials { position: relative; text-shadow: 0 2px 18px rgba(0, 0, 0, .25); z-index: 1; }
   .character-card h3 { font-size: 1.08rem; margin-bottom: .15rem; }
   .character-house {
     color: var(--muted);
@@ -747,6 +712,6 @@
     <a href="mailto:support@suchawellness.com?subject=Sucha%20Empathy%20Lab">Support</a>
   </span>
 </footer>
-<script src="/empathy-lab.js?v=2026-08-02-empathy-lab-v2" defer></script>
+<script src="/empathy-lab.js?v=2026-08-02-empathy-lab-v3" defer></script>
 </body>
 </html>
