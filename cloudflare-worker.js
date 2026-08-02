@@ -11,7 +11,7 @@ const SECURITY_HEADERS = {
   'Permissions-Policy': 'accelerometer=(), autoplay=(), camera=(), clipboard-read=(), clipboard-write=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(self), usb=()',
 };
 
-const STATIC_ASSET_VERSION = '2026-08-01-ta-berne-games-library';
+const STATIC_ASSET_VERSION = '2026-08-02-empathy-lab-v1';
 
 const ROBOTS_TXT = `# Sucha™ Wellness allows responsible search and AI discovery so people can find
 # mental wellness screening, private journaling, and care-navigation resources.
@@ -70,6 +70,7 @@ Important interpretation notes:
 - [Homepage](https://www.suchawellness.com/): Main Sucha™ Wellness experience with mental wellness screening, journaling, care navigation, provider onboarding, and contact information.
 - [Mental health screening tests](https://www.suchawellness.com/tests): Dedicated landing page for informational Sucha™-hosted screening tools and optional premium report unlocks.
 - [Empathy Type Test](https://www.suchawellness.com/empathy-test): Dedicated page for the free 5-question empathy snapshot and separate paid 20Q/50Q empathy reports.
+- [Empathy Lab](https://www.suchawellness.com/empathy-lab): Interactive premium training lab for cognitive, emotional, compassionate, synchrony, and Read the Room empathy practice.
 - [Sucha™ Journal](https://www.suchawellness.com/journal): Dedicated page for private mental health notes, local journal storage, and optional premium encrypted vault.
 - [Transactional Analysis Practice Lab](https://www.suchawellness.com/transactional-analysis): TA learning and application tool with free PAC lessons, a 7-day local trial, and optional Razorpay premium for transaction analysis, logs, strokes, life positions, and reflection.
 - [Care seeker matching](https://www.suchawellness.com/therapist-matching): Dedicated page for requesting connection to a licensed and vetted therapist or counsellor.
@@ -82,6 +83,7 @@ Important interpretation notes:
 - [Sucha™ Journal Premium](https://www.suchawellness.com/journal): $60/year premium journal vault with password-protected encryption and a 30-day cancellation refund policy described on the page.
 - [Premium screening report unlocks](https://www.suchawellness.com/premium-reports): Optional paid downloadable reports for selected informational screening tools.
 - [Premium empathy reports](https://www.suchawellness.com/empathy-test): Separate paid 20Q comprehensive and 50Q deep empathy tests with downloadable PDF reports.
+- [Empathy Lab Premium](https://www.suchawellness.com/empathy-lab): Separate $1000/year premium lab access for empathy skill practice, currently unlockable through dedicated Empathy Lab coupons or Razorpay checkout.
 - [Care navigation](https://www.suchawellness.com/therapist-matching): Request routing to qualified, licensed, and vetted mental health professionals.
 - [Provider presence](https://www.suchawellness.com/#provider-page): Branded provider pages, bookings, payments, secure sharing, and credential verification workflow.
 
@@ -118,6 +120,12 @@ const SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
   <url>
     <loc>https://www.suchawellness.com/empathy-test</loc>
     <lastmod>2026-07-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.suchawellness.com/empathy-lab</loc>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -174,6 +182,10 @@ const TA_LAB_PLAN_ID = 'ta_lab_yearly_60';
 const TA_LAB_PRODUCT = 'SuchaTALabPremium';
 const TA_LAB_PRICE_LABEL = '$60/year';
 const TA_LAB_ACCESS_DAYS = 365;
+const EMPATHY_LAB_PLAN_ID = 'empathy_lab_yearly_1000';
+const EMPATHY_LAB_PRODUCT = 'SuchaEmpathyLabPremium';
+const EMPATHY_LAB_PRICE_LABEL = '$1000/year';
+const EMPATHY_LAB_ACCESS_DAYS = 365;
 const GUARANTEE_DAYS = 30;
 const VERIFICATION_COOKIE = 'sucha_verified_visitor';
 const WALLET_PRODUCT = 'SuchaCareWallet';
@@ -301,6 +313,14 @@ function validateTaLabCheckoutRequest(body) {
   return email;
 }
 
+function validateEmpathyLabCheckoutRequest(body) {
+  const email = String(body.email || '').trim().toLowerCase();
+  if (body.planId && body.planId !== EMPATHY_LAB_PLAN_ID) throw new Error('Unknown Empathy Lab plan.');
+  if (body.product && body.product !== EMPATHY_LAB_PRODUCT) throw new Error('Unknown product.');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('A valid billing email is required.');
+  return email;
+}
+
 function empathyReportPlan(body = {}) {
   const planId = body.planId === EMPATHY_DEEP_REPORT_PLAN_ID ? EMPATHY_DEEP_REPORT_PLAN_ID : EMPATHY_REPORT_PLAN_ID;
   return planId === EMPATHY_DEEP_REPORT_PLAN_ID
@@ -314,6 +334,10 @@ function testReportPlan() {
 
 function taLabPlan() {
   return { planId: TA_LAB_PLAN_ID, label: 'TA Lab Premium', amount: 6000, price: TA_LAB_PRICE_LABEL };
+}
+
+function empathyLabPlan() {
+  return { planId: EMPATHY_LAB_PLAN_ID, label: 'Empathy Lab Premium', amount: 100000, price: EMPATHY_LAB_PRICE_LABEL };
 }
 
 async function hmacSha256Hex(secret, message) {
@@ -726,12 +750,21 @@ async function redeemCoupon(request, env, forcedProduct = '') {
   if (couponProduct !== requestedProduct) return json({ error: 'This coupon is for a different Sucha™ product.' }, { status: 403 });
 
   const now = Date.now();
-  const maxAccessDays = couponProduct === TA_LAB_PRODUCT ? TA_LAB_ACCESS_DAYS : JOURNAL_ACCESS_DAYS;
+  const maxAccessDays = couponProduct === EMPATHY_LAB_PRODUCT
+    ? EMPATHY_LAB_ACCESS_DAYS
+    : couponProduct === TA_LAB_PRODUCT
+      ? TA_LAB_ACCESS_DAYS
+      : JOURNAL_ACCESS_DAYS;
   const accessDays = clampNumber(state.accessDays, 1, maxAccessDays, maxAccessDays);
+  const planId = couponProduct === EMPATHY_LAB_PRODUCT
+    ? EMPATHY_LAB_PLAN_ID
+    : couponProduct === TA_LAB_PRODUCT
+      ? TA_LAB_PLAN_ID
+      : JOURNAL_PLAN_ID;
   const access = {
     ok: true,
     source: state.source || 'admin_coupon',
-    planId: couponProduct === TA_LAB_PRODUCT ? TA_LAB_PLAN_ID : JOURNAL_PLAN_ID,
+    planId,
     product: couponProduct,
     email,
     couponHash: hash,
@@ -997,8 +1030,9 @@ async function adminCreateCoupon(request, env) {
   const email = body.email ? normalizeEmail(body.email) : '';
   if (body.email && !email) return json({ error: 'Enter a valid email or leave email blank.' }, { status: 400 });
   const product = cleanText(body.product || JOURNAL_PRODUCT, 80);
-  if (![JOURNAL_PRODUCT, TA_LAB_PRODUCT].includes(product)) return json({ error: 'Unknown coupon product.' }, { status: 400 });
-  const accessDays = clampNumber(body.accessDays, 1, product === TA_LAB_PRODUCT ? TA_LAB_ACCESS_DAYS : JOURNAL_ACCESS_DAYS, 1);
+  if (![JOURNAL_PRODUCT, TA_LAB_PRODUCT, EMPATHY_LAB_PRODUCT].includes(product)) return json({ error: 'Unknown coupon product.' }, { status: 400 });
+  const productAccessDays = product === EMPATHY_LAB_PRODUCT ? EMPATHY_LAB_ACCESS_DAYS : product === TA_LAB_PRODUCT ? TA_LAB_ACCESS_DAYS : JOURNAL_ACCESS_DAYS;
+  const accessDays = clampNumber(body.accessDays, 1, productAccessDays, 1);
   const validHours = clampNumber(body.validHours, 1, 24 * 30, 48);
   const now = new Date();
   let code = '';
@@ -1024,14 +1058,24 @@ async function adminCreateCoupon(request, env) {
     requestId: cleanText(body.requestId || '', 80),
   };
   await putCouponState(kv, hash, state);
+  const couponProductLabel = product === EMPATHY_LAB_PRODUCT
+    ? 'Empathy Lab Premium'
+    : product === TA_LAB_PRODUCT
+      ? 'TA Lab Premium'
+      : 'Sucha™ Journal Premium';
+  const couponDestination = product === EMPATHY_LAB_PRODUCT
+    ? 'Empathy Lab premium coupon field'
+    : product === TA_LAB_PRODUCT
+      ? 'TA Lab premium coupon field'
+      : 'Sucha™ Journal premium coupon field';
   let emailed = false;
   let emailError = '';
   if (email && body.emailCoupon !== false) {
     try {
       await sendSuchaEmail(env, {
         to: email,
-        subject: 'Your Sucha™ Wellness access coupon',
-        text: `Your Sucha™ Wellness coupon code is ${code}.\n\nIt gives ${accessDays} day${accessDays === 1 ? '' : 's'} of premium access and must be used by ${state.expiresAt}.\n\nEnter it in the Sucha™ Journal premium coupon field with this email address.`,
+        subject: `Your Sucha™ Wellness ${couponProductLabel} coupon`,
+        text: `Your Sucha™ Wellness coupon code is ${code}.\n\nIt gives ${accessDays} day${accessDays === 1 ? '' : 's'} of ${couponProductLabel} access and must be used by ${state.expiresAt}.\n\nEnter it in the ${couponDestination} with this email address.`,
         html: `<!doctype html>
 <html>
   <body style="margin:0;background:#F5F2EB;color:#171717;font-family:Jost,Arial,sans-serif;">
@@ -1042,9 +1086,9 @@ async function adminCreateCoupon(request, env) {
             <tr>
               <td style="padding:28px;">
                 <div style="color:#2D7A6B;font-family:Georgia,serif;font-size:28px;line-height:1.1;font-weight:700;">Sucha™ Wellness</div>
-                <p style="font-size:17px;line-height:1.55;margin:20px 0 0;">Your premium access coupon is ready.</p>
+                <p style="font-size:17px;line-height:1.55;margin:20px 0 0;">Your ${couponProductLabel} coupon is ready.</p>
                 <div style="display:inline-block;letter-spacing:3px;font-size:24px;font-weight:700;color:#171717;background:#F5F2EB;border:1px solid #D9D2C4;border-radius:10px;padding:12px 16px;margin:22px 0;">${code}</div>
-                <p style="font-size:15px;line-height:1.55;margin:0;color:#3F4945;">This code gives ${accessDays} day${accessDays === 1 ? '' : 's'} of premium access and must be used within the approval window. Enter it in the Sucha™ Journal premium coupon field with this email address.</p>
+                <p style="font-size:15px;line-height:1.55;margin:0;color:#3F4945;">This code gives ${accessDays} day${accessDays === 1 ? '' : 's'} of ${couponProductLabel} access and must be used within the approval window. Enter it in the ${couponDestination} with this email address.</p>
               </td>
             </tr>
           </table>
@@ -1235,6 +1279,57 @@ async function createSuchaJournalCheckout(request, env) {
     });
   }
 
+  if (body.product === EMPATHY_LAB_PRODUCT || body.planId === EMPATHY_LAB_PLAN_ID) {
+    let email;
+    try {
+      email = validateEmpathyLabCheckoutRequest(body);
+    } catch (error) {
+      return json({ error: error.message }, { status: 400 });
+    }
+
+    const now = Date.now();
+    const guaranteeEndsAt = now + GUARANTEE_DAYS * 24 * 60 * 60 * 1000;
+    const accessExpiresAt = now + EMPATHY_LAB_ACCESS_DAYS * 24 * 60 * 60 * 1000;
+    const plan = empathyLabPlan();
+    const amount = Number(env.SUCHA_EMPATHY_LAB_YEARLY_AMOUNT_MINOR || env.SUCHA_EMPATHY_LAB_AMOUNT_MINOR || plan.amount);
+    const currency = env.SUCHA_EMPATHY_LAB_CURRENCY || 'USD';
+    const response = await fetch('https://api.razorpay.com/v1/orders', {
+      method: 'POST',
+      headers: {
+        Authorization: auth,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount,
+        currency,
+        receipt: `sucha_empathy_lab_${now}`,
+        notes: {
+          product: EMPATHY_LAB_PRODUCT,
+          planId: plan.planId,
+          email,
+          guaranteeDays: String(GUARANTEE_DAYS),
+          refundPolicy: '30-day cancellation refund policy described on Sucha™ Wellness',
+          price: `${plan.price} ${plan.label}`,
+          supportEmail: 'support@suchawellness.com',
+        },
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) return json({ error: data.error?.description || 'Could not create Razorpay order.' }, { status: 502 });
+    return json({
+      mode: 'order',
+      keyId: env.RAZORPAY_KEY_ID,
+      orderId: data.id,
+      amount: data.amount,
+      currency: data.currency,
+      planId: plan.planId,
+      product: EMPATHY_LAB_PRODUCT,
+      price: plan.price,
+      guaranteeEndsAt,
+      expiresAt: accessExpiresAt,
+    });
+  }
+
   let email;
   try {
     email = validateJournalCheckoutRequest(body);
@@ -1288,6 +1383,7 @@ async function verifySuchaJournalCheckout(request, env) {
   const isEmpathyReport = body.product === EMPATHY_REPORT_PRODUCT || [EMPATHY_REPORT_PLAN_ID, EMPATHY_DEEP_REPORT_PLAN_ID].includes(body.planId);
   const isTestReport = body.product === TEST_REPORT_PRODUCT || body.planId === TEST_REPORT_PLAN_ID;
   const isTaLab = body.product === TA_LAB_PRODUCT || body.planId === TA_LAB_PLAN_ID;
+  const isEmpathyLab = body.product === EMPATHY_LAB_PRODUCT || body.planId === EMPATHY_LAB_PLAN_ID;
   let email;
   try {
     email = isEmpathyReport
@@ -1296,7 +1392,9 @@ async function verifySuchaJournalCheckout(request, env) {
         ? validateTestReportCheckoutRequest(body)
         : isTaLab
           ? validateTaLabCheckoutRequest(body)
-          : validateJournalCheckoutRequest(body);
+          : isEmpathyLab
+            ? validateEmpathyLabCheckoutRequest(body)
+            : validateJournalCheckoutRequest(body);
   } catch (error) {
     return json({ error: error.message }, { status: 400 });
   }
@@ -1358,6 +1456,24 @@ async function verifySuchaJournalCheckout(request, env) {
       razorpayPaymentId: body.razorpay_payment_id,
       razorpayOrderId: body.razorpay_order_id,
       purchasedAt: Date.now(),
+      price: plan.price,
+    });
+  }
+
+  if (isEmpathyLab) {
+    const plan = empathyLabPlan();
+    const now = Date.now();
+    return json({
+      ok: true,
+      source: 'razorpay_order',
+      planId: plan.planId,
+      product: EMPATHY_LAB_PRODUCT,
+      email,
+      razorpayPaymentId: body.razorpay_payment_id,
+      razorpayOrderId: body.razorpay_order_id,
+      purchasedAt: now,
+      guaranteeEndsAt: now + GUARANTEE_DAYS * 24 * 60 * 60 * 1000,
+      expiresAt: now + EMPATHY_LAB_ACCESS_DAYS * 24 * 60 * 60 * 1000,
       price: plan.price,
     });
   }
@@ -1607,6 +1723,10 @@ export default {
       return redeemCoupon(request, env, TA_LAB_PRODUCT);
     }
 
+    if (request.method === 'POST' && url.pathname === '/api/empathy-lab/redeem-coupon') {
+      return redeemCoupon(request, env, EMPATHY_LAB_PRODUCT);
+    }
+
     if (request.method === 'POST' && url.pathname === '/api/sucha-journal/free-day-request') {
       return createFreeAccessRequest(request, env);
     }
@@ -1661,6 +1781,7 @@ export default {
       '/legal-disclaimer': '/legal-disclaimer.html',
       '/tests': '/tests.html',
       '/empathy-test': '/empathy-test.html',
+      '/empathy-lab': '/empathy-lab.html',
       '/journal': '/journal.html',
       '/transactional-analysis': '/transactional-analysis.html',
       '/therapist-matching': '/therapist-matching.html',
