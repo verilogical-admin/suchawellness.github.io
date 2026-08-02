@@ -106,9 +106,56 @@ const roomScenarios = [
   }
 ];
 
+const characterPalette = [
+  ["#27483f", "#c79a4b"],
+  ["#4b2f34", "#d98f83"],
+  ["#283a52", "#8da9c4"],
+  ["#514124", "#d9b66d"],
+  ["#3e344a", "#b8a8d4"],
+  ["#315247", "#83bba7"],
+  ["#5a3530", "#d7a092"],
+  ["#29343d", "#aebdca"]
+];
+
+const throneCharacters = [
+  { name: "Tyrion Lannister", house: "House Lannister", initials: "TL", scores: { cognitive: 10, emotional: 7, compassionate: 7, syncretic: 9 }, note: "Reads incentives, shame, pride, and danger with rare precision. His empathy is sharpest when strategy and wounded tenderness work together." },
+  { name: "Daenerys Targaryen", house: "House Targaryen", initials: "DT", scores: { cognitive: 7, emotional: 8, compassionate: 8, syncretic: 7 }, note: "Often feels suffering intensely and wants liberation, but power and certainty can narrow her ability to revise a read." },
+  { name: "Jon Snow", house: "House Stark", initials: "JS", scores: { cognitive: 7, emotional: 7, compassionate: 9, syncretic: 8 }, note: "Compassionate empathy leads. He is best at honoring pain across enemy lines, even when politics demands colder calculation." },
+  { name: "Arya Stark", house: "House Stark", initials: "AS", scores: { cognitive: 8, emotional: 5, compassionate: 5, syncretic: 9 }, note: "A master of micro-cues, threat reading, and adaptation. Her empathy is more perceptive than soft, built for survival." },
+  { name: "Sansa Stark", house: "House Stark", initials: "SS", scores: { cognitive: 9, emotional: 8, compassionate: 7, syncretic: 9 }, note: "Her people-reading matures through painful pattern recognition. She becomes especially strong at power, timing, and hidden intent." },
+  { name: "Bran Stark", house: "House Stark", initials: "BS", scores: { cognitive: 9, emotional: 3, compassionate: 4, syncretic: 10 }, note: "High syncretic perspective through vast pattern awareness, but low emotional warmth. He sees systems more easily than feelings." },
+  { name: "Catelyn Stark", house: "House Stark", initials: "CS", scores: { cognitive: 7, emotional: 9, compassionate: 8, syncretic: 7 }, note: "Emotionally attuned and fiercely protective. Her reads are powerful, though family fear can overwhelm strategic distance." },
+  { name: "Ned Stark", house: "House Stark", initials: "NS", scores: { cognitive: 6, emotional: 7, compassionate: 8, syncretic: 5 }, note: "Kind, honorable, and humane, but less fluid at reading deceptive social systems. Good heart, costly blind spots." },
+  { name: "Cersei Lannister", house: "House Lannister", initials: "CL", scores: { cognitive: 8, emotional: 5, compassionate: 2, syncretic: 7 }, note: "Excellent at suspicion, pride, vulnerability, and leverage. Compassion stays low because care is usually filtered through possession and control." },
+  { name: "Jaime Lannister", house: "House Lannister", initials: "JL", scores: { cognitive: 7, emotional: 7, compassionate: 6, syncretic: 7 }, note: "Begins defended and cynical, but grows in emotional recognition. His empathy is strongest when loyalty becomes conscience." },
+  { name: "Tywin Lannister", house: "House Lannister", initials: "TW", scores: { cognitive: 10, emotional: 3, compassionate: 1, syncretic: 8 }, note: "A formidable reader of incentives and status, with almost no compassionate softness. Strategic empathy without mercy." },
+  { name: "Varys", house: "The Spider", initials: "V", scores: { cognitive: 10, emotional: 7, compassionate: 7, syncretic: 10 }, note: "Elite pattern reader. His empathy spans networks, public suffering, and long-game outcomes, though it can become abstract." },
+  { name: "Petyr Baelish", house: "Littlefinger", initials: "PB", scores: { cognitive: 10, emotional: 6, compassionate: 1, syncretic: 9 }, note: "Brilliant at desire, insecurity, and opportunity. His empathy is extractive: he understands people mainly to move them." },
+  { name: "Brienne of Tarth", house: "House Tarth", initials: "BT", scores: { cognitive: 6, emotional: 8, compassionate: 10, syncretic: 7 }, note: "Deep compassionate empathy with strong loyalty and moral steadiness. She may miss manipulation, but rarely misses dignity." },
+  { name: "Samwell Tarly", house: "House Tarly", initials: "ST", scores: { cognitive: 8, emotional: 8, compassionate: 9, syncretic: 7 }, note: "A gentle integrator: notices fear, knowledge gaps, and practical ways to help. His empathy is warm and useful." },
+  { name: "Margaery Tyrell", house: "House Tyrell", initials: "MT", scores: { cognitive: 9, emotional: 8, compassionate: 6, syncretic: 9 }, note: "Socially fluent and emotionally observant. Her warmth may be strategic, but the read of the room is excellent." },
+  { name: "Olenna Tyrell", house: "House Tyrell", initials: "OT", scores: { cognitive: 10, emotional: 7, compassionate: 5, syncretic: 9 }, note: "Fast, witty, and socially exact. She reads motives and absurdity beautifully, with selective compassion." },
+  { name: "Theon Greyjoy", house: "House Greyjoy", initials: "TG", scores: { cognitive: 5, emotional: 8, compassionate: 6, syncretic: 6 }, note: "Emotionally intense and identity-hungry. His empathy improves when shame becomes remorse rather than performance." },
+  { name: "Yara Greyjoy", house: "House Greyjoy", initials: "YG", scores: { cognitive: 7, emotional: 7, compassionate: 7, syncretic: 8 }, note: "Direct, pragmatic, and better at reading loyalty through action than through polished words." },
+  { name: "Davos Seaworth", house: "Onion Knight", initials: "DS", scores: { cognitive: 8, emotional: 8, compassionate: 9, syncretic: 8 }, note: "One of the healthiest empathy profiles: grounded, plain-spoken, humane, and able to challenge power without losing care." },
+  { name: "Melisandre", house: "Red Priestess", initials: "M", scores: { cognitive: 7, emotional: 4, compassionate: 3, syncretic: 9 }, note: "High symbolic and pattern empathy, low humility when interpretation becomes certainty. A cautionary card for over-reading signs." },
+  { name: "Jorah Mormont", house: "House Mormont", initials: "JM", scores: { cognitive: 6, emotional: 8, compassionate: 8, syncretic: 6 }, note: "Devoted and emotionally sensitive, though attachment can distort his reading. Care is high, objectivity less so." },
+  { name: "Sandor Clegane", house: "The Hound", initials: "SC", scores: { cognitive: 7, emotional: 6, compassionate: 6, syncretic: 8 }, note: "Rough exterior, strong threat-reading, hidden care. He senses hypocrisy and fear faster than tenderness." },
+  { name: "Bronn", house: "Sellsword", initials: "B", scores: { cognitive: 8, emotional: 5, compassionate: 3, syncretic: 8 }, note: "Reads motives, risk, and advantage with comic speed. More adaptive than caring, but rarely naive." },
+  { name: "Missandei", house: "Naath", initials: "MI", scores: { cognitive: 8, emotional: 9, compassionate: 9, syncretic: 8 }, note: "Graceful emotional and compassionate empathy. She reads language, pain, loyalty, and dignity with quiet accuracy." },
+  { name: "Grey Worm", house: "Unsullied", initials: "GW", scores: { cognitive: 7, emotional: 6, compassionate: 7, syncretic: 7 }, note: "Disciplined and restrained, with empathy emerging through trust and attachment rather than open expressiveness." },
+  { name: "Tormund Giantsbane", house: "Free Folk", initials: "TG", scores: { cognitive: 6, emotional: 8, compassionate: 7, syncretic: 8 }, note: "Emotionally direct, socially bold, and often surprisingly attuned once you translate the volume." },
+  { name: "Ygritte", house: "Free Folk", initials: "Y", scores: { cognitive: 7, emotional: 8, compassionate: 6, syncretic: 8 }, note: "Strong emotional read and cultural attunement. She spots naivete quickly and tests whether people understand context." },
+  { name: "Oberyn Martell", house: "House Martell", initials: "OM", scores: { cognitive: 8, emotional: 9, compassionate: 7, syncretic: 9 }, note: "Emotionally vivid, socially perceptive, and excellent at reading masks. His empathy is passionate, sometimes risky." },
+  { name: "Ellaria Sand", house: "Dorne", initials: "ES", scores: { cognitive: 6, emotional: 9, compassionate: 4, syncretic: 7 }, note: "High emotional intensity and grief perception, but pain can narrow compassion into vengeance." },
+  { name: "Ramsay Bolton", house: "House Bolton", initials: "RB", scores: { cognitive: 8, emotional: 4, compassionate: 0, syncretic: 7 }, note: "A dark example of cognitive empathy used for harm. He reads fear well, but lacks compassionate restraint." },
+  { name: "Joffrey Baratheon", house: "House Baratheon", initials: "JB", scores: { cognitive: 3, emotional: 2, compassionate: 0, syncretic: 2 }, note: "Low empathy across the board. Often reacts from insecurity, domination, and impulse rather than accurate people-reading." }
+];
+
 let currentMode = "cognitive";
 let scenarioIndex = 0;
 let roomIndex = 0;
+let characterFilter = "all";
 
 function loadJson(key, fallback) {
   try {
@@ -388,10 +435,68 @@ function analyzeRealSituation() {
   `;
 }
 
+function dominantComponent(character) {
+  return Object.entries(character.scores).sort((a, b) => b[1] - a[1])[0][0];
+}
+
+function renderCharacters() {
+  const grid = $("#character-grid");
+  if (!grid) return;
+  const filtered = characterFilter === "all"
+    ? throneCharacters
+    : throneCharacters.filter((character) => dominantComponent(character) === characterFilter);
+  $("#character-count").textContent = `${filtered.length} character${filtered.length === 1 ? "" : "s"} shown`;
+  grid.innerHTML = filtered.map((character, index) => {
+    const palette = characterPalette[index % characterPalette.length];
+    const dominant = dominantComponent(character);
+    const scores = [
+      ["Cognitive", "cognitive", "#2f7d70"],
+      ["Emotional", "emotional", "#d98f83"],
+      ["Compassionate", "compassionate", "#c79a4b"],
+      ["Syncretic", "syncretic", "#526f8f"]
+    ].map(([label, key, color]) => `
+      <div class="mini-score">
+        <span>${label}</span>
+        <div class="mini-meter"><i style="--score-color:${color};--score-width:${character.scores[key] * 10}%"></i></div>
+        <b>${character.scores[key]}</b>
+      </div>
+    `).join("");
+    return `
+      <button class="character-card ${dominant === "syncretic" ? "featured" : ""}" type="button" data-character="${escapeHtml(character.name)}" style="--portrait-a:${palette[0]};--portrait-b:${palette[1]}">
+        <div class="character-photo" aria-hidden="true"><span class="character-initials">${escapeHtml(character.initials)}</span></div>
+        <h3>${escapeHtml(character.name)}</h3>
+        <div class="character-house">${escapeHtml(character.house)} · ${dominant}</div>
+        <div class="character-scores">${scores}</div>
+        <p class="character-note">${escapeHtml(character.note)}</p>
+      </button>
+    `;
+  }).join("");
+  if (!filtered.length) {
+    grid.innerHTML = `<article class="panel"><h3>No characters here yet</h3><p class="section-copy">Try another empathy component.</p></article>`;
+  }
+}
+
+function showCharacterDetail(name) {
+  const character = throneCharacters.find((item) => item.name === name);
+  if (!character) return;
+  const dominant = dominantComponent(character);
+  const strongest = dominant === "syncretic"
+    ? "syncretic attunement: pattern, timing, culture, power, and body-level context"
+    : `${dominant} empathy`;
+  $("#character-detail").innerHTML = `
+    <strong>${escapeHtml(character.name)}:</strong>
+    strongest in ${escapeHtml(strongest)}.
+    Cognitive ${character.scores.cognitive}/10, emotional ${character.scores.emotional}/10,
+    compassionate ${character.scores.compassionate}/10, syncretic ${character.scores.syncretic}/10.
+    ${escapeHtml(character.note)}
+  `;
+}
+
 function boot() {
   updateGate();
   renderScenario();
   renderRoom();
+  renderCharacters();
 
   $$(".tool-tab").forEach((button) => button.addEventListener("click", () => {
     currentMode = button.dataset.mode;
@@ -414,6 +519,16 @@ function boot() {
     renderRoom();
   });
   $("#analyze-real").addEventListener("click", analyzeRealSituation);
+  $$(".character-tab").forEach((button) => button.addEventListener("click", () => {
+    characterFilter = button.dataset.characterFilter;
+    $$(".character-tab").forEach((tab) => tab.classList.toggle("active", tab === button));
+    renderCharacters();
+    $("#character-detail").textContent = "Choose a character card to see the empathy read.";
+  }));
+  $("#character-grid").addEventListener("click", (event) => {
+    const card = event.target.closest("[data-character]");
+    if (card) showCharacterDetail(card.dataset.character);
+  });
   $("#empathy-lab-coupon-button").addEventListener("click", () => {
     redeemCoupon().catch((error) => setStatus(error.message || "Coupon could not be redeemed."));
   });

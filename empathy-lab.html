@@ -342,6 +342,133 @@
   .score-card strong { color: #173d35; display: block; font-family: Georgia, "Times New Roman", serif; font-size: 1.8rem; font-weight: 400; }
   .meter { background: rgba(33, 91, 79, .09); border-radius: 999px; height: .48rem; margin-top: .45rem; overflow: hidden; }
   .meter i { background: var(--teal); display: block; height: 100%; width: 0; }
+  .character-toolbar {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .character-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+  }
+  .character-tab {
+    background: rgba(255, 255, 255, .7);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: #2d443d;
+    font-size: .74rem;
+    font-weight: 850;
+    letter-spacing: .08em;
+    min-height: 2.15rem;
+    padding: .4rem .62rem;
+    text-transform: uppercase;
+  }
+  .character-tab.active { background: #173d35; border-color: #173d35; color: #fff; }
+  .character-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .character-card {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, .78), rgba(255, 252, 245, .96)),
+      radial-gradient(circle at 12% 8%, rgba(199, 154, 75, .18), transparent 8rem);
+    border: 1px solid rgba(33, 91, 79, .16);
+    border-radius: var(--radius);
+    box-shadow: 0 18px 48px rgba(34, 47, 43, .08);
+    overflow: hidden;
+    padding: .72rem;
+    text-align: left;
+  }
+  .character-card.featured {
+    border-color: rgba(199, 154, 75, .5);
+    box-shadow: 0 22px 54px rgba(81, 58, 21, .13);
+  }
+  .character-photo {
+    align-items: end;
+    aspect-ratio: 4 / 5;
+    background:
+      radial-gradient(circle at 50% 26%, rgba(255, 253, 248, .82) 0 10%, transparent 10.5%),
+      radial-gradient(circle at 48% 34%, rgba(24, 35, 31, .7) 0 2.8%, transparent 3.2%),
+      radial-gradient(circle at 57% 34%, rgba(24, 35, 31, .7) 0 2.8%, transparent 3.2%),
+      linear-gradient(145deg, var(--portrait-a), var(--portrait-b));
+    border: 1px solid rgba(24, 35, 31, .12);
+    border-radius: var(--radius);
+    color: rgba(255, 253, 250, .9);
+    display: flex;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(2rem, 6vw, 3.7rem);
+    justify-content: center;
+    line-height: 1;
+    margin-bottom: .72rem;
+    overflow: hidden;
+    padding: 0 0 .9rem;
+    position: relative;
+  }
+  .character-photo::before {
+    background:
+      radial-gradient(ellipse at center, rgba(255, 253, 248, .78) 0 28%, transparent 29%),
+      linear-gradient(160deg, rgba(255, 253, 248, .42), rgba(24, 35, 31, .14));
+    border-radius: 44% 44% 38% 38%;
+    content: "";
+    height: 41%;
+    left: 31%;
+    position: absolute;
+    top: 18%;
+    width: 38%;
+  }
+  .character-photo::after {
+    background: linear-gradient(160deg, rgba(24, 35, 31, .28), rgba(255, 253, 250, .18));
+    border-radius: 50% 50% 18% 18%;
+    bottom: 0;
+    content: "";
+    height: 40%;
+    left: 16%;
+    position: absolute;
+    width: 68%;
+  }
+  .character-initials { position: relative; text-shadow: 0 2px 18px rgba(0, 0, 0, .25); z-index: 1; }
+  .character-card h3 { font-size: 1.08rem; margin-bottom: .15rem; }
+  .character-house {
+    color: var(--muted);
+    font-size: .73rem;
+    font-weight: 850;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .character-scores { display: grid; gap: .42rem; margin-top: .75rem; }
+  .mini-score {
+    align-items: center;
+    display: grid;
+    gap: .45rem;
+    grid-template-columns: 6.9rem minmax(0, 1fr) 1.45rem;
+  }
+  .mini-score span { color: #3b4d47; font-size: .76rem; font-weight: 800; }
+  .mini-score b { color: #173d35; font-size: .8rem; text-align: right; }
+  .mini-meter { background: rgba(33, 91, 79, .1); border-radius: 999px; height: .42rem; overflow: hidden; }
+  .mini-meter i { background: var(--score-color); display: block; height: 100%; width: var(--score-width); }
+  .character-note {
+    color: #3d4d47;
+    font-size: .88rem;
+    margin: .72rem 0 0;
+  }
+  .character-detail {
+    background:
+      radial-gradient(circle at .9rem .9rem, rgba(199, 154, 75, .18) 0 .12rem, transparent .15rem),
+      linear-gradient(135deg, rgba(255, 253, 250, .95), rgba(220, 239, 233, .68));
+    background-size: 1.1rem 1.1rem, auto;
+    border: 1px solid var(--line);
+    border-left: .34rem solid var(--gold);
+    border-radius: var(--radius);
+    color: #2e403a;
+    margin-top: 1rem;
+    min-height: 5rem;
+    padding: 1rem;
+  }
   .cue-map {
     background:
       linear-gradient(90deg, transparent 49.7%, rgba(33, 91, 79, .18) 49.7%, rgba(33, 91, 79, .18) 50.3%, transparent 50.3%),
@@ -390,8 +517,11 @@
   }
   .footer-links { display: flex; flex-wrap: wrap; gap: .75rem; }
   @media (max-width: 920px) {
-    .hero, .two, .three, .four, .score-strip { grid-template-columns: 1fr; }
+    .hero, .two, .three, .four, .score-strip, .character-grid { grid-template-columns: 1fr; }
     .hero { min-height: auto; }
+  }
+  @media (min-width: 681px) and (max-width: 1120px) {
+    .character-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   @media (max-width: 680px) {
     .topbar { align-items: flex-start; flex-direction: column; }
@@ -414,6 +544,7 @@
   <nav class="nav" aria-label="Empathy Lab sections">
     <a href="#practice">Practice</a>
     <a href="#read-room">Read the Room</a>
+    <a href="#westeros-deck">Westeros Deck</a>
     <a href="#real-situation">Real Situation</a>
     <a href="/empathy-test">Empathy Test</a>
     <a href="/transactional-analysis">TA Lab</a>
@@ -549,6 +680,31 @@
     </div>
   </section>
 
+  <section class="section wrap" id="westeros-deck" data-premium-required>
+    <div class="premium-lock-banner"><strong>Premium feature</strong><span>The Westeros Empathy Deck unlocks with Empathy Lab Premium.</span></div>
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Fun practice deck</div>
+        <h2 class="section-title">Westeros Empathy Deck</h2>
+      </div>
+      <p class="section-copy">A playful fan-style exercise for reading motives, feelings, care, and social attunement. Scores are interpretive learning prompts, not official canon.</p>
+    </div>
+    <div class="premium-feature">
+      <div class="character-toolbar">
+        <div class="character-tabs" aria-label="Filter Game of Thrones characters by empathy component">
+          <button class="character-tab active" type="button" data-character-filter="all">All</button>
+          <button class="character-tab" type="button" data-character-filter="cognitive">Cognitive</button>
+          <button class="character-tab" type="button" data-character-filter="emotional">Emotional</button>
+          <button class="character-tab" type="button" data-character-filter="compassionate">Compassionate</button>
+          <button class="character-tab" type="button" data-character-filter="syncretic">Syncretic</button>
+        </div>
+        <span class="micro" id="character-count">Loading characters...</span>
+      </div>
+      <div class="character-grid" id="character-grid"></div>
+      <div class="character-detail" id="character-detail">Choose a character card to see the empathy read.</div>
+    </div>
+  </section>
+
   <section class="section wrap" id="real-situation" data-premium-required>
     <div class="premium-lock-banner"><strong>Premium feature</strong><span>Paste a real situation after unlocking Empathy Lab Premium.</span></div>
     <div class="section-head">
@@ -591,6 +747,6 @@
     <a href="mailto:support@suchawellness.com?subject=Sucha%20Empathy%20Lab">Support</a>
   </span>
 </footer>
-<script src="/empathy-lab.js?v=2026-08-02-empathy-lab-v1" defer></script>
+<script src="/empathy-lab.js?v=2026-08-02-empathy-lab-v2" defer></script>
 </body>
 </html>
