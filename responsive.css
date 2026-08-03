@@ -1,0 +1,207 @@
+html {
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+*, *::before, *::after {
+  min-width: 0;
+}
+
+img, svg, video, canvas, iframe {
+  max-width: 100%;
+}
+
+img, video {
+  height: auto;
+}
+
+input, textarea, select, button {
+  max-width: 100%;
+}
+
+textarea {
+  overflow-wrap: anywhere;
+}
+
+table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+h1, h2, h3, h4, p, a, button, label, span, li, textarea, input {
+  overflow-wrap: break-word;
+}
+
+.wrap,
+.section,
+.hero-inner,
+main,
+section,
+article,
+aside,
+form {
+  min-width: 0;
+}
+
+.button-row,
+.actions,
+.hero-actions,
+.nav-links,
+.footer-links,
+.payment-chip-row,
+.journal-actions,
+.contact-cards {
+  max-width: 100%;
+}
+
+@media (max-width: 920px) {
+  .hero,
+  .grid,
+  .two,
+  .three,
+  .four,
+  .steps-grid,
+  .why-grid,
+  .care-grid,
+  .care-form-grid,
+  .journal-shell,
+  .journal-row,
+  .test-layout,
+  .screening-tools,
+  .inline-options,
+  .score-strip,
+  .character-grid,
+  .gym-prompts,
+  .gym-stats,
+  .metric-grid,
+  .game-category-grid,
+  .pac-map,
+  .option-grid,
+  main {
+    grid-template-columns: 1fr !important;
+  }
+
+  .hero,
+  section,
+  .section {
+    min-height: auto !important;
+  }
+
+  .section-head,
+  .journal-toolbar,
+  .character-toolbar,
+  .gym-top,
+  .footer {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+}
+
+@media (max-width: 760px) {
+  nav,
+  .nav,
+  .topbar {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    gap: .75rem !important;
+  }
+
+  .nav-links,
+  .nav,
+  .topbar .nav,
+  .footer-links {
+    justify-content: flex-start !important;
+    width: 100%;
+  }
+
+  .hero,
+  section,
+  .section,
+  .wrap {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .hero {
+    padding-top: 2.4rem !important;
+    padding-bottom: 2.4rem !important;
+  }
+
+  .hero h1,
+  .section-title {
+    font-size: clamp(2rem, 11vw, 3rem) !important;
+    line-height: 1.05 !important;
+  }
+
+  .lead,
+  .hero-sub,
+  .section-subtitle,
+  .section-copy {
+    font-size: 1rem !important;
+    line-height: 1.65 !important;
+  }
+
+  .btn,
+  .actions .btn,
+  .hero-actions .btn,
+  .button-row .btn {
+    justify-content: center !important;
+    text-align: center;
+    width: 100%;
+  }
+
+  .button-row,
+  .actions,
+  .hero-actions {
+    width: 100%;
+  }
+
+  .rating-options {
+    grid-template-columns: repeat(5, minmax(44px, 1fr)) !important;
+    overflow-x: auto;
+    padding-bottom: .25rem;
+  }
+
+  .score-line,
+  .mini-score {
+    grid-template-columns: 1fr !important;
+  }
+
+  .character-search {
+    grid-template-columns: 1fr !important;
+    width: 100%;
+  }
+
+  .hero-panel,
+  .panel,
+  .card,
+  .practice-card,
+  .mini-card,
+  .screening-card,
+  .journal-panel,
+  .journal-sidebar,
+  .care-card,
+  .contact-card {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  body {
+    font-size: 15.5px;
+  }
+
+  .nav a,
+  .topbar a,
+  .character-tab,
+  .tool-tab,
+  .btn {
+    letter-spacing: .06em !important;
+  }
+}
