@@ -350,6 +350,52 @@
   .score-card strong { color: #173d35; display: block; font-family: Georgia, "Times New Roman", serif; font-size: 1.8rem; font-weight: 400; }
   .meter { background: rgba(33, 91, 79, .09); border-radius: 999px; height: .48rem; margin-top: .45rem; overflow: hidden; }
   .meter i { background: var(--teal); display: block; height: 100%; width: 0; }
+  .gym-shell {
+    background:
+      radial-gradient(circle at 1.1rem 1.1rem, rgba(47, 125, 112, .14) 0 .13rem, transparent .17rem),
+      linear-gradient(135deg, rgba(255, 253, 250, .92), rgba(220, 239, 233, .68));
+    background-size: 1.2rem 1.2rem, auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1rem;
+  }
+  .gym-top {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .gym-stats { display: grid; gap: .65rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .gym-stat {
+    background: rgba(255, 255, 255, .78);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: .72rem;
+  }
+  .gym-stat span { color: var(--muted); display: block; font-size: .72rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+  .gym-stat strong { color: #173d35; display: block; font-family: Georgia, "Times New Roman", serif; font-size: 1.7rem; font-weight: 400; }
+  .gym-prompts { display: grid; gap: .85rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gym-prompt {
+    background: rgba(255, 255, 255, .78);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: .85rem;
+  }
+  .gym-prompt h3 { font-size: 1.05rem; margin-bottom: .25rem; }
+  .gym-prompt p { color: var(--muted); margin: 0 0 .65rem; }
+  .gym-feedback {
+    background: linear-gradient(135deg, rgba(255, 253, 250, .95), rgba(255, 247, 230, .9));
+    border: 1px solid rgba(199, 154, 75, .3);
+    border-left: .34rem solid var(--gold);
+    border-radius: var(--radius);
+    color: #34443f;
+    margin-top: 1rem;
+    min-height: 5rem;
+    padding: 1rem;
+  }
   .character-toolbar {
     align-items: center;
     display: flex;
@@ -523,7 +569,7 @@
   }
   .footer-links { display: flex; flex-wrap: wrap; gap: .75rem; }
   @media (max-width: 920px) {
-    .hero, .two, .three, .four, .score-strip, .character-grid { grid-template-columns: 1fr; }
+    .hero, .two, .three, .four, .score-strip, .character-grid, .gym-prompts, .gym-stats { grid-template-columns: 1fr; }
     .hero { min-height: auto; }
   }
   @media (min-width: 681px) and (max-width: 1120px) {
@@ -549,6 +595,7 @@
 <header class="topbar">
   <a class="brand" href="/"><span class="brand-mark">S</span><span>Sucha™ Wellness</span></a>
   <nav class="nav" aria-label="Empathy Lab sections">
+    <a href="#daily-gym">Daily Gym</a>
     <a href="#practice">Practice</a>
     <a href="#read-room">Read the Room</a>
     <a href="#westeros-deck">Westeros Deck</a>
@@ -597,6 +644,75 @@
         <p class="micro" id="empathy-lab-status">Premium unlocks the interactive tools below.</p>
       </article>
     </aside>
+  </section>
+
+  <section class="section wrap" id="daily-gym" data-premium-required>
+    <div class="premium-lock-banner"><strong>Premium feature</strong><span>Daily Empathy Gym unlocks with Empathy Lab Premium.</span></div>
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Daily trainer</div>
+        <h2 class="section-title">Daily Empathy Gym</h2>
+      </div>
+      <p class="section-copy">A 5-minute progressive drill to sharpen cognitive, emotional, compassionate, and syncretic empathy with scoring, streaks, model reads, and a downloadable practice log.</p>
+    </div>
+    <div class="gym-shell premium-feature">
+      <div class="gym-top">
+        <div class="field" style="margin-top:0">
+          <label for="gym-difficulty">Difficulty</label>
+          <select id="gym-difficulty">
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </div>
+        <div class="button-row">
+          <button class="btn secondary" type="button" id="new-gym-drill">New drill</button>
+          <button class="btn secondary" type="button" id="download-gym-log">Download log</button>
+        </div>
+      </div>
+      <div class="grid two">
+        <article class="panel">
+          <h3 id="gym-title">Today's situation</h3>
+          <p class="scenario" id="gym-scenario"></p>
+          <div class="gym-stats">
+            <div class="gym-stat"><span>Streak</span><strong id="gym-streak">0</strong></div>
+            <div class="gym-stat"><span>Sessions</span><strong id="gym-sessions">0</strong></div>
+            <div class="gym-stat"><span>Average</span><strong id="gym-average">0</strong></div>
+          </div>
+        </article>
+        <article class="panel">
+          <h3>Today's focus</h3>
+          <div class="lens-grid" id="gym-focus-lenses"></div>
+        </article>
+      </div>
+      <div class="gym-prompts" style="margin-top:1rem">
+        <article class="gym-prompt">
+          <h3>Cognitive empathy</h3>
+          <p>Separate facts from assumptions and generate alternate possible reads.</p>
+          <textarea id="gym-cognitive" placeholder="Facts I know... Possible interpretations... What I should verify..."></textarea>
+        </article>
+        <article class="gym-prompt">
+          <h3>Emotional empathy</h3>
+          <p>Name possible feelings without claiming certainty.</p>
+          <textarea id="gym-emotional" placeholder="They may feel... I might be missing..."></textarea>
+        </article>
+        <article class="gym-prompt">
+          <h3>Compassionate empathy</h3>
+          <p>Choose a response that helps while respecting consent and boundaries.</p>
+          <textarea id="gym-compassionate" placeholder="A helpful response could be... I would avoid..."></textarea>
+        </article>
+        <article class="gym-prompt">
+          <h3>Syncretic empathy</h3>
+          <p>Read timing, tone, body/context, power, mismatch, and rhythm together.</p>
+          <textarea id="gym-syncretic" placeholder="Tone/timing/context cues... Mismatch... Adjustment..."></textarea>
+        </article>
+      </div>
+      <div class="button-row" style="margin-top:1rem">
+        <button class="btn" type="button" id="score-gym-drill">Score today's drill</button>
+        <button class="btn secondary" type="button" id="show-gym-model">Compare with model read</button>
+      </div>
+      <div class="gym-feedback" id="gym-feedback">Complete the four prompts, then score the drill.</div>
+    </div>
   </section>
 
   <section class="section wrap" id="practice" data-premium-required>
@@ -759,6 +875,6 @@
     <a href="mailto:support@suchawellness.com?subject=Sucha%20Empathy%20Lab">Support</a>
   </span>
 </footer>
-<script src="/empathy-lab.js?v=2026-08-03-empathy-lab-v5" defer></script>
+<script src="/empathy-lab.js?v=2026-08-03-empathy-lab-v6" defer></script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 const empathyLabAccessKey = "suchaEmpathyLabAccess.v1";
 const empathyLabProgressKey = "suchaEmpathyLabProgress.v1";
+const empathyGymLogKey = "suchaEmpathyGymLog.v1";
 const empathyLabPlanId = "empathy_lab_yearly_1000";
 const empathyLabProduct = "SuchaEmpathyLabPremium";
 
@@ -103,6 +104,111 @@ const roomScenarios = [
     text: "A friend laughs while describing something painful, then says, \"Anyway, it's stupid.\"",
     cues: ["tone", "mismatch", "need", "check"],
     explanation: "Humor and dismissal can protect vulnerability. Check gently instead of pushing."
+  }
+];
+
+const gymDrills = [
+  {
+    title: "The clipped reply",
+    difficulty: "beginner",
+    text: "A colleague replies to your careful message with only: \"Noted.\" You feel dismissed.",
+    focus: [
+      ["Cognitive", "List three possible meanings besides rejection."],
+      ["Emotional", "Name feelings that may be present for both of you."],
+      ["Compassionate", "Choose a response that checks without accusing."],
+      ["Syncretic", "Notice timing, brevity, power, and recent context together."]
+    ],
+    model: {
+      cognitive: "Facts: the reply is short. Possible reads: busy, annoyed, neutral acknowledgement, overwhelmed, or trying to avoid a long thread.",
+      emotional: "They may feel pressured, rushed, irritated, or simply task-focused. You may feel exposed or undervalued.",
+      compassionate: "A useful check: \"Thanks. If there is anything you want me to adjust, I am open to it.\"",
+      syncretic: "Brevity matters more if it is unusual, delayed, or follows tension. Compare this moment to their normal rhythm."
+    }
+  },
+  {
+    title: "The smiling no",
+    difficulty: "beginner",
+    text: "A friend smiles and says, \"No worries,\" but avoids making a new plan.",
+    focus: [
+      ["Cognitive", "Separate politeness from possible preference."],
+      ["Emotional", "Look for disappointment, fatigue, or conflict avoidance."],
+      ["Compassionate", "Offer space and one clear option."],
+      ["Syncretic", "Read smile, avoidance, timing, and history as a pattern."]
+    ],
+    model: {
+      cognitive: "They may be okay, disappointed, unsure, or avoiding pressure. The missed plan is a stronger cue than the polite phrase.",
+      emotional: "Possible feelings: mild hurt, tiredness, resignation, or desire not to burden you.",
+      compassionate: "Try: \"I do want to see you. Would next week feel good, or would you rather leave it open?\"",
+      syncretic: "The smile softens the words, but no new plan may show distance or low energy. Verify gently."
+    }
+  },
+  {
+    title: "The defensive teammate",
+    difficulty: "intermediate",
+    text: "During feedback, a teammate interrupts: \"I already know that.\" Their voice gets faster.",
+    focus: [
+      ["Cognitive", "Generate reads about threat, competence, and shame."],
+      ["Emotional", "Track possible embarrassment under defensiveness."],
+      ["Compassionate", "Protect dignity while keeping the feedback useful."],
+      ["Syncretic", "Read interruption, speed, audience, and stakes together."]
+    ],
+    model: {
+      cognitive: "They may hear feedback as status threat, may truly know it, or may fear looking incompetent in front of others.",
+      emotional: "Likely feelings include embarrassment, urgency, irritation, or anxiety.",
+      compassionate: "Try: \"That makes sense. I am not questioning your ability. I want us aligned on the next step.\"",
+      syncretic: "Fast speech plus interruption can signal threat arousal. Slow your pace and reduce public pressure."
+    }
+  },
+  {
+    title: "The silent partner",
+    difficulty: "intermediate",
+    text: "You ask what is wrong. Your partner says, \"Nothing,\" then starts cleaning intensely.",
+    focus: [
+      ["Cognitive", "Avoid mind-reading; create multiple hypotheses."],
+      ["Emotional", "Name emotion and regulation behavior carefully."],
+      ["Compassionate", "Offer a low-pressure opening."],
+      ["Syncretic", "Read words, action, energy, and relationship pattern."]
+    ],
+    model: {
+      cognitive: "Possible reads: they need time, feel unsafe to speak, are angry, are regulating through action, or truly do not know yet.",
+      emotional: "Possible feelings: overwhelm, resentment, fear of conflict, sadness, or self-protection.",
+      compassionate: "Try: \"I will give you space. I care, and I am here when you want to talk.\"",
+      syncretic: "The word says closed, the body says activated. Match by slowing down rather than pressing harder."
+    }
+  },
+  {
+    title: "The high-stakes room",
+    difficulty: "advanced",
+    text: "A senior leader praises your idea publicly, then privately asks whether you are \"sure you want to own it.\"",
+    focus: [
+      ["Cognitive", "Read surface praise versus private risk signal."],
+      ["Emotional", "Track their caution and your ambition/pride."],
+      ["Compassionate", "Respond with maturity, not defensiveness."],
+      ["Syncretic", "Integrate power, audience, wording, and timing."]
+    ],
+    model: {
+      cognitive: "They may be warning you, testing readiness, protecting themselves, or inviting you to notice hidden complexity.",
+      emotional: "They may feel cautious, exposed, skeptical, or responsible. You may feel validated and threatened at once.",
+      compassionate: "Try: \"I want to own it responsibly. What risks do you think I should see before I commit?\"",
+      syncretic: "Public praise plus private caution is a power-context mismatch. Treat it as useful data, not betrayal."
+    }
+  },
+  {
+    title: "The group chat shift",
+    difficulty: "advanced",
+    text: "In a group chat, two people stop replying after you make a joke. One later reacts with a thumbs-up only.",
+    focus: [
+      ["Cognitive", "Generate social-context hypotheses without spiraling."],
+      ["Emotional", "Consider embarrassment, discomfort, neutrality, or distraction."],
+      ["Compassionate", "Repair lightly if needed without over-apologizing."],
+      ["Syncretic", "Read group rhythm, emoji, silence, history, and topic sensitivity."]
+    ],
+    model: {
+      cognitive: "Possibilities: the joke landed badly, people got busy, the topic felt sensitive, or one person wanted to acknowledge without reopening it.",
+      emotional: "Possible feelings include discomfort, awkwardness, amusement that faded, distraction, or mild concern.",
+      compassionate: "Try privately: \"I wondered if my joke landed oddly. If so, sorry. I did not mean it sharply.\"",
+      syncretic: "Group silence is ambiguous. Weight it against normal chat rhythm and relationship history before concluding."
+    }
   }
 ];
 
@@ -223,6 +329,7 @@ let scenarioIndex = 0;
 let roomIndex = 0;
 let characterFilter = "all";
 let characterSearch = "";
+let gymIndex = 0;
 
 function loadJson(key, fallback) {
   try {
@@ -506,6 +613,142 @@ function analyzeRealSituation() {
   `;
 }
 
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function selectedGymDrills() {
+  const difficulty = $("#gym-difficulty")?.value || "beginner";
+  return gymDrills.filter((drill) => drill.difficulty === difficulty);
+}
+
+function currentGymDrill() {
+  const drills = selectedGymDrills();
+  return drills[gymIndex % drills.length] || gymDrills[0];
+}
+
+function renderGymStats() {
+  const log = loadJson(empathyGymLogKey, []);
+  const uniqueDays = [...new Set(log.map((entry) => entry.date))].sort();
+  let streak = 0;
+  let cursor = new Date();
+  while (uniqueDays.includes(cursor.toISOString().slice(0, 10))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  const average = log.length
+    ? Math.round(log.reduce((sum, entry) => sum + Number(entry.totalScore || 0), 0) / log.length)
+    : 0;
+  $("#gym-streak").textContent = streak;
+  $("#gym-sessions").textContent = log.length;
+  $("#gym-average").textContent = average;
+}
+
+function renderDailyGym(clearAnswers = false) {
+  const drill = currentGymDrill();
+  $("#gym-title").textContent = drill.title;
+  $("#gym-scenario").textContent = drill.text;
+  $("#gym-focus-lenses").innerHTML = drill.focus.map(([title, copy]) => `
+    <article class="lens-card"><b>${title}</b><span>${copy}</span></article>
+  `).join("");
+  if (clearAnswers) {
+    ["cognitive", "emotional", "compassionate", "syncretic"].forEach((key) => {
+      $(`#gym-${key}`).value = "";
+    });
+    $("#gym-feedback").textContent = "Complete the four prompts, then score the drill.";
+  }
+  renderGymStats();
+}
+
+function scoreGymAnswer(key, value) {
+  const text = value.trim();
+  let score = 0;
+  if (text.length > 24) score += 2;
+  if (text.length > 80) score += 1;
+  if (key === "cognitive" && /\bmaybe|might|could|possible|alternative|assumption|fact|verify|check\b/i.test(text)) score += 2;
+  if (key === "emotional" && /\bfeel|hurt|angry|sad|afraid|anxious|embarrassed|overwhelmed|tired|shame\b/i.test(text)) score += 2;
+  if (key === "compassionate" && /\bhelp|support|space|ask|offer|boundary|consent|care|avoid|next\b/i.test(text)) score += 2;
+  if (key === "syncretic" && /\btone|timing|body|context|power|mismatch|silence|pace|rhythm|public|private\b/i.test(text)) score += 2;
+  if (/\b(always|never|obvious|clearly|definitely|they just|I know)\b/i.test(text)) score -= 1;
+  return Math.max(0, Math.min(5, score));
+}
+
+function scoreDailyGym() {
+  const drill = currentGymDrill();
+  const answers = {
+    cognitive: $("#gym-cognitive").value,
+    emotional: $("#gym-emotional").value,
+    compassionate: $("#gym-compassionate").value,
+    syncretic: $("#gym-syncretic").value
+  };
+  const scores = Object.fromEntries(Object.entries(answers).map(([key, value]) => [key, scoreGymAnswer(key, value)]));
+  const totalScore = Object.values(scores).reduce((sum, value) => sum + value, 0);
+  const log = loadJson(empathyGymLogKey, []);
+  log.push({
+    date: todayKey(),
+    createdAt: new Date().toISOString(),
+    difficulty: drill.difficulty,
+    title: drill.title,
+    totalScore,
+    scores,
+    answers
+  });
+  saveJson(empathyGymLogKey, log.slice(-365));
+  renderGymStats();
+  const weakest = Object.entries(scores).sort((a, b) => a[1] - b[1])[0][0];
+  const strongest = Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
+  $("#gym-feedback").innerHTML = `
+    <strong>Daily Gym score: ${totalScore}/20.</strong>
+    Strongest today: ${escapeHtml(strongest)} empathy (${scores[strongest]}/5).
+    Next rep: deepen ${escapeHtml(weakest)} empathy (${scores[weakest]}/5).
+    <p>Add at least one more tentative hypothesis, feeling word, boundary-aware response, or context cue where the score is lower.</p>
+  `;
+}
+
+function showGymModel() {
+  const drill = currentGymDrill();
+  $("#gym-feedback").innerHTML = `
+    <strong>Model read for ${escapeHtml(drill.title)}:</strong>
+    <p><b>Cognitive:</b> ${escapeHtml(drill.model.cognitive)}</p>
+    <p><b>Emotional:</b> ${escapeHtml(drill.model.emotional)}</p>
+    <p><b>Compassionate:</b> ${escapeHtml(drill.model.compassionate)}</p>
+    <p><b>Syncretic:</b> ${escapeHtml(drill.model.syncretic)}</p>
+  `;
+}
+
+function downloadGymLog() {
+  const log = loadJson(empathyGymLogKey, []);
+  if (!log.length) {
+    $("#gym-feedback").textContent = "No Daily Empathy Gym sessions have been scored yet.";
+    return;
+  }
+  const header = ["date", "difficulty", "title", "total", "cognitive", "emotional", "compassionate", "syncretic", "cognitive_answer", "emotional_answer", "compassionate_answer", "syncretic_answer"];
+  const rows = log.map((entry) => [
+    entry.date,
+    entry.difficulty,
+    entry.title,
+    entry.totalScore,
+    entry.scores?.cognitive,
+    entry.scores?.emotional,
+    entry.scores?.compassionate,
+    entry.scores?.syncretic,
+    entry.answers?.cognitive,
+    entry.answers?.emotional,
+    entry.answers?.compassionate,
+    entry.answers?.syncretic
+  ]);
+  const csv = [header, ...rows].map((row) => row.map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `sucha-empathy-gym-log-${todayKey()}.csv`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 function dominantComponent(character) {
   return Object.entries(character.scores).sort((a, b) => b[1] - a[1])[0][0];
 }
@@ -722,6 +965,7 @@ function boot() {
   updateGate();
   renderScenario();
   renderRoom();
+  renderDailyGym(true);
   renderCharacters();
 
   $$(".tool-tab").forEach((button) => button.addEventListener("click", () => {
@@ -744,6 +988,17 @@ function boot() {
     roomIndex += 1;
     renderRoom();
   });
+  $("#gym-difficulty").addEventListener("change", () => {
+    gymIndex = 0;
+    renderDailyGym(true);
+  });
+  $("#new-gym-drill").addEventListener("click", () => {
+    gymIndex += 1;
+    renderDailyGym(true);
+  });
+  $("#score-gym-drill").addEventListener("click", scoreDailyGym);
+  $("#show-gym-model").addEventListener("click", showGymModel);
+  $("#download-gym-log").addEventListener("click", downloadGymLog);
   $("#analyze-real").addEventListener("click", analyzeRealSituation);
   $$(".character-tab").forEach((button) => button.addEventListener("click", () => {
     characterFilter = button.dataset.characterFilter;
