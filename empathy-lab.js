@@ -222,6 +222,7 @@ let currentMode = "cognitive";
 let scenarioIndex = 0;
 let roomIndex = 0;
 let characterFilter = "all";
+let characterSearch = "";
 
 function loadJson(key, fallback) {
   try {
@@ -646,10 +647,30 @@ function portraitForCharacter(character, index, palette) {
 function renderCharacters() {
   const grid = $("#character-grid");
   if (!grid) return;
-  const filtered = characterFilter === "all"
+  const byComponent = characterFilter === "all"
     ? throneCharacters
     : throneCharacters.filter((character) => dominantComponent(character) === characterFilter);
+  const query = characterSearch.trim().toLowerCase();
+  const filtered = query
+    ? byComponent.filter((character) => {
+      const dominant = dominantComponent(character);
+      const haystack = [
+        character.name,
+        character.house,
+        character.initials,
+        dominant,
+        character.note,
+        Object.entries(character.scores).map(([key, value]) => `${key} ${value}`).join(" ")
+      ].join(" ").toLowerCase();
+      return haystack.includes(query);
+    })
+    : byComponent;
   $("#character-count").textContent = `${filtered.length} character${filtered.length === 1 ? "" : "s"} shown`;
+  const searchButton = $("#character-search-button");
+  if (searchButton) {
+    searchButton.textContent = query ? "Clear" : "Search";
+    searchButton.dataset.mode = query ? "clear" : "search";
+  }
   grid.innerHTML = filtered.map((character, index) => {
     const palette = characterPalette[index % characterPalette.length];
     const dominant = dominantComponent(character);
@@ -677,7 +698,7 @@ function renderCharacters() {
     `;
   }).join("");
   if (!filtered.length) {
-    grid.innerHTML = `<article class="panel"><h3>No characters here yet</h3><p class="section-copy">Try another empathy component.</p></article>`;
+    grid.innerHTML = `<article class="panel"><h3>No match yet</h3><p class="section-copy">Try another name, house, cue, or empathy component.</p></article>`;
   }
 }
 
@@ -730,6 +751,28 @@ function boot() {
     renderCharacters();
     $("#character-detail").textContent = "Choose a character card to see the empathy read.";
   }));
+  $("#character-search").addEventListener("input", (event) => {
+    characterSearch = event.target.value;
+    renderCharacters();
+  });
+  $("#character-search").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      characterSearch = event.currentTarget.value;
+      renderCharacters();
+    }
+  });
+  $("#character-search-button").addEventListener("click", () => {
+    const input = $("#character-search");
+    if (characterSearch.trim()) {
+      characterSearch = "";
+      input.value = "";
+    } else {
+      characterSearch = input.value;
+    }
+    renderCharacters();
+    $("#character-detail").textContent = "Choose a character card to see the empathy read.";
+  });
   $("#character-grid").addEventListener("click", (event) => {
     const card = event.target.closest("[data-character]");
     if (card) showCharacterDetail(card.dataset.character);

@@ -61,6 +61,14 @@
   a { color: var(--teal); }
   button, input, textarea, select { font: inherit; }
   button { cursor: pointer; }
+  .sr-only {
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    width: 1px;
+    clip: rect(0, 0, 0, 0);
+  }
   .topbar {
     align-items: center;
     background: rgba(247, 242, 232, .9);
@@ -355,6 +363,39 @@
     flex-wrap: wrap;
     gap: .35rem;
   }
+  .character-search {
+    align-items: center;
+    background: rgba(255, 255, 255, .7);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    display: grid;
+    gap: .45rem;
+    grid-template-columns: minmax(11rem, 18rem) auto;
+    padding: .38rem;
+  }
+  .character-search input {
+    background: transparent;
+    border: 0;
+    min-height: 2.1rem;
+    padding: .35rem .45rem;
+  }
+  .character-search input:focus { box-shadow: none; }
+  .character-search button {
+    align-items: center;
+    background: #173d35;
+    border: 1px solid #173d35;
+    border-radius: var(--radius);
+    color: #fff;
+    display: inline-flex;
+    font-size: .78rem;
+    font-weight: 850;
+    gap: .35rem;
+    justify-content: center;
+    min-height: 2.1rem;
+    padding: .35rem .7rem;
+    text-transform: uppercase;
+  }
+  .character-search button[data-mode="clear"] { background: #fff; color: #1f6b5e; }
   .character-tab {
     background: rgba(255, 255, 255, .7);
     border: 1px solid var(--line);
@@ -492,6 +533,7 @@
     .topbar { align-items: flex-start; flex-direction: column; }
     .nav { justify-content: flex-start; }
     .nav a { font-size: .72rem; padding: .42rem .54rem; }
+    .character-search { grid-template-columns: 1fr; width: 100%; }
     .tool-tabs { border-radius: var(--radius); }
     .tool-tab { width: 100%; }
     .choice-grid, .lens-grid, .compass-grid { grid-template-columns: 1fr; }
@@ -663,6 +705,11 @@
           <button class="character-tab" type="button" data-character-filter="compassionate">Compassionate</button>
           <button class="character-tab" type="button" data-character-filter="syncretic">Syncretic</button>
         </div>
+        <div class="character-search" role="search">
+          <label class="sr-only" for="character-search">Search Westeros deck</label>
+          <input id="character-search" type="search" placeholder="Search name, house, cue...">
+          <button type="button" id="character-search-button">Search</button>
+        </div>
         <span class="micro" id="character-count">Loading characters...</span>
       </div>
       <div class="character-grid" id="character-grid"></div>
@@ -712,6 +759,6 @@
     <a href="mailto:support@suchawellness.com?subject=Sucha%20Empathy%20Lab">Support</a>
   </span>
 </footer>
-<script src="/empathy-lab.js?v=2026-08-02-empathy-lab-v4" defer></script>
+<script src="/empathy-lab.js?v=2026-08-03-empathy-lab-v5" defer></script>
 </body>
 </html>
