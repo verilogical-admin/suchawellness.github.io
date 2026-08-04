@@ -2,6 +2,9 @@
   'use strict';
 
   const STORAGE_KEY = 'suchaEqGymLog.v1';
+  const empathyLabAccessKey = 'suchaEmpathyLabAccess.v1';
+  const empathyLabPlanId = 'empathy_lab_yearly_1000';
+  const empathyLabProduct = 'SuchaEmpathyLabPremium';
 
   const compass = [
     {
@@ -213,6 +216,179 @@
 
   function saveLog(entries) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  }
+
+  function loadJson(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (error) {
+      return fallback;
+    }
+  }
+
+  function saveJson(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  function normalizeEmail(value) {
+    return String(value || '').trim().toLowerCase();
+  }
+
+  function activeAccess() {
+    const access = loadJson(empathyLabAccessKey, null);
+    if (!access) return null;
+    if (access.expiresAt && Number(access.expiresAt) < Date.now()) return null;
+    return access;
+  }
+
+  function setStatus(message) {
+    const status = $('#eq-lab-status');
+    if (status) status.textContent = message;
+  }
+
+  function updateGate() {
+    const access = activeAccess();
+    document.querySelectorAll('[data-premium-required]').forEach((section) => {
+      section.classList.toggle('premium-locked', !access);
+      section.querySelectorAll('input, textarea, select, button').forEach((control) => {
+        control.disabled = !access;
+      });
+    });
+
+    const checkout = $('#eq-lab-checkout-button');
+    if (!access) {
+      setStatus('Premium unlocks EQ Lab and Empathy Lab together.');
+      if (checkout) {
+        checkout.textContent = 'Upgrade $1000/year';
+        checkout.disabled = false;
+      }
+      return;
+    }
+
+    const date = access.expiresAt ? new Date(access.expiresAt).toLocaleDateString() : '';
+    setStatus(`Empathy + EQ Labs Premium active${access.email ? ` for ${access.email}` : ''}${date ? ` until ${date}` : ''}.`);
+    if (checkout) {
+      checkout.textContent = 'Premium active';
+      checkout.disabled = true;
+    }
+  }
+
+  async function redeemCoupon() {
+    const email = normalizeEmail($('#eq-lab-email')?.value);
+    const code = String($('#eq-lab-coupon')?.value || '').trim().toUpperCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Enter a valid billing email.');
+    if (!code) throw new Error('Enter an Empathy Lab premium coupon code.');
+    const button = $('#eq-lab-coupon-button');
+    button.disabled = true;
+    setStatus('Checking shared premium coupon...');
+    try {
+      const response = await fetch('/api/empathy-lab/redeem-coupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, email, product: empathyLabProduct })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.ok === false) throw new Error(data.error || 'Coupon could not be redeemed.');
+      saveJson(empathyLabAccessKey, {
+        source: data.source || 'admin_coupon',
+        product: data.product || empathyLabProduct,
+        planId: data.planId || empathyLabPlanId,
+        email: data.email || email,
+        couponHash: data.couponHash,
+        redeemedAt: data.redeemedAt || Date.now(),
+        expiresAt: data.expiresAt,
+        accessDays: data.accessDays,
+        price: 'Coupon'
+      });
+      $('#eq-lab-coupon').value = '';
+      updateGate();
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  async function ensureRazorpayLoaded() {
+    if (typeof Razorpay !== 'undefined') return true;
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(typeof Razorpay !== 'undefined');
+      script.onerror = () => resolve(false);
+      document.head.append(script);
+      window.setTimeout(() => resolve(typeof Razorpay !== 'undefined'), 7000);
+    });
+  }
+
+  async function startCheckout() {
+    if (location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+      throw new Error('Open the live site to use Razorpay Checkout.');
+    }
+    const email = normalizeEmail($('#eq-lab-email')?.value);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Enter a valid billing email.');
+    const ready = await ensureRazorpayLoaded();
+    if (!ready) throw new Error('Razorpay Checkout could not load.');
+    const button = $('#eq-lab-checkout-button');
+    button.disabled = true;
+    setStatus('Opening secure Razorpay checkout...');
+    try {
+      const orderResponse = await fetch('/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId: empathyLabPlanId, product: empathyLabProduct, email, amountUsd: 1000 })
+      });
+      const checkout = await orderResponse.json().catch(() => ({}));
+      if (!orderResponse.ok) throw new Error(checkout.error || 'Could not create checkout.');
+      const rz = new Razorpay({
+        key: checkout.keyId,
+        name: 'Sucha™ Wellness',
+        description: 'Empathy + EQ Labs Premium - $1000/year',
+        amount: checkout.amount,
+        currency: checkout.currency || 'USD',
+        order_id: checkout.orderId,
+        prefill: { email },
+        theme: { color: '#13584f' },
+        handler: async (response) => {
+          const verifyResponse = await fetch('/api/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              planId: empathyLabPlanId,
+              product: empathyLabProduct,
+              email,
+              checkoutMode: checkout.mode || 'order',
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            })
+          });
+          const verified = await verifyResponse.json().catch(() => ({}));
+          if (!verifyResponse.ok || verified.ok === false) throw new Error(verified.error || 'Payment verification failed.');
+          saveJson(empathyLabAccessKey, {
+            source: verified.source || 'razorpay_order',
+            product: verified.product || empathyLabProduct,
+            planId: verified.planId || empathyLabPlanId,
+            email: verified.email || email,
+            paymentId: verified.razorpayPaymentId || response.razorpay_payment_id,
+            orderId: verified.razorpayOrderId || response.razorpay_order_id,
+            purchasedAt: verified.purchasedAt || Date.now(),
+            expiresAt: verified.expiresAt || checkout.expiresAt,
+            guaranteeEndsAt: verified.guaranteeEndsAt || checkout.guaranteeEndsAt,
+            price: verified.price || '$1000/year'
+          });
+          updateGate();
+        },
+        modal: { ondismiss: () => { button.disabled = false; updateGate(); } }
+      });
+      rz.on('payment.failed', (event) => {
+        button.disabled = false;
+        setStatus(`Razorpay payment failed: ${event.error?.description || 'Try again.'}`);
+      });
+      rz.open();
+    } catch (error) {
+      button.disabled = false;
+      throw error;
+    }
   }
 
   function renderCompass(activeId) {
@@ -446,6 +622,20 @@
 
     const downloadButton = $('#download-gym');
     if (downloadButton) downloadButton.addEventListener('click', downloadGymLog);
+
+    const couponButton = $('#eq-lab-coupon-button');
+    if (couponButton) {
+      couponButton.addEventListener('click', () => {
+        redeemCoupon().catch((error) => setStatus(error.message || 'Coupon could not be redeemed.'));
+      });
+    }
+
+    const checkoutButton = $('#eq-lab-checkout-button');
+    if (checkoutButton) {
+      checkoutButton.addEventListener('click', () => {
+        startCheckout().catch((error) => setStatus(error.message || 'Could not start checkout.'));
+      });
+    }
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -455,5 +645,6 @@
     renderGymStats();
     renderArchetypes();
     bindEvents();
+    updateGate();
   });
 }());

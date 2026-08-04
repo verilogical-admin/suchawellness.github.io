@@ -547,6 +547,8 @@
   }
   .cue-pill.active { background: rgba(47, 125, 112, .12); border-color: rgba(47, 125, 112, .48); color: #1f6b5e; }
   .premium-lock-banner {
+    align-items: center;
+    justify-content: space-between;
     background: #173d35;
     border-radius: var(--radius);
     color: #fff;
@@ -555,8 +557,18 @@
     margin-bottom: 1rem;
     padding: .75rem .9rem;
   }
+  .premium-lock-banner span { color: rgba(255,255,255,.78); }
   .premium-locked .premium-lock-banner { display: flex; }
-  .premium-locked .premium-feature { filter: grayscale(.4); opacity: .5; pointer-events: none; }
+  .premium-locked .premium-feature {
+    filter: blur(2.5px) grayscale(.25);
+    max-height: 17rem;
+    opacity: .58;
+    overflow: hidden;
+    pointer-events: none;
+    user-select: none;
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 48%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 0%, #000 48%, transparent 100%);
+  }
   .micro { color: var(--muted); font-size: .88rem; margin: .45rem 0 0; }
   .footer {
     border-top: 1px solid var(--line);
@@ -628,8 +640,8 @@
         </div>
       </div>
       <article class="panel premium-panel" id="access">
-        <h3>Empathy Lab Premium</h3>
-        <p class="section-copy">$1000/year. Currently unlockable by separate Empathy Lab coupons or Razorpay checkout.</p>
+        <h3>Empathy + EQ Labs Premium</h3>
+        <p class="section-copy">$1000/year. One Empathy Lab coupon or Razorpay checkout unlocks both Empathy Lab and EQ Lab in this browser.</p>
         <div class="field">
           <label for="empathy-lab-email">Billing email</label>
           <input id="empathy-lab-email" type="email" placeholder="you@example.com" autocomplete="email">
@@ -642,13 +654,13 @@
           <button class="btn" type="button" id="empathy-lab-coupon-button">Redeem coupon</button>
           <button class="btn secondary" type="button" id="empathy-lab-checkout-button">Upgrade $1000/year</button>
         </div>
-        <p class="micro" id="empathy-lab-status">Premium unlocks the interactive tools below.</p>
+        <p class="micro" id="empathy-lab-status">Premium unlocks Empathy Lab and EQ Lab together.</p>
       </article>
     </aside>
   </section>
 
-  <section class="section wrap" id="daily-gym" data-premium-required>
-    <div class="premium-lock-banner"><strong>Premium feature</strong><span>Daily Empathy Gym unlocks with Empathy Lab Premium.</span></div>
+  <section class="section wrap premium-locked" id="daily-gym" data-premium-required>
+    <div class="premium-lock-banner"><strong>Premium teaser</strong><span>Daily Empathy Gym unlocks with Empathy + EQ Labs Premium.</span></div>
     <div class="section-head">
       <div>
         <div class="eyebrow">Daily trainer</div>
@@ -716,8 +728,8 @@
     </div>
   </section>
 
-  <section class="section wrap" id="practice" data-premium-required>
-    <div class="premium-lock-banner"><strong>Premium feature</strong><span>Redeem a separate Empathy Lab coupon or upgrade to practice.</span></div>
+  <section class="section wrap premium-locked" id="practice" data-premium-required>
+    <div class="premium-lock-banner"><strong>Premium teaser</strong><span>Preview the structure, then redeem a coupon or upgrade to practice.</span></div>
     <div class="section-head">
       <div>
         <div class="eyebrow">Core trainer</div>
@@ -764,8 +776,8 @@
     </div>
   </section>
 
-  <section class="section wrap" id="read-room" data-premium-required>
-    <div class="premium-lock-banner"><strong>Premium feature</strong><span>Read the Room is part of Empathy Lab Premium.</span></div>
+  <section class="section wrap premium-locked" id="read-room" data-premium-required>
+    <div class="premium-lock-banner"><strong>Premium teaser</strong><span>Read the Room unlocks with the same premium access as EQ Lab.</span></div>
     <div class="section-head">
       <div>
         <div class="eyebrow">People-reading trainer</div>
@@ -804,8 +816,8 @@
     </div>
   </section>
 
-  <section class="section wrap" id="westeros-deck" data-premium-required>
-    <div class="premium-lock-banner"><strong>Premium feature</strong><span>The Westeros Empathy Deck unlocks with Empathy Lab Premium.</span></div>
+  <section class="section wrap premium-locked" id="westeros-deck" data-premium-required>
+    <div class="premium-lock-banner"><strong>Premium teaser</strong><span>The Westeros Empathy Deck unlocks with Empathy + EQ Labs Premium.</span></div>
     <div class="section-head">
       <div>
         <div class="eyebrow">Fun practice deck</div>
@@ -834,8 +846,8 @@
     </div>
   </section>
 
-  <section class="section wrap" id="real-situation" data-premium-required>
-    <div class="premium-lock-banner"><strong>Premium feature</strong><span>Paste a real situation after unlocking Empathy Lab Premium.</span></div>
+  <section class="section wrap premium-locked" id="real-situation" data-premium-required>
+    <div class="premium-lock-banner"><strong>Premium teaser</strong><span>Paste a real situation after unlocking the shared Empathy + EQ Labs Premium.</span></div>
     <div class="section-head">
       <div>
         <div class="eyebrow">Application</div>
@@ -876,6 +888,6 @@
     <a href="mailto:support@suchawellness.com?subject=Sucha%20Empathy%20Lab">Support</a>
   </span>
 </footer>
-<script src="/empathy-lab.js?v=2026-08-03-empathy-lab-v6" defer></script>
+<script src="/empathy-lab.js?v=2026-08-04-shared-labs-premium-v1" defer></script>
 </body>
 </html>

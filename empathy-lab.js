@@ -387,11 +387,11 @@ function updateGate() {
     });
   });
   if (!access) {
-    setStatus("Premium unlocks the interactive tools below.");
+    setStatus("Premium unlocks Empathy Lab and EQ Lab together.");
     return;
   }
   const date = access.expiresAt ? new Date(access.expiresAt).toLocaleDateString() : "";
-  setStatus(`Empathy Lab Premium active${access.email ? ` for ${access.email}` : ""}${date ? ` until ${date}` : ""}.`);
+  setStatus(`Empathy + EQ Labs Premium active${access.email ? ` for ${access.email}` : ""}${date ? ` until ${date}` : ""}.`);
   const checkout = $("#empathy-lab-checkout-button");
   if (checkout) {
     checkout.textContent = "Premium active";
@@ -467,7 +467,7 @@ async function startCheckout() {
     const rz = new Razorpay({
       key: checkout.keyId,
       name: "Sucha™ Wellness",
-      description: "Empathy Lab Premium - $1000/year",
+      description: "Empathy + EQ Labs Premium - $1000/year",
       amount: checkout.amount,
       currency: checkout.currency || "USD",
       order_id: checkout.orderId,
