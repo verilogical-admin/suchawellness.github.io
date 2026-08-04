@@ -28,6 +28,16 @@ textarea {
   overflow-wrap: anywhere;
 }
 
+button,
+.btn,
+.nav a,
+.nav-links a,
+.nav-pills a,
+.footer a,
+.footer-links a {
+  white-space: normal;
+}
+
 table {
   display: block;
   max-width: 100%;
@@ -53,11 +63,29 @@ form {
 .actions,
 .hero-actions,
 .nav-links,
+.nav-pills,
 .footer-links,
 .payment-chip-row,
 .journal-actions,
 .contact-cards {
   max-width: 100%;
+}
+
+.nav-links,
+.nav-pills,
+.footer-links {
+  min-width: 0;
+}
+
+.premium-feature,
+.premium-lock-banner,
+.premium-access,
+.hero-panel,
+.tool-panel,
+.answer-panel,
+.modal-card,
+.report-card {
+  min-width: 0;
 }
 
 @media (max-width: 920px) {
@@ -83,6 +111,16 @@ form {
   .game-category-grid,
   .pac-map,
   .option-grid,
+  .grid-two,
+  .grid-three,
+  .compass-layout,
+  .weather-grid,
+  .trainer-layout,
+  .gym-layout,
+  .premium-access,
+  .insight-grid,
+  .score-rings,
+  .stats-grid,
   main {
     grid-template-columns: 1fr !important;
   }
@@ -97,9 +135,19 @@ form {
   .journal-toolbar,
   .character-toolbar,
   .gym-top,
+  .eq-nav-inner,
+  .premium-lock-banner,
   .footer {
     align-items: flex-start !important;
     flex-direction: column !important;
+  }
+
+  .hero-visual,
+  .hero-panel,
+  .compass,
+  .transaction-canvas,
+  .transaction-diagram {
+    max-width: 100% !important;
   }
 }
 
@@ -114,15 +162,51 @@ form {
 
   .nav-links,
   .nav,
+  .nav-pills,
   .topbar .nav,
   .footer-links {
     justify-content: flex-start !important;
     width: 100%;
   }
 
+  .topbar > .nav,
+  header.topbar > nav.nav {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    padding-bottom: .35rem;
+    scrollbar-width: thin;
+  }
+
+  .topbar > .nav a,
+  header.topbar > nav.nav a {
+    flex: 0 0 auto;
+  }
+
+  .nav-links,
+  .nav-pills {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: .45rem !important;
+    overflow-x: auto;
+    padding-bottom: .35rem;
+    scrollbar-width: thin;
+  }
+
+  .nav-links li {
+    flex: 0 0 auto;
+  }
+
+  .nav-links a,
+  .nav-pills a {
+    flex: 0 0 auto;
+  }
+
   .hero,
   section,
   .section,
+  .lab-section,
   .wrap {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
@@ -158,8 +242,18 @@ form {
 
   .button-row,
   .actions,
-  .hero-actions {
+  .hero-actions,
+  .compact-fields {
     width: 100%;
+  }
+
+  .premium-lock-banner {
+    gap: .35rem !important;
+    line-height: 1.4;
+  }
+
+  .premium-locked .premium-feature {
+    max-height: 14rem !important;
   }
 
   .rating-options {
@@ -179,6 +273,8 @@ form {
   }
 
   .hero-panel,
+  .hero-photo,
+  .hero-visual,
   .panel,
   .card,
   .practice-card,
@@ -187,8 +283,24 @@ form {
   .journal-panel,
   .journal-sidebar,
   .care-card,
-  .contact-card {
+  .contact-card,
+  .tool-panel,
+  .answer-panel,
+  .premium-access,
+  .float-card {
     max-width: 100%;
+  }
+
+  .hero-photo,
+  .screening-hero-photo,
+  .character-portrait {
+    object-fit: cover;
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 16px;
   }
 }
 
@@ -199,9 +311,26 @@ form {
 
   .nav a,
   .topbar a,
+  .nav-links a,
+  .nav-pills a,
   .character-tab,
   .tool-tab,
   .btn {
-    letter-spacing: .06em !important;
+    letter-spacing: 0 !important;
+  }
+
+  h1,
+  .hero h1,
+  .section-title {
+    font-size: clamp(1.85rem, 10vw, 2.65rem) !important;
+  }
+
+  .panel,
+  .card,
+  .practice-card,
+  .tool-panel,
+  .answer-panel,
+  .premium-access {
+    padding: 1rem !important;
   }
 }
