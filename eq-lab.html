@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EQ Lab | Sucha™ Wellness</title>
+  <meta name="description" content="Train emotional intelligence with visual drills for self-awareness, regulation, empathy, and relationship skill.">
+  <link rel="canonical" href="https://www.suchawellness.com/eq-lab">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="apple-touch-icon" href="/assets/sucha-web-icon-180.png">
+  <link rel="stylesheet" href="/responsive.css?v=2026-08-03-site-mobile-1">
+  <style>
+    :root {
+      --ink: #17211f;
+      --muted: #5d6965;
+      --line: #dbe5df;
+      --paper: #fbfbf7;
+      --mist: #eef5f1;
+      --mint: #dff0e8;
+      --teal: #2b7a6d;
+      --teal-dark: #13584f;
+      --rose: #b95f67;
+      --gold: #b88a3d;
+      --blue: #4f6d9b;
+      --violet: #7762a8;
+      --shadow: 0 18px 55px rgba(28, 48, 41, 0.12);
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(43, 122, 109, 0.10), transparent 32%),
+        linear-gradient(135deg, #fbfbf7 0%, #f4f1eb 44%, #edf5f1 100%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+
+    a { color: inherit; }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    .site-shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .eq-nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid rgba(219, 229, 223, 0.9);
+      background: rgba(251, 251, 247, 0.86);
+      backdrop-filter: blur(18px);
+    }
+
+    .eq-nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      min-height: 72px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .brand img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      box-shadow: 0 8px 24px rgba(19, 88, 79, 0.18);
+    }
+
+    .nav-pills {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav-pills a {
+      border: 1px solid transparent;
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 750;
+      padding: 8px 12px;
+      text-decoration: none;
+    }
+
+    .nav-pills a:hover,
+    .nav-pills .accent {
+      border-color: rgba(43, 122, 109, 0.24);
+      background: #fff;
+      color: var(--teal-dark);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+      align-items: center;
+      gap: 48px;
+      min-height: calc(100vh - 72px);
+      padding: 56px 0 34px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      color: var(--teal-dark);
+      font-size: 0.78rem;
+      font-weight: 850;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 32px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--teal), var(--gold));
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      max-width: 760px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(3rem, 8vw, 6.9rem);
+      font-weight: 600;
+    }
+
+    .lead {
+      max-width: 670px;
+      margin: 22px 0 0;
+      color: #42504c;
+      font-size: 1.14rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 850;
+      padding: 11px 18px;
+      text-decoration: none;
+      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(23, 33, 31, 0.12);
+    }
+
+    .btn-primary {
+      background: var(--teal-dark);
+      color: #fff;
+    }
+
+    .btn-soft {
+      border-color: var(--line);
+      background: rgba(255, 255, 255, 0.76);
+      color: var(--teal-dark);
+    }
+
+    .btn-small {
+      min-height: 38px;
+      padding: 8px 13px;
+      font-size: 0.9rem;
+    }
+
+    .hero-visual {
+      position: relative;
+      min-height: 600px;
+    }
+
+    .hero-photo {
+      width: 100%;
+      height: 560px;
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: var(--radius);
+      object-fit: cover;
+      box-shadow: var(--shadow);
+    }
+
+    .float-card {
+      position: absolute;
+      width: min(260px, 52%);
+      border: 1px solid rgba(219, 229, 223, 0.9);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 16px 40px rgba(23, 33, 31, 0.13);
+      padding: 16px;
+    }
+
+    .float-card.top {
+      top: 28px;
+      left: -18px;
+    }
+
+    .float-card.bottom {
+      right: -12px;
+      bottom: 12px;
+    }
+
+    .float-label {
+      color: var(--muted);
+      font-size: 0.73rem;
+      font-weight: 850;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .float-value {
+      margin-top: 5px;
+      font-weight: 850;
+      font-size: 1.03rem;
+      line-height: 1.25;
+    }
+
+    .mini-bars {
+      display: grid;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .mini-bar {
+      height: 8px;
+      border-radius: 999px;
+      background: var(--mist);
+      overflow: hidden;
+    }
+
+    .mini-bar span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--teal), var(--gold));
+    }
+
+    section.lab-section {
+      padding: 76px 0;
+      border-top: 1px solid rgba(219, 229, 223, 0.75);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2rem, 4vw, 3.35rem);
+      font-weight: 600;
+    }
+
+    .section-copy {
+      max-width: 620px;
+      color: var(--muted);
+      margin: 10px 0 0;
+    }
+
+    .grid-two {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .grid-three {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .panel,
+    .tool-panel,
+    .archetype-card {
+      border: 1px solid rgba(219, 229, 223, 0.92);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 12px 34px rgba(23, 33, 31, 0.07);
+    }
+
+    .panel,
+    .tool-panel {
+      padding: 24px;
+    }
+
+    .concept-card {
+      position: relative;
+      overflow: hidden;
+      min-height: 260px;
+    }
+
+    .concept-card::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 190px;
+      height: 190px;
+      background:
+        linear-gradient(135deg, transparent 20%, rgba(255, 255, 255, 0.42) 20% 31%, transparent 31% 52%, rgba(255, 255, 255, 0.36) 52% 62%, transparent 62%),
+        radial-gradient(circle, rgba(43, 122, 109, 0.12), transparent 70%);
+      pointer-events: none;
+    }
+
+    .concept-card.eq { background: linear-gradient(135deg, rgba(223, 240, 232, 0.98), #fff 68%); }
+    .concept-card.empathy { background: linear-gradient(135deg, rgba(246, 225, 224, 0.9), #fff 70%); }
+
+    .card-kicker {
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 850;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .panel h3,
+    .tool-panel h3,
+    .archetype-card h3 {
+      margin-top: 8px;
+      font-size: 1.45rem;
+    }
+
+    .panel p,
+    .tool-panel p,
+    .archetype-card p {
+      color: var(--muted);
+      margin: 12px 0 0;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .chip {
+      border: 1px solid rgba(43, 122, 109, 0.18);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.64);
+      color: var(--teal-dark);
+      font-size: 0.84rem;
+      font-weight: 800;
+      padding: 7px 10px;
+    }
+
+    .compass-layout {
+      display: grid;
+      grid-template-columns: 0.75fr 1.25fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .compass-buttons {
+      display: grid;
+      gap: 10px;
+    }
+
+    .compass-button {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 58px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--ink);
+      cursor: pointer;
+      font-weight: 850;
+      padding: 12px 14px;
+      text-align: left;
+    }
+
+    .compass-button.active {
+      border-color: rgba(43, 122, 109, 0.38);
+      background: var(--mint);
+      color: var(--teal-dark);
+    }
+
+    .score-dot {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      flex: 0 0 auto;
+    }
+
+    .compass-detail {
+      min-height: 100%;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(238, 245, 241, 0.72)),
+        repeating-linear-gradient(45deg, rgba(43, 122, 109, 0.06) 0 1px, transparent 1px 16px);
+    }
+
+    .practice-list {
+      display: grid;
+      gap: 10px;
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .practice-list li {
+      border-left: 3px solid var(--teal);
+      background: rgba(255, 255, 255, 0.72);
+      padding: 10px 12px;
+    }
+
+    .weather-grid {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 18px;
+    }
+
+    .weather-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .weather-button {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      cursor: pointer;
+      min-height: 86px;
+      padding: 13px;
+      text-align: left;
+    }
+
+    .weather-button strong {
+      display: block;
+      font-size: 1rem;
+    }
+
+    .weather-button span {
+      color: var(--muted);
+      display: block;
+      font-size: 0.86rem;
+      margin-top: 4px;
+    }
+
+    .weather-button.active {
+      border-color: rgba(43, 122, 109, 0.45);
+      background: var(--mint);
+    }
+
+    .answer-panel {
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(239, 246, 242, 0.9)),
+        repeating-linear-gradient(135deg, rgba(184, 138, 61, 0.08) 0 1px, transparent 1px 15px);
+    }
+
+    .answer-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 80% 12%, rgba(185, 95, 103, 0.13), transparent 36%);
+      pointer-events: none;
+    }
+
+    .answer-panel > * { position: relative; }
+
+    .insight-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .insight-tile {
+      border: 1px solid rgba(219, 229, 223, 0.85);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.72);
+      padding: 14px;
+    }
+
+    .insight-tile b {
+      display: block;
+      color: var(--teal-dark);
+      margin-bottom: 5px;
+    }
+
+    .trainer-layout {
+      display: grid;
+      grid-template-columns: 0.92fr 1.08fr;
+      gap: 18px;
+    }
+
+    .field-stack {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    label span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 850;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    select,
+    textarea,
+    input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--ink);
+      outline: none;
+      padding: 12px 13px;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    select:focus,
+    textarea:focus,
+    input:focus {
+      border-color: rgba(43, 122, 109, 0.52);
+      box-shadow: 0 0 0 4px rgba(43, 122, 109, 0.11);
+    }
+
+    .score-rings {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .ring {
+      display: grid;
+      place-items: center;
+      min-height: 116px;
+      border: 1px solid rgba(219, 229, 223, 0.9);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.72);
+      text-align: center;
+    }
+
+    .ring-score {
+      display: grid;
+      place-items: center;
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      background: conic-gradient(var(--teal) calc(var(--score, 0) * 20%), #e5ece7 0);
+      color: var(--ink);
+      font-weight: 900;
+    }
+
+    .ring-score span {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    .ring-label {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 850;
+      margin-top: 8px;
+      text-transform: uppercase;
+    }
+
+    .gym-layout {
+      display: grid;
+      grid-template-columns: 1fr 0.82fr;
+      gap: 18px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .stat {
+      border: 1px solid rgba(219, 229, 223, 0.9);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.76);
+      padding: 14px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.7rem;
+      line-height: 1;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .archetype-card {
+      min-height: 230px;
+      overflow: hidden;
+      padding: 18px;
+      position: relative;
+    }
+
+    .archetype-card::before {
+      content: "";
+      display: block;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--accent, var(--teal));
+      box-shadow: 0 0 0 10px color-mix(in srgb, var(--accent, var(--teal)) 18%, transparent);
+      margin-bottom: 18px;
+    }
+
+    .archetype-card h3 {
+      font-size: 1.2rem;
+    }
+
+    .archetype-card .move {
+      border-top: 1px solid rgba(219, 229, 223, 0.9);
+      color: var(--ink);
+      font-weight: 750;
+      margin-top: 14px;
+      padding-top: 13px;
+    }
+
+    .disclaimer {
+      border-top: 1px solid rgba(219, 229, 223, 0.9);
+      color: var(--muted);
+      font-size: 0.93rem;
+      margin-top: 22px;
+      padding-top: 16px;
+    }
+
+    footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      border-top: 1px solid rgba(219, 229, 223, 0.85);
+      color: var(--muted);
+      padding: 30px 16px 40px;
+      text-align: center;
+    }
+
+    footer a {
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    @media (max-width: 920px) {
+      .eq-nav-inner,
+      .section-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .nav-pills {
+        justify-content: flex-start;
+      }
+
+      .hero,
+      .grid-two,
+      .compass-layout,
+      .weather-grid,
+      .trainer-layout,
+      .gym-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: 0;
+      }
+
+      .hero-visual {
+        min-height: 480px;
+      }
+
+      .hero-photo {
+        height: 460px;
+      }
+
+      .score-rings,
+      .grid-three {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 620px) {
+      .site-shell {
+        width: min(100% - 22px, 1180px);
+      }
+
+      .eq-nav-inner {
+        min-height: 0;
+        padding: 12px 0;
+      }
+
+      .nav-pills a {
+        font-size: 0.82rem;
+        padding: 7px 9px;
+      }
+
+      .hero {
+        gap: 28px;
+        padding-top: 38px;
+      }
+
+      .lead {
+        font-size: 1rem;
+      }
+
+      .hero-visual {
+        min-height: 360px;
+      }
+
+      .hero-photo {
+        height: 340px;
+      }
+
+      .float-card {
+        position: static;
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      section.lab-section {
+        padding: 52px 0;
+      }
+
+      .panel,
+      .tool-panel {
+        padding: 18px;
+      }
+
+      .weather-options,
+      .insight-grid,
+      .score-rings,
+      .stats-grid,
+      .grid-three {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="eq-nav" aria-label="EQ Lab navigation">
+    <div class="site-shell eq-nav-inner">
+      <a class="brand" href="/">
+        <img src="/assets/sucha-web-icon-180.png" alt="Sucha™ Wellness logo">
+        <span>Sucha™ Wellness</span>
+      </a>
+      <div class="nav-pills">
+        <a href="#compass">Compass</a>
+        <a href="#weather">Weather</a>
+        <a href="#trainer">Trainer</a>
+        <a href="#gym">Daily Gym</a>
+        <a href="/empathy-lab">Empathy Lab</a>
+        <a href="/transactional-analysis" class="accent">TA Lab</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <header class="site-shell hero">
+      <div>
+        <div class="eyebrow">EQ Lab</div>
+        <h1>Train emotional intelligence for real conversations.</h1>
+        <p class="lead">EQ is the broader skill of noticing emotion, regulating yourself, understanding others, and choosing a wise response. Empathy is one of its most important engines. This lab turns both into small daily reps.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#weather">Start check</a>
+          <a class="btn btn-soft" href="/empathy-lab">Practice empathy</a>
+        </div>
+      </div>
+      <div class="hero-visual" aria-label="EQ Lab visual dashboard">
+        <img class="hero-photo" src="/assets/sucha-phone-journal-human.jpg" alt="A calm person reflecting with a phone">
+        <div class="float-card top">
+          <div class="float-label">Today’s focus</div>
+          <div class="float-value">Name the feeling before choosing the response.</div>
+          <div class="mini-bars" aria-hidden="true">
+            <div class="mini-bar"><span style="width: 88%"></span></div>
+            <div class="mini-bar"><span style="width: 64%"></span></div>
+            <div class="mini-bar"><span style="width: 76%"></span></div>
+          </div>
+        </div>
+        <div class="float-card bottom">
+          <div class="float-label">EQ loop</div>
+          <div class="float-value">Notice → Regulate → Read → Respond</div>
+        </div>
+      </div>
+    </header>
+
+    <section class="lab-section" id="difference">
+      <div class="site-shell">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">EQ vs empathy</div>
+            <h2 class="section-title">Related, not identical.</h2>
+          </div>
+          <p class="section-copy">Empathy helps you read and care about another person’s inner world. EQ includes that, then adds self-awareness, regulation, values, and relationship choices under pressure.</p>
+        </div>
+        <div class="grid-two">
+          <article class="panel concept-card eq">
+            <div class="card-kicker">Emotional intelligence</div>
+            <h3>The operating system</h3>
+            <p>EQ asks: What am I feeling, what is it doing to my behavior, what matters here, and what response will make the situation healthier?</p>
+            <div class="chip-row">
+              <span class="chip">Self-awareness</span>
+              <span class="chip">Regulation</span>
+              <span class="chip">Social skill</span>
+              <span class="chip">Repair</span>
+            </div>
+          </article>
+          <article class="panel concept-card empathy">
+            <div class="card-kicker">Empathy</div>
+            <h3>The human-reading engine</h3>
+            <p>Empathy asks: What might they be thinking, feeling, needing, protecting, or hoping for, and how can I respond with clarity and care?</p>
+            <div class="chip-row">
+              <span class="chip">Cognitive</span>
+              <span class="chip">Emotional</span>
+              <span class="chip">Compassionate</span>
+              <span class="chip">Synchrony</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="lab-section" id="compass">
+      <div class="site-shell">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">EQ compass</div>
+            <h2 class="section-title">Five skills to train.</h2>
+          </div>
+          <p class="section-copy">Tap each compass point to see what it looks like in ordinary life, how it fails under stress, and one concrete practice.</p>
+        </div>
+        <div class="compass-layout">
+          <div class="compass-buttons" id="eq-compass-buttons"></div>
+          <article class="tool-panel compass-detail" id="eq-compass-detail" aria-live="polite"></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="lab-section" id="weather">
+      <div class="site-shell">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Emotion weather</div>
+            <h2 class="section-title">Check the climate before you speak.</h2>
+          </div>
+          <p class="section-copy">A fast read of your emotional state can prevent a ten-second reaction from creating a ten-day repair job.</p>
+        </div>
+        <div class="weather-grid">
+          <div class="weather-options" id="weather-options"></div>
+          <article class="tool-panel answer-panel" id="weather-result" aria-live="polite"></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="lab-section" id="trainer">
+      <div class="site-shell">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Trigger trainer</div>
+            <h2 class="section-title">Turn heat into skill.</h2>
+          </div>
+          <p class="section-copy">Use the trainer on real moments: criticism, coldness, being ignored, conflict, or pressure. It scores the response across the EQ skills that matter most.</p>
+        </div>
+        <div class="trainer-layout">
+          <form class="tool-panel" id="trigger-form">
+            <label>
+              <span>Scenario</span>
+              <select id="trigger-scenario"></select>
+            </label>
+            <div class="field-stack">
+              <label>
+                <span>What am I feeling?</span>
+                <textarea id="trigger-feeling" placeholder="Example: defensive, embarrassed, tense, worried"></textarea>
+              </label>
+              <label>
+                <span>What story am I telling myself?</span>
+                <textarea id="trigger-story" placeholder="Example: They do not respect me, I am failing, I need to win this"></textarea>
+              </label>
+              <label>
+                <span>What might they be feeling or needing?</span>
+                <textarea id="trigger-other" placeholder="Example: They may be rushed, anxious, unclear, protective, disappointed"></textarea>
+              </label>
+              <label>
+                <span>What response fits my values?</span>
+                <textarea id="trigger-response" placeholder="Example: I want to clarify, take responsibility where needed, and ask for the next useful step"></textarea>
+              </label>
+              <button class="btn btn-primary" type="submit">Score response</button>
+            </div>
+          </form>
+          <article class="tool-panel answer-panel" id="trigger-result" aria-live="polite">
+            <div class="card-kicker">Practice output</div>
+            <h3>Your EQ score will appear here.</h3>
+            <p>Write a real or imagined response and the lab will highlight what is already strong plus one sharper next move.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="lab-section" id="gym">
+      <div class="site-shell">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Daily EQ gym</div>
+            <h2 class="section-title">Four-minute reps.</h2>
+          </div>
+          <p class="section-copy">Answers are stored locally in this browser. Download them whenever you want a private practice record.</p>
+        </div>
+        <div class="gym-layout">
+          <form class="tool-panel" id="gym-form">
+            <div class="field-stack">
+              <label>
+                <span>The moment</span>
+                <textarea id="gym-moment" placeholder="What happened? Keep it factual."></textarea>
+              </label>
+              <label>
+                <span>The feeling</span>
+                <textarea id="gym-feeling" placeholder="Name the feeling and where you noticed it in the body."></textarea>
+              </label>
+              <label>
+                <span>The other person</span>
+                <textarea id="gym-other" placeholder="What might they have been thinking, feeling, needing, or protecting?"></textarea>
+              </label>
+              <label>
+                <span>The wise response</span>
+                <textarea id="gym-response" placeholder="What would be clear, kind, and effective?"></textarea>
+              </label>
+              <div class="hero-actions">
+                <button class="btn btn-primary" type="submit">Save practice</button>
+                <button class="btn btn-soft" id="download-gym" type="button">Download log</button>
+              </div>
+            </div>
+          </form>
+          <aside class="tool-panel answer-panel">
+            <div class="card-kicker">Your practice pattern</div>
+            <h3>Small reps compound.</h3>
+            <p id="gym-summary">No practice saved yet. Start with one moment from today.</p>
+            <div class="stats-grid" id="gym-stats"></div>
+            <div class="disclaimer">This tool is for reflection and education. It is not clinical diagnosis, crisis support, or a substitute for care from a qualified professional.</div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="lab-section" id="archetypes">
+      <div class="site-shell">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">EQ archetypes</div>
+            <h2 class="section-title">Find your stress pattern.</h2>
+          </div>
+          <p class="section-copy">These are not labels. They are mirrors for what tends to happen when emotion outruns awareness.</p>
+        </div>
+        <div class="grid-three" id="archetype-grid"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>© 2026 Sucha™ Wellness. All rights reserved.</span>
+    <a href="/">Home</a>
+    <a href="/eq-lab">EQ Lab</a>
+    <a href="/empathy-lab">Empathy Lab</a>
+    <a href="/transactional-analysis">TA Lab</a>
+    <a href="/legal-disclaimer">Legal Disclaimer</a>
+    <a href="mailto:support@suchawellness.com?subject=Sucha%20EQ%20Lab%20Support">Support</a>
+  </footer>
+
+  <script src="/eq-lab.js?v=2026-08-04-eq-lab-v1" defer></script>
+</body>
+</html>

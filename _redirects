@@ -5,6 +5,7 @@ http://www.suchawellness.com/* https://www.suchawellness.com/:splat 301!
 /tests /tests.html 200
 /empathy-test /empathy-test.html 200
 /empathy-lab /empathy-lab.html 200
+/eq-lab /eq-lab.html 200
 /journal /journal.html 200
 /transactional-analysis /transactional-analysis.html 200
 /therapist-matching /therapist-matching.html 200
