@@ -5,6 +5,8 @@
   const empathyLabAccessKey = 'suchaEmpathyLabAccess.v1';
   const empathyLabPlanId = 'empathy_lab_yearly_1000';
   const empathyLabProduct = 'SuchaEmpathyLabPremium';
+  let triggerAttemptCount = 0;
+  let lastTriggerSignature = '';
 
   const compass = [
     {
@@ -448,24 +450,66 @@
     select.innerHTML = scenarios.map((item) => `<option value="${item.id}">${escapeHtml(item.label)}</option>`).join('');
   }
 
-  function scoreText(text, keywords) {
+  function scoreText(text, keywords, options = {}) {
     const normalized = String(text || '').toLowerCase();
-    const matches = keywords.filter((keyword) => normalized.includes(keyword)).length;
-    return Math.min(5, Math.max(1, 1 + matches));
+    const words = normalized.match(/[a-z']+/g) || [];
+    const uniqueMatches = keywords.filter((keyword) => normalized.includes(keyword)).length;
+    const lengthPoint = words.length >= (options.longWords || 18) ? 1 : words.length >= (options.shortWords || 8) ? 0.5 : 0;
+    const questionPoint = options.questionBonus && normalized.includes('?') ? 0.75 : 0;
+    const ownershipPoint = options.ownershipBonus && /\bi\b|\bmy\b|\bme\b/.test(normalized) ? 0.5 : 0;
+    const otherPoint = options.otherBonus && /\bthey\b|\bthem\b|\byou\b|\btheir\b/.test(normalized) ? 0.5 : 0;
+    const score = 1 + uniqueMatches + lengthPoint + questionPoint + ownershipPoint + otherPoint;
+    return Math.min(5, Math.max(1, Math.round(score)));
+  }
+
+  function triggerSignature() {
+    return [
+      $('#trigger-scenario')?.value || '',
+      $('#trigger-feeling')?.value || '',
+      $('#trigger-story')?.value || '',
+      $('#trigger-other')?.value || '',
+      $('#trigger-response')?.value || ''
+    ].join('|').trim();
+  }
+
+  function markTriggerDraftChanged() {
+    const signature = triggerSignature();
+    if (!lastTriggerSignature || signature === lastTriggerSignature) return;
+    const host = $('#trigger-result');
+    if (!host) return;
+    host.innerHTML = `
+      <div class="card-kicker">New draft ready</div>
+      <h3>Your answers changed.</h3>
+      <p>Press <b>Score response</b> again to calculate a fresh EQ score for this attempt.</p>
+    `;
   }
 
   function scoreTrigger(event) {
     event.preventDefault();
+    const signature = triggerSignature();
     const scenario = scenarios.find((item) => item.id === $('#trigger-scenario').value) || scenarios[0];
     const feeling = $('#trigger-feeling').value.trim();
     const story = $('#trigger-story').value.trim();
     const other = $('#trigger-other').value.trim();
     const response = $('#trigger-response').value.trim();
 
-    const awareness = scoreText(`${feeling} ${story}`, ['feel', 'body', 'notice', 'story', 'assume', 'need', 'afraid', 'angry', 'hurt', 'sad']);
-    const regulation = scoreText(response, ['pause', 'moment', 'slow', 'breathe', 'calm', 'clear', 'wait', 'understand']);
-    const empathy = scoreText(other, ['may', 'might', 'need', 'feel', 'think', 'protect', 'pressure', 'worried', 'afraid']);
-    const relationship = scoreText(response, ['ask', 'request', 'understand', 'clarify', 'together', 'repair', 'next', 'help']);
+    if (!signature.replace(/\|/g, '').trim()) {
+      const host = $('#trigger-result');
+      host.innerHTML = `
+        <div class="card-kicker">Add a response</div>
+        <h3>Write at least one answer first.</h3>
+        <p>The score updates when there is something real to evaluate.</p>
+      `;
+      return;
+    }
+
+    triggerAttemptCount += 1;
+    lastTriggerSignature = signature;
+
+    const awareness = scoreText(`${feeling} ${story}`, ['feel', 'body', 'notice', 'story', 'assume', 'need', 'afraid', 'angry', 'hurt', 'sad', 'defensive', 'tense'], { ownershipBonus: true });
+    const regulation = scoreText(response, ['pause', 'moment', 'slow', 'breathe', 'calm', 'clear', 'wait', 'understand', 'minute', 'steady'], { longWords: 16 });
+    const empathy = scoreText(other, ['may', 'might', 'need', 'feel', 'think', 'protect', 'pressure', 'worried', 'afraid', 'rushed', 'unclear'], { otherBonus: true });
+    const relationship = scoreText(response, ['ask', 'request', 'understand', 'clarify', 'together', 'repair', 'next', 'help', 'could', 'can we'], { questionBonus: true });
     const total = awareness + regulation + empathy + relationship;
 
     const feedback = total >= 16
@@ -476,7 +520,7 @@
 
     const host = $('#trigger-result');
     host.innerHTML = `
-      <div class="card-kicker">${escapeHtml(scenario.label)}</div>
+      <div class="card-kicker">${escapeHtml(scenario.label)} - Attempt ${triggerAttemptCount}</div>
       <h3>${escapeHtml(feedback)}</h3>
       <p>${escapeHtml(scenario.prompt)}</p>
       <div class="score-rings">
@@ -616,6 +660,10 @@
 
     const triggerForm = $('#trigger-form');
     if (triggerForm) triggerForm.addEventListener('submit', scoreTrigger);
+    document.querySelectorAll('#trigger-scenario, #trigger-feeling, #trigger-story, #trigger-other, #trigger-response').forEach((control) => {
+      control.addEventListener('input', markTriggerDraftChanged);
+      control.addEventListener('change', markTriggerDraftChanged);
+    });
 
     const gymForm = $('#gym-form');
     if (gymForm) gymForm.addEventListener('submit', scoreDaily);
