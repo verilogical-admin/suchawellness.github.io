@@ -11,7 +11,7 @@ const SECURITY_HEADERS = {
   'Permissions-Policy': 'accelerometer=(), autoplay=(), camera=(), clipboard-read=(), clipboard-write=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(self), usb=()',
 };
 
-const STATIC_ASSET_VERSION = '2026-08-09-optimal-response-v1';
+const STATIC_ASSET_VERSION = '2026-08-09-patience-builder-v1';
 
 const ROBOTS_TXT = `# Sucha™ Wellness allows responsible search and AI discovery so people can find
 # mental wellness screening, private journaling, and care-navigation resources.
@@ -71,7 +71,7 @@ Important interpretation notes:
 - [Mental health screening tests](https://www.suchawellness.com/tests): Dedicated landing page for informational Sucha™-hosted screening tools and optional premium report unlocks.
 - [Empathy Type Test](https://www.suchawellness.com/empathy-test): Dedicated page for the free 5-question empathy snapshot and separate paid 20Q/50Q empathy reports.
 - [Empathy Lab](https://www.suchawellness.com/empathy-lab): Interactive premium training lab for cognitive, emotional, compassionate, synchrony, and Read the Room empathy practice. The same premium purchase or coupon also unlocks EQ Lab.
-- [EQ Lab](https://www.suchawellness.com/eq-lab): Premium visual emotional intelligence learning and practice lab for self-awareness, self-regulation, empathy, trigger response, and relationship skill. It unlocks with the same Empathy Lab premium purchase or coupon.
+- [EQ Lab](https://www.suchawellness.com/eq-lab): Premium visual emotional intelligence learning and practice lab for self-awareness, self-regulation, patience building, empathy, trigger response, and relationship skill. It unlocks with the same Empathy Lab premium purchase or coupon.
 - [Sucha™ Journal](https://www.suchawellness.com/journal): Dedicated page for private mental health notes, local journal storage, and optional premium encrypted vault.
 - [Transactional Analysis Practice Lab](https://www.suchawellness.com/transactional-analysis): TA learning and application tool with free PAC lessons, a 7-day local trial, and optional Razorpay premium for transaction analysis, logs, strokes, life positions, and reflection.
 - [Care seeker matching](https://www.suchawellness.com/therapist-matching): Dedicated page for requesting connection to a licensed and vetted therapist or counsellor.

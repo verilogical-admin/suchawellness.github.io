@@ -533,6 +533,93 @@
       gap: 18px;
     }
 
+    .patience-layout {
+      display: grid;
+      grid-template-columns: 0.86fr 1.14fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .patience-types {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .patience-type {
+      min-height: 108px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.82);
+      cursor: pointer;
+      padding: 14px;
+      text-align: left;
+    }
+
+    .patience-type strong {
+      display: block;
+      color: var(--ink);
+      font-size: 1rem;
+    }
+
+    .patience-type span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.86rem;
+      margin-top: 5px;
+    }
+
+    .patience-type.active {
+      border-color: rgba(43, 122, 109, 0.45);
+      background: var(--mint);
+    }
+
+    .pause-ladder {
+      display: grid;
+      gap: 9px;
+      margin-top: 18px;
+    }
+
+    .pause-step {
+      align-items: center;
+      display: grid;
+      grid-template-columns: 2.1rem minmax(0, 1fr);
+      gap: 10px;
+      border: 1px solid rgba(219, 229, 223, 0.85);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.74);
+      padding: 11px;
+    }
+
+    .pause-step b {
+      display: grid;
+      place-items: center;
+      width: 2.1rem;
+      height: 2.1rem;
+      border-radius: 50%;
+      background: var(--teal-dark);
+      color: #fff;
+      font-size: 0.88rem;
+    }
+
+    .patience-meter {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 7px;
+      margin-top: 14px;
+    }
+
+    .patience-meter span {
+      height: 12px;
+      border-radius: 999px;
+      background: #e5ece7;
+    }
+
+    .patience-meter span.active {
+      background: linear-gradient(90deg, var(--teal), var(--gold));
+    }
+
     .field-stack {
       display: grid;
       gap: 12px;
@@ -793,6 +880,7 @@
       .grid-two,
       .compass-layout,
       .weather-grid,
+      .patience-layout,
       .trainer-layout,
       .gym-layout {
         grid-template-columns: 1fr;
@@ -868,6 +956,7 @@
       }
 
       .weather-options,
+      .patience-types,
       .insight-grid,
       .score-rings,
       .stats-grid,
@@ -888,6 +977,7 @@
         <a href="#access">Premium</a>
         <a href="#compass">Compass</a>
         <a href="#weather">Weather</a>
+        <a href="#patience">Patience</a>
         <a href="#trainer">Trainer</a>
         <a href="#gym">Daily Gym</a>
         <a href="/empathy-lab">Empathy Lab</a>
@@ -1017,6 +1107,50 @@
       </div>
     </section>
 
+    <section class="lab-section premium-locked" id="patience" data-premium-required>
+      <div class="site-shell">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Self-Regulation</div>
+            <h2 class="section-title">Patience Builder.</h2>
+          </div>
+          <p class="section-copy">Train patience as an active skill: notice the urgency, slow the body, choose the wait, and respond without becoming passive.</p>
+        </div>
+        <div class="premium-lock-banner"><strong>Premium preview</strong><span>Unlock to practice patience with a visual pause plan and exact response wording.</span></div>
+        <div class="patience-layout premium-feature">
+          <article class="tool-panel">
+            <div class="card-kicker">Impatience type</div>
+            <h3>What is rushing you?</h3>
+            <div class="patience-types" id="patience-types"></div>
+            <div class="field-stack">
+              <label>
+                <span>Trigger moment</span>
+                <textarea id="patience-trigger" placeholder="Example: I am waiting for a reply, someone is moving slowly, or a decision is taking too long."></textarea>
+              </label>
+              <label>
+                <span>Intensity</span>
+                <input id="patience-intensity" type="range" min="1" max="5" value="3">
+              </label>
+              <div class="hero-actions">
+                <button class="btn btn-primary" type="button" id="patience-plan-button">Build patience plan</button>
+                <button class="btn btn-soft" type="button" id="patience-optimal-button">Give optimal response</button>
+              </div>
+            </div>
+          </article>
+          <article class="tool-panel answer-panel" id="patience-result" aria-live="polite">
+            <div class="card-kicker">Pause ladder</div>
+            <h3>Patience is not doing nothing.</h3>
+            <p>It is slowing the impulse enough to choose a response you will still respect later.</p>
+            <div class="pause-ladder">
+              <div class="pause-step"><b>1</b><span>Name the urge without obeying it.</span></div>
+              <div class="pause-step"><b>2</b><span>Relax one body signal: jaw, shoulders, hands, or breath.</span></div>
+              <div class="pause-step"><b>3</b><span>Choose the smallest useful next step.</span></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
     <section class="lab-section premium-locked" id="trainer" data-premium-required>
       <div class="site-shell">
         <div class="section-head">
@@ -1136,6 +1270,6 @@
     <a href="mailto:support@suchawellness.com?subject=Sucha%20EQ%20Lab%20Support">Support</a>
   </footer>
 
-  <script src="/eq-lab.js?v=2026-08-09-optimal-response-v1" defer></script>
+  <script src="/eq-lab.js?v=2026-08-09-patience-builder-v1" defer></script>
 </body>
 </html>

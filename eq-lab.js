@@ -124,6 +124,58 @@
     }
   ];
 
+  const patienceTypes = [
+    {
+      id: 'urgency',
+      title: 'Urgency',
+      cue: 'I need this now.',
+      protects: 'A need for certainty, progress, or relief from waiting.',
+      reset: 'Name the deadline, then separate real urgency from emotional urgency.',
+      response: 'I feel the urgency. Let us slow down just enough to choose the right next step.'
+    },
+    {
+      id: 'irritation',
+      title: 'Irritation',
+      cue: 'Why are they so slow?',
+      protects: 'A wish for competence, respect, or smoother effort.',
+      reset: 'Unclench your jaw and translate the complaint into a request.',
+      response: 'I am getting impatient, and I do not want that to come out sharply. Can we clarify what is blocking this?'
+    },
+    {
+      id: 'control',
+      title: 'Control',
+      cue: 'If I do not push, this will fail.',
+      protects: 'A fear that looseness, ambiguity, or someone else’s pace will create harm.',
+      reset: 'Ask what is actually yours to own and what belongs to time, process, or another person.',
+      response: 'I want to help this move well without forcing it. What part needs my action, and what part needs time?'
+    },
+    {
+      id: 'anxiety',
+      title: 'Anxiety',
+      cue: 'Waiting means something bad.',
+      protects: 'A nervous-system attempt to reduce uncertainty by acting fast.',
+      reset: 'Exhale slowly, find one fact, and delay the conclusion by one minute.',
+      response: 'I notice my mind is filling in blanks. Can we check what is actually known before deciding?'
+    },
+    {
+      id: 'boredom',
+      title: 'Boredom',
+      cue: 'This is too slow.',
+      protects: 'A need for stimulation, novelty, movement, or visible progress.',
+      reset: 'Give the waiting a job: observe, prepare, breathe, or ask one useful question.',
+      response: 'I am tempted to rush this. What is one useful thing I can do while this unfolds?'
+    },
+    {
+      id: 'helplessness',
+      title: 'Helplessness',
+      cue: 'Nothing I do matters.',
+      protects: 'A tired system trying to stop disappointment.',
+      reset: 'Shrink the field: choose one next humane action, not the whole outcome.',
+      response: 'I cannot control the whole outcome, but I can choose the next steady step.'
+    }
+  ];
+  let activePatienceType = 'urgency';
+
   const scenarios = [
     {
       id: 'criticism',
@@ -450,6 +502,72 @@
     select.innerHTML = scenarios.map((item) => `<option value="${item.id}">${escapeHtml(item.label)}</option>`).join('');
   }
 
+  function renderPatience(activeId = activePatienceType) {
+    activePatienceType = activeId;
+    const active = patienceTypes.find((item) => item.id === activePatienceType) || patienceTypes[0];
+    const host = $('#patience-types');
+    if (!host) return;
+    host.innerHTML = patienceTypes.map((item) => `
+      <button class="patience-type ${item.id === active.id ? 'active' : ''}" type="button" data-patience="${item.id}">
+        <strong>${escapeHtml(item.title)}</strong>
+        <span>${escapeHtml(item.cue)}</span>
+      </button>
+    `).join('');
+    renderPatiencePlan(false);
+  }
+
+  function patienceIntensity() {
+    return Math.max(1, Math.min(5, Number($('#patience-intensity')?.value || 3)));
+  }
+
+  function renderPatienceMeter(intensity) {
+    return `
+      <div class="patience-meter" aria-label="Impatience intensity ${intensity} out of 5">
+        ${[1, 2, 3, 4, 5].map((step) => `<span class="${step <= intensity ? 'active' : ''}"></span>`).join('')}
+      </div>
+    `;
+  }
+
+  function renderPatiencePlan(includeTrigger = true) {
+    const active = patienceTypes.find((item) => item.id === activePatienceType) || patienceTypes[0];
+    const intensity = patienceIntensity();
+    const trigger = String($('#patience-trigger')?.value || '').trim();
+    const waitTime = intensity >= 5 ? '10 minutes' : intensity >= 4 ? '3 minutes' : intensity >= 3 ? '90 seconds' : '30 seconds';
+    const host = $('#patience-result');
+    if (!host) return;
+    host.innerHTML = `
+      <div class="card-kicker">${escapeHtml(active.title)} patience plan</div>
+      <h3>${escapeHtml(active.cue)}</h3>
+      ${renderPatienceMeter(intensity)}
+      <div class="insight-grid">
+        <div class="insight-tile"><b>What it may protect</b>${escapeHtml(active.protects)}</div>
+        <div class="insight-tile"><b>Reset move</b>${escapeHtml(active.reset)}</div>
+        <div class="insight-tile"><b>Pause length</b>Wait ${waitTime} before sending, deciding, correcting, or pushing.</div>
+        <div class="insight-tile"><b>Trigger focus</b>${escapeHtml(includeTrigger && trigger ? trigger : 'Name the exact moment that makes you want to rush.')}</div>
+      </div>
+      <div class="pause-ladder">
+        <div class="pause-step"><b>1</b><span>Say internally: impatience is here, and I do not have to obey it.</span></div>
+        <div class="pause-step"><b>2</b><span>Relax one body signal and make your exhale longer than your inhale.</span></div>
+        <div class="pause-step"><b>3</b><span>Choose a patient action: ask, wait, clarify, schedule, or release.</span></div>
+      </div>
+    `;
+  }
+
+  function showPatienceOptimalResponse() {
+    const active = patienceTypes.find((item) => item.id === activePatienceType) || patienceTypes[0];
+    const host = $('#patience-result');
+    if (!host) return;
+    host.innerHTML = `
+      <div class="card-kicker">${escapeHtml(active.title)} - Optimal response</div>
+      <h3>Try these exact words.</h3>
+      <blockquote>${escapeHtml(active.response)}</blockquote>
+      <div class="insight-grid">
+        <div class="insight-tile"><b>Why this works</b>It admits the internal pressure without dumping it on the other person.</div>
+        <div class="insight-tile"><b>Practice move</b>Say it slower than feels natural. Patience often begins as a change in pace.</div>
+      </div>
+    `;
+  }
+
   function scoreText(text, keywords, options = {}) {
     const normalized = String(text || '').toLowerCase();
     const words = normalized.match(/[a-z']+/g) || [];
@@ -671,6 +789,9 @@
 
       const weatherButton = event.target.closest('[data-weather]');
       if (weatherButton) renderWeather(weatherButton.dataset.weather);
+
+      const patienceButton = event.target.closest('[data-patience]');
+      if (patienceButton) renderPatience(patienceButton.dataset.patience);
     });
 
     const triggerForm = $('#trigger-form');
@@ -684,6 +805,13 @@
 
     const gymForm = $('#gym-form');
     if (gymForm) gymForm.addEventListener('submit', scoreDaily);
+
+    const patiencePlanButton = $('#patience-plan-button');
+    if (patiencePlanButton) patiencePlanButton.addEventListener('click', () => renderPatiencePlan(true));
+    const patienceOptimalButton = $('#patience-optimal-button');
+    if (patienceOptimalButton) patienceOptimalButton.addEventListener('click', showPatienceOptimalResponse);
+    const patienceIntensityInput = $('#patience-intensity');
+    if (patienceIntensityInput) patienceIntensityInput.addEventListener('input', () => renderPatiencePlan(true));
 
     const downloadButton = $('#download-gym');
     if (downloadButton) downloadButton.addEventListener('click', downloadGymLog);
@@ -706,6 +834,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     renderCompass('awareness');
     renderWeather('clear');
+    renderPatience('urgency');
     populateScenarios();
     renderGymStats();
     renderArchetypes();
