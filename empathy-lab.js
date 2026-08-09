@@ -55,7 +55,8 @@ const scenarios = [
       emotional: "Possible feelings: guilt, tiredness, pressure, distance, or embarrassment.",
       compassionate: "A helpful response asks whether they need space or support without demanding immediate closeness.",
       synchrony: "The timing is delayed and the wording is short. That mismatch invites a gentle check, not a verdict."
-    }
+    },
+    optimal: "I missed hearing from you and wondered how you are doing. No pressure to reply fast, but are you needing space or support?"
   },
   {
     title: "Quiet manager",
@@ -65,7 +66,8 @@ const scenarios = [
       emotional: "Possible feelings: concern, irritation, fatigue, or guardedness.",
       compassionate: "You can offer a low-pressure check: \"I sense there may be a concern. Want me to revise anything before sending?\"",
       synchrony: "Words say yes, tone and eye contact suggest hesitation. The useful cue is mismatch."
-    }
+    },
+    optimal: "I sense there may be a concern. Before I send it, is there anything you want me to revise or think through?"
   },
   {
     title: "Partner says nothing",
@@ -75,7 +77,8 @@ const scenarios = [
       emotional: "Possible feelings: hurt, resignation, anger, fear of being too much.",
       compassionate: "Pause the decision and invite the hidden preference: \"I do care what you want. Can we slow down?\"",
       synchrony: "The phrase closes the topic, but silence keeps the emotion active."
-    }
+    },
+    optimal: "I do care what you want. Can we pause the decision for a minute and hear what would actually feel good to you?"
   },
   {
     title: "Client keeps changing details",
@@ -85,7 +88,8 @@ const scenarios = [
       emotional: "Possible feelings: urgency, uncertainty, perfectionism, or pressure from someone else.",
       compassionate: "Help by creating clarity: \"I can do these changes. Let us group them and confirm scope.\"",
       synchrony: "Repeated small asks suggest the real need may be reassurance or control."
-    }
+    },
+    optimal: "I can help with these changes. Let us group them, confirm the scope, and agree what should be handled in this round."
   }
 ];
 
@@ -533,6 +537,15 @@ function revealModelRead() {
   $("#practice-result").innerHTML = `<strong>Model ${modes[currentMode].label.toLowerCase()} read:</strong> ${escapeHtml(scenario.model[currentMode])}`;
 }
 
+function revealOptimalResponse() {
+  const scenario = scenarios[scenarioIndex % scenarios.length];
+  $("#practice-result").innerHTML = `
+    <strong>Optimal response:</strong>
+    <p>${escapeHtml(scenario.optimal)}</p>
+    <p>Use this as wording practice: it checks the read, leaves room for correction, and avoids turning a hypothesis into a claim.</p>
+  `;
+}
+
 function scorePractice() {
   const first = $("#first-read").value.trim();
   const alternatives = $("#alt-reads").value.trim();
@@ -713,6 +726,30 @@ function showGymModel() {
     <p><b>Emotional:</b> ${escapeHtml(drill.model.emotional)}</p>
     <p><b>Compassionate:</b> ${escapeHtml(drill.model.compassionate)}</p>
     <p><b>Syncretic:</b> ${escapeHtml(drill.model.syncretic)}</p>
+  `;
+}
+
+function showGymOptimalResponse() {
+  const drill = currentGymDrill();
+  $("#gym-feedback").innerHTML = `
+    <strong>Optimal response for ${escapeHtml(drill.title)}:</strong>
+    <p>${escapeHtml(drill.model.compassionate)}</p>
+    <p>Why it works: it offers care or clarity without pressure, accusation, or mind-reading.</p>
+  `;
+}
+
+function showRealOptimalResponse() {
+  const text = $("#real-text").value.trim();
+  const hasMismatch = /\b(but|however|although|tone|silence|paused|looked away|short reply|different than usual)\b/i.test(text);
+  const hasConflict = /\b(argue|fight|angry|upset|hurt|ignored|dismissed|criticized|cold)\b/i.test(text);
+  const response = hasMismatch
+    ? "I may be reading this wrong, but I noticed the words and tone did not fully match. Is there something you are hesitant about?"
+    : hasConflict
+      ? "I want to understand this without escalating it. What felt most important or difficult for you in that moment?"
+      : "I may be wrong, but I want to understand your side better. What is most important for you here?";
+  $("#real-result").innerHTML = `
+    <p><strong>Optimal response:</strong> ${escapeHtml(response)}</p>
+    <p><strong>Why this works:</strong> It names uncertainty, invites correction, and gives the other person a clear doorway into the conversation.</p>
   `;
 }
 
@@ -978,6 +1015,7 @@ function boot() {
     renderScenario();
   });
   $("#reveal-model").addEventListener("click", revealModelRead);
+  $("#reveal-optimal-response").addEventListener("click", revealOptimalResponse);
   $("#score-practice").addEventListener("click", scorePractice);
   $("#cue-options").addEventListener("click", (event) => {
     const button = event.target.closest("[data-cue]");
@@ -997,9 +1035,11 @@ function boot() {
     renderDailyGym(true);
   });
   $("#score-gym-drill").addEventListener("click", scoreDailyGym);
+  $("#show-gym-optimal").addEventListener("click", showGymOptimalResponse);
   $("#show-gym-model").addEventListener("click", showGymModel);
   $("#download-gym-log").addEventListener("click", downloadGymLog);
   $("#analyze-real").addEventListener("click", analyzeRealSituation);
+  $("#real-optimal-response").addEventListener("click", showRealOptimalResponse);
   $$(".character-tab").forEach((button) => button.addEventListener("click", () => {
     characterFilter = button.dataset.characterFilter;
     $$(".character-tab").forEach((tab) => tab.classList.toggle("active", tab === button));

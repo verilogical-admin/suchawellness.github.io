@@ -536,6 +536,21 @@
     `;
   }
 
+  function showTriggerOptimalResponse() {
+    const scenario = scenarios.find((item) => item.id === $('#trigger-scenario')?.value) || scenarios[0];
+    const host = $('#trigger-result');
+    if (!host) return;
+    host.innerHTML = `
+      <div class="card-kicker">${escapeHtml(scenario.label)} - Optimal response</div>
+      <h3>Try these exact words.</h3>
+      <blockquote>${escapeHtml(scenario.optimal)}</blockquote>
+      <div class="insight-grid">
+        <div class="insight-tile"><b>Why this works</b>It stays calm, names the issue without blame, and invites the next useful piece of information.</div>
+        <div class="insight-tile"><b>Practice move</b>Say it once slowly, then adapt it to your natural voice before using it in the real conversation.</div>
+      </div>
+    `;
+  }
+
   function renderRing(label, score) {
     return `
       <div class="ring">
@@ -660,6 +675,8 @@
 
     const triggerForm = $('#trigger-form');
     if (triggerForm) triggerForm.addEventListener('submit', scoreTrigger);
+    const optimalButton = $('#trigger-optimal-button');
+    if (optimalButton) optimalButton.addEventListener('click', showTriggerOptimalResponse);
     document.querySelectorAll('#trigger-scenario, #trigger-feeling, #trigger-story, #trigger-other, #trigger-response').forEach((control) => {
       control.addEventListener('input', markTriggerDraftChanged);
       control.addEventListener('change', markTriggerDraftChanged);

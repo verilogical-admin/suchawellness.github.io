@@ -1050,7 +1050,10 @@
                 <span>What response fits my values?</span>
                 <textarea id="trigger-response" placeholder="Example: I want to clarify, take responsibility where needed, and ask for the next useful step"></textarea>
               </label>
-              <button class="btn btn-primary" type="submit">Score response</button>
+              <div class="hero-actions">
+                <button class="btn btn-primary" type="submit">Score response</button>
+                <button class="btn btn-soft" type="button" id="trigger-optimal-button">Give optimal response</button>
+              </div>
             </div>
           </form>
           <article class="tool-panel answer-panel" id="trigger-result" aria-live="polite">
@@ -1133,6 +1136,6 @@
     <a href="mailto:support@suchawellness.com?subject=Sucha%20EQ%20Lab%20Support">Support</a>
   </footer>
 
-  <script src="/eq-lab.js?v=2026-08-09-trigger-refresh-v1" defer></script>
+  <script src="/eq-lab.js?v=2026-08-09-optimal-response-v1" defer></script>
 </body>
 </html>
