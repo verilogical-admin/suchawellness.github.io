@@ -74,9 +74,23 @@
   .label { color: var(--muted); font-size: 0.8rem; }
   .value { color: var(--teal); font-size: 1.45rem; font-weight: 700; }
   .status { color: var(--muted); min-height: 1.5rem; }
+  .coupon-summary { display: grid; gap: 0.75rem; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0.75rem 0 1rem; }
+  .coupon-product-card { border: 1px solid var(--line); background: var(--white); padding: 0.8rem; }
+  .coupon-product-card strong { color: var(--teal); display: block; }
+  .coupon-product-card span { color: var(--muted); display: block; font-size: 0.84rem; margin-top: 0.25rem; }
+  .product-pill {
+    background: rgba(45,122,107,0.1);
+    border: 1px solid rgba(45,122,107,0.2);
+    color: var(--teal);
+    display: inline-flex;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    padding: 0.2rem 0.45rem;
+  }
   @media (max-width: 780px) {
     main { padding: 1rem; }
-    .toolbar, .cards, .admin-form-grid { grid-template-columns: 1fr; }
+    .toolbar, .cards, .admin-form-grid, .coupon-summary { grid-template-columns: 1fr; }
     table { display: block; overflow-x: auto; }
   }
 </style>
@@ -105,10 +119,13 @@
 
   <section>
     <h2>Coupons</h2>
+    <p class="status">Coupon products currently supported: Journal Premium, TA Lab Premium, and shared Empathy + EQ Labs Premium. Tests and Empathy Test reports are paid report products, not coupon products yet.</p>
+    <div class="coupon-summary" id="coupon-summary"></div>
     <table>
       <thead>
         <tr>
           <th>Coupon</th>
+          <th>Product</th>
           <th>Status</th>
           <th>Used by</th>
           <th>Updated</th>
@@ -116,7 +133,7 @@
         </tr>
       </thead>
       <tbody id="coupons">
-        <tr><td colspan="5">Load dashboard to view coupons.</td></tr>
+        <tr><td colspan="6">Load dashboard to view coupons.</td></tr>
       </tbody>
     </table>
   </section>
@@ -125,6 +142,11 @@
     <h2>Manual Discounts</h2>
     <p class="status">Create one-use coupon codes on your discretion. Leave email blank for a transferable code, or assign it to one account.</p>
     <div class="admin-form-grid">
+      <select id="manual-coupon-product" aria-label="Coupon product">
+        <option value="SuchaEmpathyLabPremium">Empathy + EQ Labs Premium</option>
+        <option value="SuchaTALabPremium">TA Lab Premium</option>
+        <option value="SuchaJournal">Journal Premium</option>
+      </select>
       <input id="manual-coupon-email" type="email" placeholder="Customer email">
       <input id="manual-coupon-days" type="number" min="1" max="365" value="7" placeholder="Access days">
       <input id="manual-coupon-hours" type="number" min="1" max="720" value="48" placeholder="Valid hours">
@@ -135,6 +157,7 @@
       <thead>
         <tr>
           <th>Code</th>
+          <th>Product</th>
           <th>Email</th>
           <th>Access</th>
           <th>Status</th>
@@ -143,14 +166,14 @@
         </tr>
       </thead>
       <tbody id="manual-coupons">
-        <tr><td colspan="6">Load dashboard to view manual coupons.</td></tr>
+        <tr><td colspan="7">Load dashboard to view manual coupons.</td></tr>
       </tbody>
     </table>
   </section>
 
   <section>
     <h2>Free Day Requests</h2>
-    <p class="status">Approving creates a one-use 1-day coupon assigned to that email and valid for 48 hours.</p>
+    <p class="status">Approving creates a one-use 1-day coupon assigned to that email, valid for 48 hours, using the selected coupon product above.</p>
     <table>
       <thead>
         <tr>
@@ -235,6 +258,6 @@
   </section>
 </main>
 
-<script src="/admin.js?v=ask-sucha-1" defer></script>
+<script src="/admin.js?v=2026-08-11-coupon-products-v1" defer></script>
 </body>
 </html>

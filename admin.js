@@ -3,8 +3,10 @@ const tokenToggle = document.querySelector('#token-toggle');
 const loadButton = document.querySelector('#load');
 const statusEl = document.querySelector('#status');
 const couponsEl = document.querySelector('#coupons');
+const couponSummaryEl = document.querySelector('#coupon-summary');
 const manualCouponsEl = document.querySelector('#manual-coupons');
 const freeDayRequestsEl = document.querySelector('#free-day-requests');
+const manualCouponProduct = document.querySelector('#manual-coupon-product');
 const manualCouponEmail = document.querySelector('#manual-coupon-email');
 const manualCouponDays = document.querySelector('#manual-coupon-days');
 const manualCouponHours = document.querySelector('#manual-coupon-hours');
@@ -15,6 +17,8 @@ const analyticsEl = document.querySelector('#analytics');
 const careRequestsEl = document.querySelector('#care-requests');
 const feedbackEl = document.querySelector('#feedback');
 const visitorQuestionsEl = document.querySelector('#visitor-questions');
+let latestBuiltInCoupons = [];
+let latestManualCoupons = [];
 const adminApiBase = location.protocol === 'https:' && /(^|\.)suchawellness\.com$/i.test(location.hostname)
   ? location.origin
   : 'https://www.suchawellness.com';
@@ -62,13 +66,98 @@ function sumObject(object = {}) {
   return Object.values(object).reduce((total, value) => total + Number(value || 0), 0);
 }
 
+const productLabels = {
+  SuchaJournal: {
+    label: 'Journal Premium',
+    detail: 'Encrypted journal vault',
+    category: 'Journal',
+  },
+  SuchaTALabPremium: {
+    label: 'TA Lab Premium',
+    detail: 'Transactional Analysis tools',
+    category: 'TA Lab',
+  },
+  SuchaEmpathyLabPremium: {
+    label: 'Empathy + EQ Labs Premium',
+    detail: 'Empathy Lab and EQ Lab together',
+    category: 'Empathy Lab / EQ Lab',
+  },
+  SuchaTestReport: {
+    label: 'Test PDF Report',
+    detail: 'Paid test report product, not coupon-enabled',
+    category: 'Tests',
+  },
+  SuchaEmpathyReport: {
+    label: 'Empathy Test Report',
+    detail: 'Paid empathy report product, not coupon-enabled',
+    category: 'Empathy Test',
+  },
+};
+
+function productInfo(product) {
+  return productLabels[product] || {
+    label: product || 'Unknown product',
+    detail: 'Unknown coupon product',
+    category: 'Unknown',
+  };
+}
+
+function productMarkup(product) {
+  const info = productInfo(product);
+  return `
+    <span class="product-pill">${info.category}</span><br>
+    <strong>${info.label}</strong><br>
+    <span class="label">${info.detail}</span>
+  `;
+}
+
+function couponStatus(coupon) {
+  return coupon.status || (coupon.revoked ? 'Revoked' : coupon.usedAt ? 'Used' : 'Available');
+}
+
+function renderCouponSummary() {
+  if (!couponSummaryEl) return;
+  const coupons = [...latestBuiltInCoupons, ...latestManualCoupons];
+  couponSummaryEl.replaceChildren();
+  if (!coupons.length) {
+    couponSummaryEl.innerHTML = '<div class="coupon-product-card"><strong>No coupon data loaded</strong><span>Load dashboard to view usage by product.</span></div>';
+    return;
+  }
+  const grouped = coupons.reduce((acc, coupon) => {
+    const product = coupon.product || 'SuchaJournal';
+    const status = couponStatus(coupon);
+    acc[product] ||= { total: 0, Used: 0, Available: 0, Expired: 0, Revoked: 0 };
+    acc[product].total += 1;
+    acc[product][status] = (acc[product][status] || 0) + 1;
+    return acc;
+  }, {});
+  Object.entries(grouped).forEach(([product, counts]) => {
+    const info = productInfo(product);
+    const card = document.createElement('div');
+    card.className = 'coupon-product-card';
+    card.innerHTML = `
+      <strong>${info.label}</strong>
+      <span>${info.category}</span>
+      <p class="label">Total ${counts.total} | Used ${counts.Used || 0} | Available ${counts.Available || 0} | Expired ${counts.Expired || 0} | Revoked ${counts.Revoked || 0}</p>
+    `;
+    couponSummaryEl.append(card);
+  });
+}
+
 function renderCoupons(coupons) {
+  latestBuiltInCoupons = coupons || [];
   couponsEl.replaceChildren();
+  renderCouponSummary();
+  if (!coupons.length) {
+    couponsEl.innerHTML = '<tr><td colspan="6">No built-in coupons found.</td></tr>';
+    return;
+  }
   coupons.forEach((coupon) => {
     const row = document.createElement('tr');
-    const status = coupon.revoked ? 'Revoked' : coupon.usedAt ? 'Used' : 'Available';
+    const status = couponStatus(coupon);
     row.innerHTML = `
       <td><strong>${coupon.id}</strong><br><code>${coupon.hash}</code></td>
+      <td>${productMarkup(coupon.product)}</td>
       <td>${status}</td>
       <td>${coupon.usedBy || '-'}</td>
       <td>${fmt(coupon.revokedAt || coupon.usedAt || coupon.updatedAt)}</td>
@@ -96,9 +185,11 @@ async function copyText(value) {
 
 function renderManualCoupons(coupons = []) {
   if (!manualCouponsEl) return;
+  latestManualCoupons = coupons || [];
+  renderCouponSummary();
   manualCouponsEl.replaceChildren();
   if (!coupons.length) {
-    manualCouponsEl.innerHTML = '<tr><td colspan="6">No manual coupons yet.</td></tr>';
+    manualCouponsEl.innerHTML = '<tr><td colspan="7">No manual coupons yet.</td></tr>';
     return;
   }
   coupons.slice(0, 200).forEach((coupon) => {
@@ -107,12 +198,14 @@ function renderManualCoupons(coupons = []) {
     const code = document.createElement('code');
     code.textContent = coupon.code || coupon.hash;
     codeCell.append(code, document.createElement('br'), document.createTextNode(`Valid until ${fmt(coupon.validUntil)}`));
+    const productCell = document.createElement('td');
+    productCell.innerHTML = productMarkup(coupon.product);
     const emailCell = document.createElement('td');
-    emailCell.textContent = coupon.email || 'transferable';
+    emailCell.innerHTML = `${coupon.email || 'transferable'}${coupon.usedBy ? `<br><span class="label">Used by ${coupon.usedBy}</span>` : ''}`;
     const accessCell = document.createElement('td');
     accessCell.textContent = `${coupon.accessDays || 1} day${Number(coupon.accessDays || 1) === 1 ? '' : 's'}`;
     const statusCell = document.createElement('td');
-    statusCell.textContent = coupon.status || 'Available';
+    statusCell.innerHTML = `${couponStatus(coupon)}${coupon.usedAt ? `<br><span class="label">${fmt(coupon.usedAt)}</span>` : ''}`;
     const noteCell = document.createElement('td');
     noteCell.textContent = coupon.note || '-';
     const actionCell = document.createElement('td');
@@ -129,7 +222,7 @@ function renderManualCoupons(coupons = []) {
     revoke.disabled = !!coupon.revoked || coupon.status === 'Used';
     revoke.addEventListener('click', () => revokeCoupon(coupon.hash));
     actionCell.append(copy, document.createTextNode(' '), revoke);
-    row.append(codeCell, emailCell, accessCell, statusCell, noteCell, actionCell);
+    row.append(codeCell, productCell, emailCell, accessCell, statusCell, noteCell, actionCell);
     manualCouponsEl.append(row);
   });
 }
@@ -353,6 +446,7 @@ async function createManualCoupon() {
       method: 'POST',
       headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        product: manualCouponProduct?.value || 'SuchaEmpathyLabPremium',
         email: manualCouponEmail.value.trim(),
         accessDays: manualCouponDays.value,
         validHours: manualCouponHours.value,
@@ -360,7 +454,8 @@ async function createManualCoupon() {
         note: manualCouponNote.value.trim(),
       }),
     });
-    setStatus(`Created coupon ${data.coupon?.code || ''}${data.emailed ? ' and emailed it.' : data.emailError ? `, but email failed: ${data.emailError}` : ''}`);
+    const info = productInfo(manualCouponProduct?.value);
+    setStatus(`Created ${info.label} coupon ${data.coupon?.code || ''}${data.emailed ? ' and emailed it.' : data.emailError ? `, but email failed: ${data.emailError}` : ''}`);
     if (data.coupon?.code) copyText(data.coupon.code);
     manualCouponNote.value = '';
     await loadDashboard();
@@ -380,6 +475,7 @@ async function approveFreeDayRequest(request) {
       validHours: 48,
       label: 'Good-faith 1-day access',
       note: `Approved free-day request: ${request.id}`,
+      product: manualCouponProduct?.value || 'SuchaEmpathyLabPremium',
       requestId: request.id,
     }),
   });
