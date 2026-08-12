@@ -209,6 +209,37 @@
     }
   ];
 
+  const politicalScenarios = [
+    {
+      id: 'founder-board',
+      label: 'Founder wants board buy-in',
+      prompt: 'You need support for a risky product pivot. The board chair likes bold moves, the CFO worries about runway, and a senior engineer can influence whether the team believes it.',
+      optimal: 'I would pre-wire the CFO first: "What risk would make this responsible enough for you?" Then I would brief the senior engineer privately, ask what the team will fear, and present the board with one bold option plus one visible risk-control plan.',
+      trap: 'Do not surprise the CFO in the meeting or frame caution as lack of vision.'
+    },
+    {
+      id: 'manager-conflict',
+      label: 'Manager conflict',
+      prompt: 'Two managers are blocking each other. One owns budget, one owns execution, and both want the CEO to see them as the adult in the room.',
+      optimal: 'I would meet each privately, name their legitimate concern, then propose a joint decision memo with clear ownership: budget guardrails from one, execution milestones from the other. In the group, I would give both a visible win.',
+      trap: 'Do not pick a public winner unless the relationship damage is worth it.'
+    },
+    {
+      id: 'family-business',
+      label: 'Family business decision',
+      prompt: 'A younger family member has the best plan, but an elder has informal veto power and feels bypassed when decisions move too fast.',
+      optimal: 'I would ask the elder for counsel before asking for approval: "I want your read before this becomes a decision." Then I would let the younger person present the plan while explicitly honoring the elder’s risk sense.',
+      trap: 'Do not treat informal power as irrational just because it is not on the org chart.'
+    },
+    {
+      id: 'team-credit',
+      label: 'Credit and visibility',
+      prompt: 'You did the key work, but a politically polished colleague is getting most of the visibility. Your sponsor values calm professionalism.',
+      optimal: 'I would document contribution without complaint: "For context, I led X and Y, and I would like to present the next milestone." Then I would strengthen sponsor awareness privately before the next public update.',
+      trap: 'Do not attack the colleague publicly; make your value impossible to miss.'
+    }
+  ];
+
   const archetypes = [
     {
       title: 'The Reactor',
@@ -502,6 +533,12 @@
     select.innerHTML = scenarios.map((item) => `<option value="${item.id}">${escapeHtml(item.label)}</option>`).join('');
   }
 
+  function populatePoliticalScenarios() {
+    const select = $('#political-scenario');
+    if (!select) return;
+    select.innerHTML = politicalScenarios.map((item) => `<option value="${item.id}">${escapeHtml(item.label)}</option>`).join('');
+  }
+
   function renderPatience(activeId = activePatienceType) {
     activePatienceType = activeId;
     const active = patienceTypes.find((item) => item.id === activePatienceType) || patienceTypes[0];
@@ -564,6 +601,72 @@
       <div class="insight-grid">
         <div class="insight-tile"><b>Why this works</b>It admits the internal pressure without dumping it on the other person.</div>
         <div class="insight-tile"><b>Practice move</b>Say it slower than feels natural. Patience often begins as a change in pace.</div>
+      </div>
+    `;
+  }
+
+  function selectedPoliticalScenario() {
+    return politicalScenarios.find((item) => item.id === $('#political-scenario')?.value) || politicalScenarios[0];
+  }
+
+  function scorePolitical(event) {
+    event.preventDefault();
+    const scenario = selectedPoliticalScenario();
+    const power = $('#political-power')?.value.trim() || '';
+    const incentives = $('#political-incentives')?.value.trim() || '';
+    const move = $('#political-move')?.value.trim() || '';
+    const host = $('#political-result');
+    if (!host) return;
+
+    if (!power && !incentives && !move) {
+      host.innerHTML = `
+        <div class="card-kicker">Add a room read</div>
+        <h3>Map at least one real signal first.</h3>
+        <p>Political savvy begins by naming power, incentives, and the first low-drama move.</p>
+      `;
+      return;
+    }
+
+    const powerScore = scoreText(power, ['power', 'formal', 'informal', 'influence', 'veto', 'access', 'sponsor', 'block', 'decision', 'expert', 'budget', 'chair', 'ceo'], { otherBonus: true });
+    const incentiveScore = scoreText(incentives, ['want', 'fear', 'protect', 'gain', 'lose', 'avoid', 'risk', 'status', 'credit', 'control', 'runway', 'trust', 'ego'], { otherBonus: true });
+    const timingScore = scoreText(move, ['private', 'brief', 'before', 'pre-wire', 'ask', 'sequence', 'first', 'timing', 'heads-up', 'listen', 'coalition'], { questionBonus: true });
+    const tactScore = scoreText(move, ['respect', 'face', 'honor', 'credit', 'clear', 'calm', 'frame', 'align', 'concern', 'help', 'together'], { longWords: 18 });
+    const total = powerScore + incentiveScore + timingScore + tactScore;
+
+    const feedback = total >= 16
+      ? 'Strong political read. You are seeing power, naming incentives, sequencing the ask, and protecting dignity.'
+      : total >= 11
+        ? 'Good start. Add a clearer private pre-wire step and name what each stakeholder is protecting.'
+        : 'Slow down before influencing. The move needs more power mapping, more incentive empathy, and less public pressure.';
+
+    host.innerHTML = `
+      <div class="card-kicker">${escapeHtml(scenario.label)} - Savvy score</div>
+      <h3>${escapeHtml(feedback)}</h3>
+      <p>${escapeHtml(scenario.prompt)}</p>
+      <div class="score-rings">
+        ${renderRing('Power map', powerScore)}
+        ${renderRing('Incentives', incentiveScore)}
+        ${renderRing('Timing', timingScore)}
+        ${renderRing('Tact', tactScore)}
+      </div>
+      <div class="insight-grid">
+        <div class="insight-tile"><b>Optimal move</b>${escapeHtml(scenario.optimal)}</div>
+        <div class="insight-tile"><b>Watch the trap</b>${escapeHtml(scenario.trap)}</div>
+      </div>
+    `;
+  }
+
+  function showPoliticalOptimalMove() {
+    const scenario = selectedPoliticalScenario();
+    const host = $('#political-result');
+    if (!host) return;
+    host.innerHTML = `
+      <div class="card-kicker">${escapeHtml(scenario.label)} - Optimal move</div>
+      <h3>Use power with timing and tact.</h3>
+      <blockquote>${escapeHtml(scenario.optimal)}</blockquote>
+      <div class="insight-grid">
+        <div class="insight-tile"><b>Why this works</b>It pre-wires resistance, gives important people dignity, and makes the decision easier to support.</div>
+        <div class="insight-tile"><b>Trap to avoid</b>${escapeHtml(scenario.trap)}</div>
       </div>
     `;
   }
@@ -813,6 +916,11 @@
     const patienceIntensityInput = $('#patience-intensity');
     if (patienceIntensityInput) patienceIntensityInput.addEventListener('input', () => renderPatiencePlan(true));
 
+    const politicalForm = $('#political-form');
+    if (politicalForm) politicalForm.addEventListener('submit', scorePolitical);
+    const politicalOptimalButton = $('#political-optimal-button');
+    if (politicalOptimalButton) politicalOptimalButton.addEventListener('click', showPoliticalOptimalMove);
+
     const downloadButton = $('#download-gym');
     if (downloadButton) downloadButton.addEventListener('click', downloadGymLog);
 
@@ -836,6 +944,7 @@
     renderWeather('clear');
     renderPatience('urgency');
     populateScenarios();
+    populatePoliticalScenarios();
     renderGymStats();
     renderArchetypes();
     bindEvents();

@@ -620,6 +620,120 @@
       background: linear-gradient(90deg, var(--teal), var(--gold));
     }
 
+    .political-layout {
+      display: grid;
+      grid-template-columns: 0.94fr 1.06fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .political-layout #political-result {
+      grid-column: 1 / -1;
+    }
+
+    .power-map {
+      position: relative;
+      min-height: 390px;
+      border: 1px solid rgba(219, 229, 223, 0.9);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 44%, rgba(43, 122, 109, 0.12), transparent 0 96px, rgba(184, 138, 61, 0.08) 97px 168px, transparent 169px),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(239, 246, 242, 0.86));
+    }
+
+    .power-map::before,
+    .power-map::after {
+      content: "";
+      position: absolute;
+      inset: 54px;
+      border: 1px dashed rgba(43, 122, 109, 0.22);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .power-map::after {
+      inset: 115px;
+      border-color: rgba(184, 138, 61, 0.25);
+    }
+
+    .power-center {
+      position: absolute;
+      left: 50%;
+      top: 48%;
+      z-index: 2;
+      transform: translate(-50%, -50%);
+      width: 132px;
+      height: 132px;
+      border: 1px solid rgba(43, 122, 109, 0.28);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 18px 38px rgba(23, 33, 31, 0.11);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 15px;
+      font-weight: 900;
+      color: var(--teal-dark);
+    }
+
+    .power-node {
+      position: absolute;
+      z-index: 3;
+      width: min(42%, 176px);
+      border: 1px solid rgba(219, 229, 223, 0.95);
+      border-left: 4px solid var(--node-color, var(--teal));
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: 0 12px 26px rgba(23, 33, 31, 0.08);
+      padding: 12px;
+    }
+
+    .power-node strong {
+      display: block;
+      color: var(--ink);
+      font-size: 0.96rem;
+    }
+
+    .power-node span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.35;
+      margin-top: 4px;
+    }
+
+    .power-node.sponsor { left: 8%; top: 9%; --node-color: var(--teal); }
+    .power-node.blocker { right: 7%; top: 12%; --node-color: var(--rose); }
+    .power-node.operator { left: 7%; bottom: 12%; --node-color: var(--gold); }
+    .power-node.audience { right: 8%; bottom: 10%; --node-color: #7762a8; }
+
+    .principle-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .principle {
+      border: 1px solid rgba(219, 229, 223, 0.9);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.76);
+      padding: 12px;
+    }
+
+    .principle b {
+      display: block;
+      color: var(--teal-dark);
+      margin-bottom: 4px;
+    }
+
+    .principle span {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.35;
+    }
+
     .field-stack {
       display: grid;
       gap: 12px;
@@ -881,6 +995,7 @@
       .compass-layout,
       .weather-grid,
       .patience-layout,
+      .political-layout,
       .trainer-layout,
       .gym-layout {
         grid-template-columns: 1fr;
@@ -957,6 +1072,7 @@
 
       .weather-options,
       .patience-types,
+      .principle-strip,
       .insight-grid,
       .score-rings,
       .stats-grid,
@@ -976,6 +1092,7 @@
       <div class="nav-pills">
         <a href="#access">Premium</a>
         <a href="#compass">Compass</a>
+        <a href="#political-savvy">Political Savvy</a>
         <a href="#weather">Weather</a>
         <a href="#patience">Patience</a>
         <a href="#trainer">Trainer</a>
@@ -1086,6 +1203,69 @@
         <div class="compass-layout premium-feature">
           <div class="compass-buttons" id="eq-compass-buttons"></div>
           <article class="tool-panel compass-detail" id="eq-compass-detail" aria-live="polite"></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="lab-section premium-locked" id="political-savvy" data-premium-required>
+      <div class="site-shell">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Social Awareness</div>
+            <h2 class="section-title">Political Savvy / Power & Influence Reading.</h2>
+          </div>
+          <p class="section-copy">Political savvy is cognitive empathy with power, incentives, timing, and tact added. Train the habit of reading the room before trying to move the room.</p>
+        </div>
+        <div class="premium-lock-banner"><strong>Premium preview</strong><span>Unlock to train power maps, influence timing, and exact politically savvy moves.</span></div>
+        <div class="political-layout premium-feature">
+          <article class="tool-panel">
+            <div class="card-kicker">Power map</div>
+            <h3>See the invisible room.</h3>
+            <div class="power-map" aria-label="Political savvy power map">
+              <div class="power-center">Decision<br>Field</div>
+              <div class="power-node sponsor"><strong>Sponsor</strong><span>Who benefits if this works?</span></div>
+              <div class="power-node blocker"><strong>Blocker</strong><span>Who can quietly slow or kill it?</span></div>
+              <div class="power-node operator"><strong>Operator</strong><span>Who carries the real work?</span></div>
+              <div class="power-node audience"><strong>Audience</strong><span>Who must feel respected by the move?</span></div>
+            </div>
+            <div class="principle-strip">
+              <div class="principle"><b>Power</b><span>Who has formal, informal, expert, or access power?</span></div>
+              <div class="principle"><b>Incentives</b><span>What does each person gain, lose, protect, or fear?</span></div>
+              <div class="principle"><b>Timing</b><span>Who needs a private heads-up before the public ask?</span></div>
+              <div class="principle"><b>Tact</b><span>How can truth land without humiliation or threat?</span></div>
+            </div>
+          </article>
+          <form class="tool-panel" id="political-form">
+            <div class="card-kicker">Influence game</div>
+            <h3>Choose the wise move.</h3>
+            <div class="field-stack">
+              <label>
+                <span>Scenario</span>
+                <select id="political-scenario"></select>
+              </label>
+              <label>
+                <span>Power map</span>
+                <textarea id="political-power" placeholder="Who has formal power, informal influence, expertise, access, or veto power?"></textarea>
+              </label>
+              <label>
+                <span>Hidden incentives</span>
+                <textarea id="political-incentives" placeholder="What might each person want, fear, protect, or avoid admitting?"></textarea>
+              </label>
+              <label>
+                <span>Your move</span>
+                <textarea id="political-move" placeholder="What would you say or do first, and who would you brief privately?"></textarea>
+              </label>
+              <div class="hero-actions">
+                <button class="btn btn-primary" type="submit">Score savvy</button>
+                <button class="btn btn-soft" type="button" id="political-optimal-button">Give optimal move</button>
+              </div>
+            </div>
+          </form>
+          <article class="tool-panel answer-panel" id="political-result" aria-live="polite">
+            <div class="card-kicker">Room read</div>
+            <h3>Your political savvy score will appear here.</h3>
+            <p>Map power, incentives, and timing. The trainer will show whether your move is strategic without becoming manipulative.</p>
+          </article>
         </div>
       </div>
     </section>
@@ -1270,6 +1450,6 @@
     <a href="mailto:support@suchawellness.com?subject=Sucha%20EQ%20Lab%20Support">Support</a>
   </footer>
 
-  <script src="/eq-lab.js?v=2026-08-12-price-10000-v1" defer></script>
+  <script src="/eq-lab.js?v=2026-08-12-political-savvy-v1" defer></script>
 </body>
 </html>
