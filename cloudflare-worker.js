@@ -11,7 +11,7 @@ const SECURITY_HEADERS = {
   'Permissions-Policy': 'accelerometer=(), autoplay=(), camera=(), clipboard-read=(), clipboard-write=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(self), usb=()',
 };
 
-const STATIC_ASSET_VERSION = '2026-08-11-admin-coupon-products-v1';
+const STATIC_ASSET_VERSION = '2026-08-12-empathy-eq-price-10000-v1';
 
 const ROBOTS_TXT = `# Sucha™ Wellness allows responsible search and AI discovery so people can find
 # mental wellness screening, private journaling, and care-navigation resources.
@@ -84,7 +84,7 @@ Important interpretation notes:
 - [Sucha™ Journal Premium](https://www.suchawellness.com/journal): $60/year premium journal vault with password-protected encryption and a 30-day cancellation refund policy described on the page.
 - [Premium screening report unlocks](https://www.suchawellness.com/premium-reports): Optional paid downloadable reports for selected informational screening tools.
 - [Premium empathy reports](https://www.suchawellness.com/empathy-test): Separate paid 20Q comprehensive and 50Q deep empathy tests with downloadable PDF reports.
-- [Empathy + EQ Labs Premium](https://www.suchawellness.com/empathy-lab): Shared $1000/year premium lab access for empathy and emotional intelligence practice, currently unlockable through dedicated Empathy Lab coupons or Razorpay checkout.
+- [Empathy + EQ Labs Premium](https://www.suchawellness.com/empathy-lab): Shared $10,000/year premium lab access for empathy and emotional intelligence practice, currently unlockable through dedicated Empathy Lab coupons or Razorpay checkout.
 - [Care navigation](https://www.suchawellness.com/therapist-matching): Request routing to qualified, licensed, and vetted mental health professionals.
 - [Provider presence](https://www.suchawellness.com/#provider-page): Branded provider pages, bookings, payments, secure sharing, and credential verification workflow.
 
@@ -189,9 +189,9 @@ const TA_LAB_PLAN_ID = 'ta_lab_yearly_60';
 const TA_LAB_PRODUCT = 'SuchaTALabPremium';
 const TA_LAB_PRICE_LABEL = '$60/year';
 const TA_LAB_ACCESS_DAYS = 365;
-const EMPATHY_LAB_PLAN_ID = 'empathy_lab_yearly_1000';
+const EMPATHY_LAB_PLAN_ID = 'empathy_lab_yearly_10000';
 const EMPATHY_LAB_PRODUCT = 'SuchaEmpathyLabPremium';
-const EMPATHY_LAB_PRICE_LABEL = '$1000/year';
+const EMPATHY_LAB_PRICE_LABEL = '$10,000/year';
 const EMPATHY_LAB_ACCESS_DAYS = 365;
 const GUARANTEE_DAYS = 30;
 const VERIFICATION_COOKIE = 'sucha_verified_visitor';
@@ -344,7 +344,7 @@ function taLabPlan() {
 }
 
 function empathyLabPlan() {
-  return { planId: EMPATHY_LAB_PLAN_ID, label: 'Empathy Lab Premium', amount: 100000, price: EMPATHY_LAB_PRICE_LABEL };
+  return { planId: EMPATHY_LAB_PLAN_ID, label: 'Empathy Lab Premium', amount: 1000000, price: EMPATHY_LAB_PRICE_LABEL };
 }
 
 async function hmacSha256Hex(secret, message) {

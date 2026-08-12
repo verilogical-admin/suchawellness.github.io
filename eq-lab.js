@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'suchaEqGymLog.v1';
   const empathyLabAccessKey = 'suchaEmpathyLabAccess.v1';
-  const empathyLabPlanId = 'empathy_lab_yearly_1000';
+  const empathyLabPlanId = 'empathy_lab_yearly_10000';
   const empathyLabProduct = 'SuchaEmpathyLabPremium';
   let triggerAttemptCount = 0;
   let lastTriggerSignature = '';
@@ -314,7 +314,7 @@
     if (!access) {
       setStatus('Premium unlocks EQ Lab and Empathy Lab together.');
       if (checkout) {
-        checkout.textContent = 'Upgrade $1000/year';
+        checkout.textContent = 'Upgrade $10,000/year';
         checkout.disabled = false;
       }
       return;
@@ -389,14 +389,14 @@
       const orderResponse = await fetch('/api/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId: empathyLabPlanId, product: empathyLabProduct, email, amountUsd: 1000 })
+        body: JSON.stringify({ planId: empathyLabPlanId, product: empathyLabProduct, email, amountUsd: 10000 })
       });
       const checkout = await orderResponse.json().catch(() => ({}));
       if (!orderResponse.ok) throw new Error(checkout.error || 'Could not create checkout.');
       const rz = new Razorpay({
         key: checkout.keyId,
         name: 'Sucha™ Wellness',
-        description: 'Empathy + EQ Labs Premium - $1000/year',
+        description: 'Empathy + EQ Labs Premium - $10,000/year',
         amount: checkout.amount,
         currency: checkout.currency || 'USD',
         order_id: checkout.orderId,
@@ -428,7 +428,7 @@
             purchasedAt: verified.purchasedAt || Date.now(),
             expiresAt: verified.expiresAt || checkout.expiresAt,
             guaranteeEndsAt: verified.guaranteeEndsAt || checkout.guaranteeEndsAt,
-            price: verified.price || '$1000/year'
+            price: verified.price || '$10,000/year'
           });
           updateGate();
         },
