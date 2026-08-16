@@ -734,6 +734,150 @@
       line-height: 1.35;
     }
 
+    .confidence-layout {
+      display: grid;
+      grid-template-columns: 0.86fr 1.14fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .confidence-layout #confidence-result {
+      grid-column: 1 / -1;
+    }
+
+    .confidence-dial {
+      min-height: 360px;
+      border: 1px solid rgba(219, 229, 223, 0.92);
+      border-radius: var(--radius);
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.94) 0 78px, rgba(43, 122, 109, 0.12) 79px 150px, transparent 151px),
+        conic-gradient(from 225deg, rgba(185, 95, 103, 0.16), rgba(184, 138, 61, 0.18), rgba(43, 122, 109, 0.18), rgba(119, 98, 168, 0.14), rgba(185, 95, 103, 0.16));
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      padding: 18px;
+      position: relative;
+    }
+
+    .confidence-dial::before,
+    .confidence-dial::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      border: 1px dashed rgba(43, 122, 109, 0.24);
+      pointer-events: none;
+    }
+
+    .confidence-dial::before { inset: 42px; }
+    .confidence-dial::after { inset: 102px; border-color: rgba(184, 138, 61, 0.28); }
+
+    .confidence-center {
+      position: relative;
+      z-index: 2;
+      width: min(76%, 220px);
+      aspect-ratio: 1;
+      border: 1px solid rgba(43, 122, 109, 0.24);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 18px 44px rgba(23, 33, 31, 0.12);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .confidence-center strong {
+      display: block;
+      color: var(--teal-dark);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.35rem;
+      font-weight: 650;
+      line-height: 1.1;
+    }
+
+    .confidence-center span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 800;
+      margin-top: 8px;
+      text-transform: uppercase;
+    }
+
+    .confidence-node {
+      position: absolute;
+      z-index: 3;
+      width: min(42%, 172px);
+      border: 1px solid rgba(219, 229, 223, 0.95);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: 0 12px 26px rgba(23, 33, 31, 0.08);
+      padding: 12px;
+    }
+
+    .confidence-node b {
+      display: block;
+      color: var(--ink);
+      font-size: 0.94rem;
+    }
+
+    .confidence-node span {
+      color: var(--muted);
+      display: block;
+      font-size: 0.78rem;
+      line-height: 1.35;
+      margin-top: 4px;
+    }
+
+    .confidence-node.presence { left: 8%; top: 8%; border-left: 4px solid var(--teal); }
+    .confidence-node.clarity { right: 8%; top: 8%; border-left: 4px solid var(--gold); }
+    .confidence-node.respect { left: 8%; bottom: 8%; border-left: 4px solid #7762a8; }
+    .confidence-node.boundary { right: 8%; bottom: 8%; border-left: 4px solid var(--rose); }
+
+    .trust-layout {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .trust-layout #trust-result {
+      grid-column: 1 / -1;
+    }
+
+    .trust-algorithm {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .trust-step {
+      align-items: center;
+      display: grid;
+      grid-template-columns: 2.4rem minmax(0, 1fr);
+      gap: 10px;
+      border: 1px solid rgba(219, 229, 223, 0.9);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.76);
+      padding: 11px;
+    }
+
+    .trust-step b {
+      display: grid;
+      place-items: center;
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 50%;
+      background: var(--teal-dark);
+      color: #fff;
+      font-size: 0.78rem;
+    }
+
+    .trust-step span {
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
     .field-stack {
       display: grid;
       gap: 12px;
@@ -996,6 +1140,8 @@
       .weather-grid,
       .patience-layout,
       .political-layout,
+      .confidence-layout,
+      .trust-layout,
       .trainer-layout,
       .gym-layout {
         grid-template-columns: 1fr;
@@ -1093,6 +1239,8 @@
         <a href="#access">Premium</a>
         <a href="#compass">Compass</a>
         <a href="#political-savvy">Political Savvy</a>
+        <a href="#quiet-confidence">Quiet Confidence</a>
+        <a href="#trust-calibration">Trust Calibration</a>
         <a href="#weather">Weather</a>
         <a href="#patience">Patience</a>
         <a href="#trainer">Trainer</a>
@@ -1265,6 +1413,124 @@
             <div class="card-kicker">Room read</div>
             <h3>Your political savvy score will appear here.</h3>
             <p>Map power, incentives, and timing. The trainer will show whether your move is strategic without becoming manipulative.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="lab-section premium-locked" id="quiet-confidence" data-premium-required>
+      <div class="site-shell">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Relationship Management</div>
+            <h2 class="section-title">Quiet Confidence / Status Without Diminishing.</h2>
+          </div>
+          <p class="section-copy">Train the stance: I know my ground, and your dignity is safe with me. Confidence becomes magnetic when it is clear, warm, and unthreatened.</p>
+        </div>
+        <div class="premium-lock-banner"><strong>Premium preview</strong><span>Unlock to practice calm status, respectful disagreement, and exact confident wording.</span></div>
+        <div class="confidence-layout premium-feature">
+          <article class="tool-panel">
+            <div class="card-kicker">Confidence dial</div>
+            <h3>Warmth plus spine.</h3>
+            <div class="confidence-dial" aria-label="Quiet confidence visual dial">
+              <div class="confidence-center"><div><strong>Grounded<br>Presence</strong><span>No need to shrink or tower</span></div></div>
+              <div class="confidence-node presence"><b>Presence</b><span>Slow breath, steady pace, soft eyes.</span></div>
+              <div class="confidence-node clarity"><b>Clarity</b><span>One clean point. Then pause.</span></div>
+              <div class="confidence-node respect"><b>Respect</b><span>Disagree without contempt.</span></div>
+              <div class="confidence-node boundary"><b>Boundary</b><span>Hold your no without heat.</span></div>
+            </div>
+            <div class="principle-strip">
+              <div class="principle"><b>Inner stance</b><span>I respect myself and do not need to reduce you.</span></div>
+              <div class="principle"><b>Body signal</b><span>Relaxed face, clear spine, unhurried voice.</span></div>
+              <div class="principle"><b>Language</b><span>Fewer words. More precision. Less pleading.</span></div>
+              <div class="principle"><b>Social effect</b><span>The room feels steadier around you.</span></div>
+            </div>
+          </article>
+          <form class="tool-panel" id="confidence-form">
+            <div class="card-kicker">Confidence trainer</div>
+            <h3>Rewrite the moment.</h3>
+            <div class="field-stack">
+              <label>
+                <span>Scenario</span>
+                <select id="confidence-scenario"></select>
+              </label>
+              <label>
+                <span>Your first impulse</span>
+                <textarea id="confidence-impulse" placeholder="Example: I want to over-explain, prove myself, attack back, apologize too much, or stay silent."></textarea>
+              </label>
+              <label>
+                <span>Confident response</span>
+                <textarea id="confidence-response" placeholder="Example: I see the concern. My view is different, and here is the key reason."></textarea>
+              </label>
+              <div class="hero-actions">
+                <button class="btn btn-primary" type="submit">Score confidence</button>
+                <button class="btn btn-soft" type="button" id="confidence-optimal-button">Give optimal wording</button>
+              </div>
+            </div>
+          </form>
+          <article class="tool-panel answer-panel" id="confidence-result" aria-live="polite">
+            <div class="card-kicker">Practice output</div>
+            <h3>Your quiet confidence score will appear here.</h3>
+            <p>Write a real response and the lab will check whether it shows presence, respect, clarity, and boundaries without putting the other person down.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="lab-section premium-locked" id="trust-calibration" data-premium-required>
+      <div class="site-shell">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Social Awareness + Self-Regulation</div>
+            <h2 class="section-title">Trust Calibration / Gullibility Shield.</h2>
+          </div>
+          <p class="section-copy">Stay warm without being captureable. Train the skill of delaying belief, verifying claims, reading incentives, and reducing access when people take or lie.</p>
+        </div>
+        <div class="premium-lock-banner"><strong>Premium preview</strong><span>Unlock to practice evidence checks, pressure resistance, and taker/liar boundaries.</span></div>
+        <div class="trust-layout premium-feature">
+          <article class="tool-panel">
+            <div class="card-kicker">Mental algorithm</div>
+            <h3>Warm heart. Cool head. Slow yes.</h3>
+            <p>Trust people gradually; verify claims independently. Liking someone and believing a claim are separate decisions.</p>
+            <div class="trust-algorithm">
+              <div class="trust-step"><b>1</b><span><strong>Pause</strong> before agreement, especially under urgency, flattery, fear, greed, or loneliness.</span></div>
+              <div class="trust-step"><b>2</b><span><strong>Claim</strong>: ask for the exact claim in one sentence.</span></div>
+              <div class="trust-step"><b>3</b><span><strong>Evidence</strong>: ask how they know, what would disprove it, and what the downside is.</span></div>
+              <div class="trust-step"><b>4</b><span><strong>Incentive</strong>: ask what happens to them if you believe it.</span></div>
+              <div class="trust-step"><b>5</b><span><strong>Independent check</strong>: verify outside the same source before giving access.</span></div>
+              <div class="trust-step"><b>6</b><span><strong>Decide</strong>: give trust incrementally, with written clarity and consequence-based boundaries.</span></div>
+            </div>
+          </article>
+          <form class="tool-panel" id="trust-form">
+            <div class="card-kicker">Claim filter game</div>
+            <h3>Do not become cynical. Become harder to rush.</h3>
+            <div class="field-stack">
+              <label>
+                <span>Scenario</span>
+                <select id="trust-scenario"></select>
+              </label>
+              <label>
+                <span>Claim and emotional hook</span>
+                <textarea id="trust-claim" placeholder="What are they asking you to believe, and what emotion are they using: urgency, flattery, fear, greed, guilt, attraction?"></textarea>
+              </label>
+              <label>
+                <span>Evidence and incentive check</span>
+                <textarea id="trust-evidence" placeholder="What evidence would you need? How can you verify it independently? What do they gain if you believe?"></textarea>
+              </label>
+              <label>
+                <span>Boundary or next response</span>
+                <textarea id="trust-response" placeholder="Example: I am open to this, but I need independent verification before I commit."></textarea>
+              </label>
+              <div class="hero-actions">
+                <button class="btn btn-primary" type="submit">Score judgment</button>
+                <button class="btn btn-soft" type="button" id="trust-optimal-button">Give optimal response</button>
+              </div>
+            </div>
+          </form>
+          <article class="tool-panel answer-panel" id="trust-result" aria-live="polite">
+            <div class="card-kicker">Discernment output</div>
+            <h3>Your trust calibration score will appear here.</h3>
+            <p>The trainer checks evidence thinking, incentive reading, pressure resistance, and access boundaries without turning you cold or paranoid.</p>
           </article>
         </div>
       </div>
@@ -1450,6 +1716,6 @@
     <a href="mailto:support@suchawellness.com?subject=Sucha%20EQ%20Lab%20Support">Support</a>
   </footer>
 
-  <script src="/eq-lab.js?v=2026-08-12-political-savvy-v1" defer></script>
+  <script src="/eq-lab.js?v=2026-08-16-trust-confidence-v1" defer></script>
 </body>
 </html>

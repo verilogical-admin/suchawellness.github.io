@@ -240,6 +240,68 @@
     }
   ];
 
+  const confidenceScenarios = [
+    {
+      id: 'challenged-meeting',
+      label: 'Your idea is challenged',
+      prompt: 'Someone says, "I do not think this plan makes sense," in front of others.',
+      optimal: 'I see the concern. My view is different: the strongest reason to try this is the downside is contained and the learning value is high. What risk would you want addressed first?',
+      avoid: 'Do not mock the concern, over-explain your intelligence, or rush to win the room.'
+    },
+    {
+      id: 'senior-status',
+      label: 'Senior person disagrees',
+      prompt: 'A senior person dismisses your point quickly, but you believe they missed an important distinction.',
+      optimal: 'You may be right about the larger pattern. I would add one distinction: in this case, the constraint is different. Can I show the specific data point?',
+      avoid: 'Do not become submissive or combative. Hold respect and precision at the same time.'
+    },
+    {
+      id: 'boundary-pressure',
+      label: 'Someone pushes your boundary',
+      prompt: 'Someone asks for a commitment you do not want to make and keeps pressing after your first no.',
+      optimal: 'I understand why you want an answer now. My answer is still no, and I do not want to keep negotiating it. I am open to discussing a different option.',
+      avoid: 'Do not apologize repeatedly or attack them for asking. Calm repetition is stronger.'
+    },
+    {
+      id: 'credit-room',
+      label: 'You need to claim credit',
+      prompt: 'Your contribution is being skipped in a group conversation and you want to speak without sounding needy.',
+      optimal: 'I want to add context because I led that part of the work. The key decision I made was X, and the result was Y. I am happy to walk through it.',
+      avoid: 'Do not complain about being ignored. Make the value visible with clean facts.'
+    }
+  ];
+
+  const trustScenarios = [
+    {
+      id: 'urgent-investment',
+      label: 'Urgent investment pitch',
+      prompt: 'Someone says an opportunity will return 30% and you have to decide today.',
+      optimal: 'Interesting. I do not make money decisions under time pressure. Send the numbers, the risks, and where I can independently verify them. I will review it after that.',
+      signal: 'Urgency plus extraordinary benefit.'
+    },
+    {
+      id: 'flattering-partner',
+      label: 'Flattering partnership offer',
+      prompt: 'A charming person says you are exactly who they have been looking for and asks for access to your network quickly.',
+      optimal: 'I appreciate that. I move gradually with introductions. Let us start with one small, low-risk step and see how you follow through.',
+      signal: 'Heavy flattery plus fast access request.'
+    },
+    {
+      id: 'lying-taker',
+      label: 'Taker with shifting stories',
+      prompt: 'Someone repeatedly asks for help, gives inconsistent explanations, and becomes irritated when you ask for details.',
+      optimal: 'That does not match what I have documented. I am pausing this until the facts are clear. I am not comfortable proceeding on verbal assurance.',
+      signal: 'Inconsistency plus anger when questioned.'
+    },
+    {
+      id: 'secret-pressure',
+      label: 'Do not check with anyone',
+      prompt: 'Someone says the deal only works if you do not discuss it with anyone else first.',
+      optimal: 'I do not make consequential decisions that I am told not to verify. If independent review is a problem, I am out.',
+      signal: 'Isolation from outside verification.'
+    }
+  ];
+
   const archetypes = [
     {
       title: 'The Reactor',
@@ -539,6 +601,18 @@
     select.innerHTML = politicalScenarios.map((item) => `<option value="${item.id}">${escapeHtml(item.label)}</option>`).join('');
   }
 
+  function populateConfidenceScenarios() {
+    const select = $('#confidence-scenario');
+    if (!select) return;
+    select.innerHTML = confidenceScenarios.map((item) => `<option value="${item.id}">${escapeHtml(item.label)}</option>`).join('');
+  }
+
+  function populateTrustScenarios() {
+    const select = $('#trust-scenario');
+    if (!select) return;
+    select.innerHTML = trustScenarios.map((item) => `<option value="${item.id}">${escapeHtml(item.label)}</option>`).join('');
+  }
+
   function renderPatience(activeId = activePatienceType) {
     activePatienceType = activeId;
     const active = patienceTypes.find((item) => item.id === activePatienceType) || patienceTypes[0];
@@ -667,6 +741,137 @@
       <div class="insight-grid">
         <div class="insight-tile"><b>Why this works</b>It pre-wires resistance, gives important people dignity, and makes the decision easier to support.</div>
         <div class="insight-tile"><b>Trap to avoid</b>${escapeHtml(scenario.trap)}</div>
+      </div>
+    `;
+  }
+
+  function selectedConfidenceScenario() {
+    return confidenceScenarios.find((item) => item.id === $('#confidence-scenario')?.value) || confidenceScenarios[0];
+  }
+
+  function scoreConfidence(event) {
+    event.preventDefault();
+    const scenario = selectedConfidenceScenario();
+    const impulse = $('#confidence-impulse')?.value.trim() || '';
+    const response = $('#confidence-response')?.value.trim() || '';
+    const host = $('#confidence-result');
+    if (!host) return;
+
+    if (!impulse && !response) {
+      host.innerHTML = `
+        <div class="card-kicker">Add a response</div>
+        <h3>Write the first impulse or the words you would use.</h3>
+        <p>Quiet confidence begins by seeing the impulse without obeying it.</p>
+      `;
+      return;
+    }
+
+    const presenceScore = scoreText(`${impulse} ${response}`, ['pause', 'slow', 'breath', 'steady', 'calm', 'ground', 'moment', 'notice', 'soft', 'unhurried'], { ownershipBonus: true });
+    const respectScore = scoreText(response, ['see', 'understand', 'fair', 'point', 'concern', 'respect', 'may', 'you', 'agree', 'different', 'add'], { otherBonus: true });
+    const clarityScore = scoreText(response, ['view', 'reason', 'key', 'specific', 'data', 'clear', 'different', 'because', 'first', 'distinction', 'context'], { longWords: 14 });
+    const boundaryScore = scoreText(response, ['no', 'not', 'still', 'boundary', 'answer', 'open', 'option', 'request', 'different', 'will', 'will not'], { longWords: 14 });
+    const total = presenceScore + respectScore + clarityScore + boundaryScore;
+
+    const feedback = total >= 16
+      ? 'Strong quiet confidence. You sound grounded without making the other person smaller.'
+      : total >= 11
+        ? 'Good base. Make the response a little slower, cleaner, and more boundaried.'
+        : 'The response may still leak insecurity or dominance. Reduce heat, reduce explanation, and say one clear sentence.';
+
+    host.innerHTML = `
+      <div class="card-kicker">${escapeHtml(scenario.label)} - Confidence score</div>
+      <h3>${escapeHtml(feedback)}</h3>
+      <p>${escapeHtml(scenario.prompt)}</p>
+      <div class="score-rings">
+        ${renderRing('Presence', presenceScore)}
+        ${renderRing('Respect', respectScore)}
+        ${renderRing('Clarity', clarityScore)}
+        ${renderRing('Boundary', boundaryScore)}
+      </div>
+      <div class="insight-grid">
+        <div class="insight-tile"><b>Optimal wording</b>${escapeHtml(scenario.optimal)}</div>
+        <div class="insight-tile"><b>Avoid</b>${escapeHtml(scenario.avoid)}</div>
+      </div>
+    `;
+  }
+
+  function showConfidenceOptimalWording() {
+    const scenario = selectedConfidenceScenario();
+    const host = $('#confidence-result');
+    if (!host) return;
+    host.innerHTML = `
+      <div class="card-kicker">${escapeHtml(scenario.label)} - Optimal wording</div>
+      <h3>Try these exact words.</h3>
+      <blockquote>${escapeHtml(scenario.optimal)}</blockquote>
+      <div class="insight-grid">
+        <div class="insight-tile"><b>Why this works</b>It holds your ground, gives the other person dignity, and keeps the conversation moving toward truth.</div>
+        <div class="insight-tile"><b>Practice move</b>Say it with a slower pace than feels necessary. Confidence often shows up as unused speed.</div>
+      </div>
+    `;
+  }
+
+  function selectedTrustScenario() {
+    return trustScenarios.find((item) => item.id === $('#trust-scenario')?.value) || trustScenarios[0];
+  }
+
+  function scoreTrust(event) {
+    event.preventDefault();
+    const scenario = selectedTrustScenario();
+    const claim = $('#trust-claim')?.value.trim() || '';
+    const evidence = $('#trust-evidence')?.value.trim() || '';
+    const response = $('#trust-response')?.value.trim() || '';
+    const host = $('#trust-result');
+    if (!host) return;
+
+    if (!claim && !evidence && !response) {
+      host.innerHTML = `
+        <div class="card-kicker">Add a claim</div>
+        <h3>Write what is being asked of you first.</h3>
+        <p>The skill is not distrust. It is delaying belief until the evidence deserves it.</p>
+      `;
+      return;
+    }
+
+    const evidenceScore = scoreText(evidence, ['evidence', 'verify', 'source', 'independent', 'numbers', 'risk', 'prove', 'wrong', 'downside', 'document', 'written'], { questionBonus: true });
+    const incentiveScore = scoreText(`${claim} ${evidence}`, ['gain', 'incentive', 'commission', 'benefit', 'want', 'pressure', 'status', 'money', 'access', 'authority', 'they'], { otherBonus: true });
+    const pressureScore = scoreText(`${claim} ${response}`, ['pause', 'slow', 'today', 'pressure', 'urgent', 'time', 'flattery', 'fear', 'guilt', 'maybe', 'review'], { ownershipBonus: true });
+    const boundaryScore = scoreText(response, ['no', 'not', 'before', 'until', 'verify', 'written', 'pause', 'commit', 'access', 'comfortable', 'independent', 'proceed'], { longWords: 14 });
+    const total = evidenceScore + incentiveScore + pressureScore + boundaryScore;
+
+    const feedback = total >= 16
+      ? 'Strong trust calibration. You stay open while protecting belief, access, and commitment.'
+      : total >= 11
+        ? 'Good judgment. Add one clearer independent check or one firmer access boundary.'
+        : 'This still looks easy to rush. Ask for evidence, name the incentive, and delay commitment.';
+
+    host.innerHTML = `
+      <div class="card-kicker">${escapeHtml(scenario.label)} - Judgment score</div>
+      <h3>${escapeHtml(feedback)}</h3>
+      <p>${escapeHtml(scenario.prompt)}</p>
+      <div class="score-rings">
+        ${renderRing('Evidence', evidenceScore)}
+        ${renderRing('Incentive', incentiveScore)}
+        ${renderRing('Pressure', pressureScore)}
+        ${renderRing('Boundary', boundaryScore)}
+      </div>
+      <div class="insight-grid">
+        <div class="insight-tile"><b>Manipulation signal</b>${escapeHtml(scenario.signal)}</div>
+        <div class="insight-tile"><b>Optimal response</b>${escapeHtml(scenario.optimal)}</div>
+      </div>
+    `;
+  }
+
+  function showTrustOptimalResponse() {
+    const scenario = selectedTrustScenario();
+    const host = $('#trust-result');
+    if (!host) return;
+    host.innerHTML = `
+      <div class="card-kicker">${escapeHtml(scenario.label)} - Optimal response</div>
+      <h3>Warm, calm, not captureable.</h3>
+      <blockquote>${escapeHtml(scenario.optimal)}</blockquote>
+      <div class="insight-grid">
+        <div class="insight-tile"><b>Signal to notice</b>${escapeHtml(scenario.signal)}</div>
+        <div class="insight-tile"><b>Practice move</b>Use fewer words. Do not debate the story. Move to verification, writing, and access boundaries.</div>
       </div>
     `;
   }
@@ -921,6 +1126,16 @@
     const politicalOptimalButton = $('#political-optimal-button');
     if (politicalOptimalButton) politicalOptimalButton.addEventListener('click', showPoliticalOptimalMove);
 
+    const confidenceForm = $('#confidence-form');
+    if (confidenceForm) confidenceForm.addEventListener('submit', scoreConfidence);
+    const confidenceOptimalButton = $('#confidence-optimal-button');
+    if (confidenceOptimalButton) confidenceOptimalButton.addEventListener('click', showConfidenceOptimalWording);
+
+    const trustForm = $('#trust-form');
+    if (trustForm) trustForm.addEventListener('submit', scoreTrust);
+    const trustOptimalButton = $('#trust-optimal-button');
+    if (trustOptimalButton) trustOptimalButton.addEventListener('click', showTrustOptimalResponse);
+
     const downloadButton = $('#download-gym');
     if (downloadButton) downloadButton.addEventListener('click', downloadGymLog);
 
@@ -945,6 +1160,8 @@
     renderPatience('urgency');
     populateScenarios();
     populatePoliticalScenarios();
+    populateConfidenceScenarios();
+    populateTrustScenarios();
     renderGymStats();
     renderArchetypes();
     bindEvents();
