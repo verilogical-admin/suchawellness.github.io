@@ -11,7 +11,7 @@ const SECURITY_HEADERS = {
   'Permissions-Policy': 'accelerometer=(), autoplay=(), camera=(), clipboard-read=(), clipboard-write=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(self), usb=()',
 };
 
-const STATIC_ASSET_VERSION = '2026-08-20-eq-patience-garden-v1';
+const STATIC_ASSET_VERSION = '2026-08-20-adhd-planner-teaser-v1';
 
 const ROBOTS_TXT = `# Sucha™ Wellness allows responsible search and AI discovery so people can find
 # mental wellness screening, private journaling, and care-navigation resources.
@@ -72,6 +72,7 @@ Important interpretation notes:
 - [Empathy Type Test](https://www.suchawellness.com/empathy-test): Dedicated page for the free 5-question empathy snapshot and separate paid 20Q/50Q empathy reports.
 - [Empathy Lab](https://www.suchawellness.com/empathy-lab): Interactive premium training lab for cognitive, emotional, compassionate, synchrony, and Read the Room empathy practice. The same premium purchase or coupon also unlocks EQ Lab.
 - [EQ Lab](https://www.suchawellness.com/eq-lab): Premium visual emotional intelligence learning and practice lab for self-awareness, self-regulation, patience building, empathy, trigger response, and relationship skill. It unlocks with the same Empathy Lab premium purchase or coupon.
+- [ADHD Planner](https://www.suchawellness.com/adhd-planner): Sucha™ Wellness discovery page for the JournalForever ADHD Planner, a visual year, quarter, month, week, and day dashboard for nonlinear minds.
 - [Sucha™ Journal](https://www.suchawellness.com/journal): Dedicated page for private mental health notes, local journal storage, and optional premium encrypted vault.
 - [Transactional Analysis Practice Lab](https://www.suchawellness.com/transactional-analysis): TA learning and application tool with free PAC lessons, a 7-day local trial, and optional Razorpay premium for transaction analysis, logs, strokes, life positions, and reflection.
 - [Care seeker matching](https://www.suchawellness.com/therapist-matching): Dedicated page for requesting connection to a licensed and vetted therapist or counsellor.
@@ -135,6 +136,12 @@ const SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
     <lastmod>2026-08-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.suchawellness.com/adhd-planner</loc>
+    <lastmod>2026-08-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.suchawellness.com/journal</loc>
@@ -1790,6 +1797,7 @@ export default {
       '/empathy-test': '/empathy-test.html',
       '/empathy-lab': '/empathy-lab.html',
       '/eq-lab': '/eq-lab.html',
+      '/adhd-planner': '/adhd-planner.html',
       '/journal': '/journal.html',
       '/transactional-analysis': '/transactional-analysis.html',
       '/therapist-matching': '/therapist-matching.html',

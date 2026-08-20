@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADHD Planner | Sucha™ Wellness</title>
+  <meta name="description" content="A Sucha™ Wellness discovery page for the JournalForever ADHD Planner: a visual year, quarter, month, week, and day dashboard for nonlinear minds.">
+  <link rel="canonical" href="https://www.suchawellness.com/adhd-planner">
+  <style>
+    :root {
+      color: #20201d;
+      background: #f7f1e7;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 12% 20%, rgba(255, 210, 117, 0.36), transparent 28%),
+        radial-gradient(circle at 86% 8%, rgba(91, 141, 132, 0.22), transparent 28%),
+        linear-gradient(135deg, #fffdf6, #edf4f1 48%, #f7eadf);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    nav {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+      margin: 0 auto;
+      max-width: 1180px;
+      padding: 22px;
+    }
+
+    .brand {
+      color: #273f3a;
+      font-weight: 800;
+    }
+
+    .navLinks {
+      align-items: center;
+      display: flex;
+      gap: 12px;
+    }
+
+    .navLinks a,
+    .button {
+      border-radius: 8px;
+      display: inline-flex;
+      font-weight: 800;
+      min-height: 42px;
+      padding: 0 16px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .button.primary {
+      background: #273f3a;
+      color: #fffdf6;
+    }
+
+    .button.secondary,
+    .navLinks a {
+      background: rgba(255, 253, 246, 0.72);
+      border: 1px solid rgba(32, 32, 29, 0.1);
+      color: #273f3a;
+    }
+
+    main {
+      margin: 0 auto;
+      max-width: 1180px;
+      padding: 18px 22px 56px;
+    }
+
+    .hero {
+      align-items: stretch;
+      display: grid;
+      gap: 22px;
+      grid-template-columns: minmax(0, 1fr) 430px;
+      min-height: calc(100vh - 126px);
+    }
+
+    .copy {
+      align-self: center;
+      padding: clamp(22px, 6vw, 56px) 0;
+    }
+
+    .eyebrow {
+      color: #6a706b;
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      color: #1f3d37;
+      font-family: ui-serif, Georgia, "Times New Roman", serif;
+      font-size: clamp(3rem, 8vw, 7.4rem);
+      font-weight: 500;
+      letter-spacing: 0;
+      line-height: 0.94;
+      margin: 0;
+      max-width: 840px;
+    }
+
+    .lead {
+      color: #525f59;
+      font-size: clamp(1.05rem, 2vw, 1.28rem);
+      line-height: 1.65;
+      max-width: 680px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .dashboardPreview {
+      align-self: center;
+      background: rgba(255, 253, 246, 0.84);
+      border: 1px solid rgba(32, 32, 29, 0.1);
+      border-radius: 8px;
+      box-shadow: 0 28px 80px rgba(39, 63, 58, 0.14);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 16px;
+    }
+
+    .previewHeader {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .previewHeader strong {
+      color: #273f3a;
+      font-size: 1.15rem;
+    }
+
+    .previewPill {
+      background: #f0e4d4;
+      border-radius: 999px;
+      color: #6f512c;
+      font-size: 0.82rem;
+      font-weight: 800;
+      padding: 7px 10px;
+    }
+
+    .miniBoard {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(5, 1fr);
+    }
+
+    .miniColumn {
+      border-radius: 8px;
+      min-height: 310px;
+      overflow: hidden;
+      background: #f8f2e9;
+      border: 1px solid rgba(32, 32, 29, 0.08);
+    }
+
+    .miniColumn span {
+      color: #fffdf6;
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 900;
+      padding: 10px;
+    }
+
+    .miniColumn:nth-child(1) span { background: #27695f; }
+    .miniColumn:nth-child(2) span { background: #7863a6; }
+    .miniColumn:nth-child(3) span { background: #4f6d9b; }
+    .miniColumn:nth-child(4) span { background: #b8893c; }
+    .miniColumn:nth-child(5) span { background: #b95f67; }
+
+    .miniTask {
+      background: #fffdf6;
+      border-radius: 8px;
+      height: 58px;
+      margin: 8px;
+    }
+
+    .featureGrid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(4, 1fr);
+      margin-top: 28px;
+    }
+
+    .feature {
+      background: rgba(255, 253, 246, 0.78);
+      border: 1px solid rgba(32, 32, 29, 0.1);
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    .feature strong {
+      color: #273f3a;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .feature p {
+      color: #626b66;
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    @media (max-width: 920px) {
+      .hero,
+      .featureGrid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: 0;
+      }
+    }
+
+    @media (max-width: 620px) {
+      nav,
+      .navLinks,
+      .actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .navLinks {
+        display: none;
+      }
+
+      .miniBoard {
+        grid-template-columns: 1fr;
+      }
+
+      .miniColumn {
+        min-height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="brand" href="/">Sucha™ Wellness</a>
+    <div class="navLinks">
+      <a href="/journal">Sucha Journal</a>
+      <a href="/eq-lab">EQ Lab</a>
+      <a href="/transactional-analysis">TA Lab</a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div class="copy">
+        <span class="eyebrow">Discovery page</span>
+        <h1>ADHD planning belongs inside JournalForever.</h1>
+        <p class="lead">Sucha™ Wellness helps you understand your mind. JournalForever helps you run your day. The ADHD Planner is a visual life dashboard for nonlinear, fast, overloaded minds: year, quarter, month, week, and today on one beautiful screen.</p>
+        <div class="actions">
+          <a class="button primary" href="https://journalforever.com" rel="noopener">Open JournalForever</a>
+          <a class="button secondary" href="/journal">See Sucha Journal</a>
+        </div>
+      </div>
+
+      <div class="dashboardPreview" aria-label="ADHD Planner dashboard preview">
+        <div class="previewHeader">
+          <strong>One-page planner</strong>
+          <span class="previewPill">gentle focus</span>
+        </div>
+        <div class="miniBoard">
+          <div class="miniColumn"><span>Year</span><div class="miniTask"></div></div>
+          <div class="miniColumn"><span>Quarter</span><div class="miniTask"></div><div class="miniTask"></div></div>
+          <div class="miniColumn"><span>Month</span><div class="miniTask"></div></div>
+          <div class="miniColumn"><span>Week</span><div class="miniTask"></div><div class="miniTask"></div></div>
+          <div class="miniColumn"><span>Today</span><div class="miniTask"></div><div class="miniTask"></div><div class="miniTask"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="featureGrid" aria-label="Planner features">
+      <article class="feature">
+        <strong>All horizons together</strong>
+        <p>Big life direction and tiny next action stay visible at the same time.</p>
+      </article>
+      <article class="feature">
+        <strong>Habit loops</strong>
+        <p>Small daily behaviors get a simple visual streak system without shame.</p>
+      </article>
+      <article class="feature">
+        <strong>Focus pings</strong>
+        <p>Browser notifications can gently pull attention back while the page is open.</p>
+      </article>
+      <article class="feature">
+        <strong>Journal-native</strong>
+        <p>Planning and private reflection live in the same product home.</p>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
