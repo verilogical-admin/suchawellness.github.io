@@ -176,6 +176,65 @@
   ];
   let activePatienceType = 'urgency';
 
+  const patiencePractices = [
+    {
+      id: 'observe',
+      label: 'Observer rep',
+      action: 'Watch the urge like weather. Name three facts, one body sensation, and one thing you do not yet know.',
+      phrase: 'Interesting. The urge is here. I can observe it without becoming it.',
+      garden: 'Observation waters the roots before action grows.'
+    },
+    {
+      id: 'prepare',
+      label: 'Prepare rep',
+      action: 'Use the waiting time to prepare one calmer sentence, one question, and one fallback option.',
+      phrase: 'I can use this pause to become clearer, not just louder inside.',
+      garden: 'Preparation turns waiting into quiet strength.'
+    },
+    {
+      id: 'soften',
+      label: 'Body softening rep',
+      action: 'Unclench jaw, lower shoulders, relax hands, and make five exhales longer than the inhale.',
+      phrase: 'My body can slow first. My mind will follow.',
+      garden: 'A softer body gives patience somewhere to land.'
+    },
+    {
+      id: 'micro-kindness',
+      label: 'Micro-kindness rep',
+      action: 'While waiting, do one small helpful thing: tidy, thank, clarify, breathe, or reduce friction for someone.',
+      phrase: 'I do not need to force the outcome. I can add steadiness here.',
+      garden: 'Kind action keeps patience from becoming passive.'
+    },
+    {
+      id: 'breath',
+      label: 'Breath observation',
+      action: 'Observe ten breaths without changing them. Silently mark: inhale, exhale, pause. Return gently each time the mind rushes.',
+      phrase: 'Breath is happening. I can ride one breath before I ride the impulse.',
+      garden: 'Breath observation gives impatience a soft anchor.'
+    },
+    {
+      id: 'mindfulness',
+      label: 'Mindfulness scan',
+      action: 'Notice five sensations, three sounds, two colors, and one feeling. Let each be here without fixing it.',
+      phrase: 'This moment is larger than the thing I am waiting for.',
+      garden: 'Mindfulness widens the room around the urge.'
+    },
+    {
+      id: 'cognitive-empathy',
+      label: 'Cognitive empathy',
+      action: 'Generate three plausible reasons the other person may be slow, unavailable, defensive, or unclear without assuming bad intent.',
+      phrase: 'There may be more happening on their side than I can see.',
+      garden: 'Cognitive empathy turns impatience into better hypotheses.'
+    },
+    {
+      id: 'ta-check',
+      label: 'TA ego-state check',
+      action: 'Ask: Am I in Critical Parent, Adapted Child, or Adult? Then write one Adult response that is factual, calm, and specific.',
+      phrase: 'The Adult in me can wait, ask, clarify, or choose a boundary.',
+      garden: 'The Adult ego state grows patience from clarity.'
+    }
+  ];
+
   const scenarios = [
     {
       id: 'criticism',
@@ -627,6 +686,16 @@
     renderPatiencePlan(false);
   }
 
+  function populatePatiencePractices() {
+    const select = $('#patience-practice');
+    if (!select) return;
+    select.innerHTML = patiencePractices.map((item) => `<option value="${item.id}">${escapeHtml(item.label)}</option>`).join('');
+  }
+
+  function selectedPatiencePractice() {
+    return patiencePractices.find((item) => item.id === $('#patience-practice')?.value) || patiencePractices[0];
+  }
+
   function patienceIntensity() {
     return Math.max(1, Math.min(5, Number($('#patience-intensity')?.value || 3)));
   }
@@ -639,9 +708,28 @@
     `;
   }
 
+  function renderPatienceGarden(intensity) {
+    const blooms = ['#b88a3d', '#2b7a6d', '#b95f67', '#7762a8', '#b88a3d'];
+    return `
+      <div class="patience-garden">
+        <div class="garden-bed" aria-hidden="true">
+          ${[1, 2, 3, 4, 5].map((step) => {
+            const active = step <= intensity;
+            const height = 24 + (step * 9) + (active ? 10 : 0);
+            const opacity = active ? 0.92 : 0.36;
+            const scale = active ? 0.94 : 0.62;
+            return `<div class="garden-sprout" style="--stem:${height}px;--sprout-opacity:${opacity};--bloom-scale:${scale};--bloom:${blooms[step - 1]}"><div class="garden-bloom"></div><div class="garden-stem"></div></div>`;
+          }).join('')}
+        </div>
+        <div class="garden-caption"><span>Notice</span><span>Soften</span><span>Choose</span></div>
+      </div>
+    `;
+  }
+
   function renderPatiencePlan(includeTrigger = true) {
     const active = patienceTypes.find((item) => item.id === activePatienceType) || patienceTypes[0];
     const intensity = patienceIntensity();
+    const practice = selectedPatiencePractice();
     const trigger = String($('#patience-trigger')?.value || '').trim();
     const waitTime = intensity >= 5 ? '10 minutes' : intensity >= 4 ? '3 minutes' : intensity >= 3 ? '90 seconds' : '30 seconds';
     const host = $('#patience-result');
@@ -650,10 +738,13 @@
       <div class="card-kicker">${escapeHtml(active.title)} patience plan</div>
       <h3>${escapeHtml(active.cue)}</h3>
       ${renderPatienceMeter(intensity)}
+      ${renderPatienceGarden(intensity)}
       <div class="insight-grid">
         <div class="insight-tile"><b>What it may protect</b>${escapeHtml(active.protects)}</div>
         <div class="insight-tile"><b>Reset move</b>${escapeHtml(active.reset)}</div>
         <div class="insight-tile"><b>Pause length</b>Wait ${waitTime} before sending, deciding, correcting, or pushing.</div>
+        <div class="insight-tile"><b>Practice rep</b>${escapeHtml(practice.action)}</div>
+        <div class="insight-tile"><b>Garden note</b>${escapeHtml(practice.garden)}</div>
         <div class="insight-tile"><b>Trigger focus</b>${escapeHtml(includeTrigger && trigger ? trigger : 'Name the exact moment that makes you want to rush.')}</div>
       </div>
       <div class="pause-ladder">
@@ -666,6 +757,7 @@
 
   function showPatienceOptimalResponse() {
     const active = patienceTypes.find((item) => item.id === activePatienceType) || patienceTypes[0];
+    const practice = selectedPatiencePractice();
     const host = $('#patience-result');
     if (!host) return;
     host.innerHTML = `
@@ -674,7 +766,33 @@
       <blockquote>${escapeHtml(active.response)}</blockquote>
       <div class="insight-grid">
         <div class="insight-tile"><b>Why this works</b>It admits the internal pressure without dumping it on the other person.</div>
+        <div class="insight-tile"><b>Practice phrase</b>${escapeHtml(practice.phrase)}</div>
         <div class="insight-tile"><b>Practice move</b>Say it slower than feels natural. Patience often begins as a change in pace.</div>
+      </div>
+    `;
+  }
+
+  function startPatienceRep() {
+    const practice = selectedPatiencePractice();
+    const active = patienceTypes.find((item) => item.id === activePatienceType) || patienceTypes[0];
+    const host = $('#patience-result');
+    if (!host) return;
+    host.innerHTML = `
+      <div class="card-kicker">30-second patience rep</div>
+      <h3>${escapeHtml(practice.label)}</h3>
+      <div class="patience-countdown">
+        <div class="countdown-orb" style="--progress:100%"><span>30s</span></div>
+        <div>
+          <p><b>${escapeHtml(active.cue)}</b></p>
+          <p>${escapeHtml(practice.action)}</p>
+          <blockquote>${escapeHtml(practice.phrase)}</blockquote>
+        </div>
+      </div>
+      ${renderPatienceGarden(Math.max(2, patienceIntensity()))}
+      <div class="pause-ladder">
+        <div class="pause-step"><b>1</b><span>For ten seconds: breathe out slowly and relax one body signal.</span></div>
+        <div class="pause-step"><b>2</b><span>For ten seconds: name what you want to force, fix, or finish.</span></div>
+        <div class="pause-step"><b>3</b><span>For ten seconds: choose the smallest patient action.</span></div>
       </div>
     `;
   }
@@ -1118,8 +1236,12 @@
     if (patiencePlanButton) patiencePlanButton.addEventListener('click', () => renderPatiencePlan(true));
     const patienceOptimalButton = $('#patience-optimal-button');
     if (patienceOptimalButton) patienceOptimalButton.addEventListener('click', showPatienceOptimalResponse);
+    const patienceStartButton = $('#patience-start-button');
+    if (patienceStartButton) patienceStartButton.addEventListener('click', startPatienceRep);
     const patienceIntensityInput = $('#patience-intensity');
     if (patienceIntensityInput) patienceIntensityInput.addEventListener('input', () => renderPatiencePlan(true));
+    const patiencePracticeSelect = $('#patience-practice');
+    if (patiencePracticeSelect) patiencePracticeSelect.addEventListener('change', () => renderPatiencePlan(true));
 
     const politicalForm = $('#political-form');
     if (politicalForm) politicalForm.addEventListener('submit', scorePolitical);
@@ -1157,6 +1279,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     renderCompass('awareness');
     renderWeather('clear');
+    populatePatiencePractices();
     renderPatience('urgency');
     populateScenarios();
     populatePoliticalScenarios();

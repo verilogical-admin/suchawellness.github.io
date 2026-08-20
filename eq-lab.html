@@ -620,6 +620,95 @@
       background: linear-gradient(90deg, var(--teal), var(--gold));
     }
 
+    .patience-garden {
+      border: 1px solid rgba(219, 229, 223, 0.9);
+      border-radius: var(--radius);
+      background:
+        radial-gradient(circle at 18% 22%, rgba(184, 138, 61, 0.14), transparent 28%),
+        radial-gradient(circle at 82% 16%, rgba(43, 122, 109, 0.13), transparent 30%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(239, 246, 242, 0.82));
+      margin-top: 16px;
+      overflow: hidden;
+      padding: 16px;
+    }
+
+    .garden-bed {
+      align-items: end;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      min-height: 116px;
+      padding: 8px 4px 0;
+    }
+
+    .garden-sprout {
+      align-items: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: end;
+      min-height: 98px;
+    }
+
+    .garden-stem {
+      width: 7px;
+      height: var(--stem, 30px);
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--teal), var(--teal-dark));
+      opacity: var(--sprout-opacity, 0.46);
+    }
+
+    .garden-bloom {
+      width: 28px;
+      height: 28px;
+      border-radius: 50% 50% 45% 45%;
+      background: var(--bloom, var(--gold));
+      box-shadow:
+        -9px 4px 0 color-mix(in srgb, var(--bloom, var(--gold)) 70%, white),
+        9px 4px 0 color-mix(in srgb, var(--bloom, var(--gold)) 70%, white);
+      margin-bottom: -2px;
+      opacity: var(--sprout-opacity, 0.46);
+      transform: scale(var(--bloom-scale, 0.72));
+    }
+
+    .garden-caption {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 750;
+      margin-top: 12px;
+    }
+
+    .patience-countdown {
+      align-items: center;
+      display: grid;
+      grid-template-columns: 86px minmax(0, 1fr);
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .countdown-orb {
+      display: grid;
+      place-items: center;
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      background: conic-gradient(var(--teal) var(--progress, 0%), #e5ece7 0);
+      color: var(--ink);
+      font-weight: 900;
+    }
+
+    .countdown-orb span {
+      display: grid;
+      place-items: center;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: #fff;
+    }
+
     .political-layout {
       display: grid;
       grid-template-columns: 0.94fr 1.06fr;
@@ -1560,9 +1649,9 @@
             <div class="eyebrow">Self-Regulation</div>
             <h2 class="section-title">Patience Builder.</h2>
           </div>
-          <p class="section-copy">Train patience as an active skill: notice the urgency, slow the body, choose the wait, and respond without becoming passive.</p>
+          <p class="section-copy">Train patience as an active skill with breath observation, mindfulness, cognitive empathy, TA Adult checks, and playful waiting reps. The goal is not passive waiting. It is wiser timing.</p>
         </div>
-        <div class="premium-lock-banner"><strong>Premium preview</strong><span>Unlock to practice patience with a visual pause plan and exact response wording.</span></div>
+        <div class="premium-lock-banner"><strong>Premium preview</strong><span>Unlock the playful Patience Garden, breath reps, TA checks, and exact response wording.</span></div>
         <div class="patience-layout premium-feature">
           <article class="tool-panel">
             <div class="card-kicker">Impatience type</div>
@@ -1577,16 +1666,31 @@
                 <span>Intensity</span>
                 <input id="patience-intensity" type="range" min="1" max="5" value="3">
               </label>
+              <label>
+                <span>Practice rep</span>
+                <select id="patience-practice"></select>
+              </label>
               <div class="hero-actions">
                 <button class="btn btn-primary" type="button" id="patience-plan-button">Build patience plan</button>
                 <button class="btn btn-soft" type="button" id="patience-optimal-button">Give optimal response</button>
+                <button class="btn btn-soft" type="button" id="patience-start-button">Start 30-second rep</button>
               </div>
             </div>
           </article>
           <article class="tool-panel answer-panel" id="patience-result" aria-live="polite">
-            <div class="card-kicker">Pause ladder</div>
-            <h3>Patience is not doing nothing.</h3>
-            <p>It is slowing the impulse enough to choose a response you will still respect later.</p>
+            <div class="card-kicker">Patience garden</div>
+            <h3>Patience is active waiting.</h3>
+            <p>It is giving the impulse somewhere beautiful to go while your wiser response catches up.</p>
+            <div class="patience-garden">
+              <div class="garden-bed" aria-hidden="true">
+                <div class="garden-sprout" style="--stem:28px;--sprout-opacity:.62;--bloom:#b88a3d"><div class="garden-bloom"></div><div class="garden-stem"></div></div>
+                <div class="garden-sprout" style="--stem:42px;--sprout-opacity:.74;--bloom:#2b7a6d"><div class="garden-bloom"></div><div class="garden-stem"></div></div>
+                <div class="garden-sprout" style="--stem:64px;--sprout-opacity:.9;--bloom:#b95f67"><div class="garden-bloom"></div><div class="garden-stem"></div></div>
+                <div class="garden-sprout" style="--stem:46px;--sprout-opacity:.76;--bloom:#7762a8"><div class="garden-bloom"></div><div class="garden-stem"></div></div>
+                <div class="garden-sprout" style="--stem:32px;--sprout-opacity:.66;--bloom:#b88a3d"><div class="garden-bloom"></div><div class="garden-stem"></div></div>
+              </div>
+              <div class="garden-caption"><span>Notice the urge.</span><span>Slow the body.</span><span>Choose the response.</span></div>
+            </div>
             <div class="pause-ladder">
               <div class="pause-step"><b>1</b><span>Name the urge without obeying it.</span></div>
               <div class="pause-step"><b>2</b><span>Relax one body signal: jaw, shoulders, hands, or breath.</span></div>
@@ -1716,6 +1820,6 @@
     <a href="mailto:support@suchawellness.com?subject=Sucha%20EQ%20Lab%20Support">Support</a>
   </footer>
 
-  <script src="/eq-lab.js?v=2026-08-16-trust-confidence-v1" defer></script>
+  <script src="/eq-lab.js?v=2026-08-20-patience-garden-v1" defer></script>
 </body>
 </html>
