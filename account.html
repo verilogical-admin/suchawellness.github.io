@@ -40,11 +40,20 @@
     z-index: 10;
   }
   .brand {
+    align-items: center;
     color: var(--teal);
+    display: inline-flex;
     font-family: 'Cormorant Garamond', serif;
     font-size: 1.45rem;
     font-weight: 500;
+    gap: 0.55rem;
     text-decoration: none;
+  }
+  .brand img {
+    border-radius: 50%;
+    height: 36px;
+    object-fit: contain;
+    width: 36px;
   }
   .header-actions { align-items: center; display: flex; gap: 0.75rem; }
   .settings-wrap { position: relative; }
@@ -400,7 +409,7 @@
 </head>
 <body>
 <header>
-  <a class="brand" href="/">Sucha Account</a>
+  <a class="brand" href="/"><img src="/assets/sucha-web-icon-180.png" alt="Sucha™ Wellness logo"><span>Sucha Account</span></a>
   <div class="header-actions">
     <button class="button secondary" id="account-lock-now" type="button" hidden>Lock</button>
     <a class="button secondary" href="/">Main site</a>

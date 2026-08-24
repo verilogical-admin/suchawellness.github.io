@@ -27,11 +27,24 @@
     padding: 2rem 1.5rem;
   }
   nav {
+    align-items: center;
     display: flex;
     gap: 0.75rem;
     flex-wrap: wrap;
     margin-bottom: 2rem;
     color: var(--muted);
+  }
+  .brand {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.55rem;
+    text-decoration: none;
+  }
+  .brand img {
+    border-radius: 50%;
+    height: 36px;
+    object-fit: contain;
+    width: 36px;
   }
   a { color: var(--teal-dark); font-weight: 700; }
   h1 {
@@ -54,7 +67,7 @@
 <link rel="stylesheet" href="/responsive.css?v=2026-08-04-site-mobile-v2">
 </head>
 <body>
-<nav><a href="/">&larr; Sucha™ Wellness</a><span>·</span><a href="/#contact">Contact</a></nav>
+<nav><a class="brand" href="/"><img src="/assets/sucha-web-icon-180.png" alt="Sucha™ Wellness logo"><span>Sucha™ Wellness</span></a><span>·</span><a href="/#contact">Contact</a></nav>
 <h1>Legal Disclaimer</h1>
 <p class="updated">Last updated: 7 June 2026</p>
 
