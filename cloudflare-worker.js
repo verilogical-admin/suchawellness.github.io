@@ -11,7 +11,7 @@ const SECURITY_HEADERS = {
   'Permissions-Policy': 'accelerometer=(), autoplay=(), camera=(), clipboard-read=(), clipboard-write=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(self), usb=()',
 };
 
-const STATIC_ASSET_VERSION = '2026-08-24-logo-standard-v1';
+const STATIC_ASSET_VERSION = '2026-08-24-sales-skill-v1';
 
 const ROBOTS_TXT = `# Sucha™ Wellness allows responsible search and AI discovery so people can find
 # mental wellness screening, private journaling, and care-navigation resources.
@@ -72,7 +72,7 @@ Important interpretation notes:
 - [Empathy Type Test](https://www.suchawellness.com/empathy-test): Dedicated page for the free 5-question empathy snapshot and separate paid 20Q/50Q empathy reports.
 - [Empathy Lab](https://www.suchawellness.com/empathy-lab): Interactive premium training lab for cognitive, emotional, compassionate, synchrony, and Read the Room empathy practice. The same premium purchase or coupon also unlocks EQ Lab.
 - [EQ Lab](https://www.suchawellness.com/eq-lab): Premium visual emotional intelligence learning and practice lab for self-awareness, self-regulation, patience building, empathy, trigger response, and relationship skill. It unlocks with the same Empathy Lab premium purchase or coupon.
-- [Sucha Skill Lab](https://www.suchawellness.com/skill-lab): Premium practice hub for Self-Esteem Lab and Patience Gym. Included with Empathy + EQ Labs Premium, not sold as a separate module.
+- [Sucha Skill Lab](https://www.suchawellness.com/skill-lab): Premium practice hub for Self-Esteem Lab, Patience Gym, and Sales EQ Lab. Included with Empathy + EQ Labs Premium, not sold as a separate module.
 - [ADHD Planner](https://www.suchawellness.com/adhd-planner): Sucha™ Wellness discovery page for the JournalForever ADHD Planner, a visual year, quarter, month, week, and day dashboard for nonlinear minds.
 - [Sucha™ Journal](https://www.suchawellness.com/journal): Dedicated page for private mental health notes, local journal storage, and optional premium encrypted vault.
 - [Transactional Analysis Practice Lab](https://www.suchawellness.com/transactional-analysis): TA learning and application tool with free PAC lessons, a 7-day local trial, and optional Razorpay premium for transaction analysis, logs, strokes, life positions, and reflection.
@@ -81,6 +81,7 @@ Important interpretation notes:
 - [Provider pages](https://www.suchawellness.com/#provider-page): Provider onboarding for branded pages powered by Sucha™ Wellness.
 - [Self-Esteem Lab](https://www.suchawellness.com/self-esteem-training): Sucha skill lab for building self-esteem through six daily-practice pillars. Included with Empathy + EQ Labs Premium.
 - [Patience Gym](https://www.suchawellness.com/patience-training): Sucha skill lab for building patience through pauses, trigger drills, and daily reps. Included with Empathy + EQ Labs Premium.
+- [Sales EQ Lab](https://www.suchawellness.com/sales-training): Sucha skill lab for practicing ethical sales habits, soft asks, SPIN questions, follow-up, and trust-building conversations. Included with Empathy + EQ Labs Premium.
 - [Contact](https://www.suchawellness.com/#contact): General contact and support entry point.
 - [Legal disclaimer](https://www.suchawellness.com/legal-disclaimer.html): Safety, informational-use, and clinical-care disclaimers.
 
@@ -88,8 +89,8 @@ Important interpretation notes:
 - [Sucha™ Journal Premium](https://www.suchawellness.com/journal): $60/year premium journal vault with password-protected encryption and a 30-day cancellation refund policy described on the page.
 - [Premium screening report unlocks](https://www.suchawellness.com/premium-reports): Optional paid downloadable reports for selected informational screening tools.
 - [Premium empathy reports](https://www.suchawellness.com/empathy-test): Separate paid 20Q comprehensive and 50Q deep empathy tests with downloadable PDF reports.
-- [Empathy + EQ Labs Premium](https://www.suchawellness.com/empathy-lab): Shared $10,000/year premium lab access for empathy, emotional intelligence, Self-Esteem Lab, and Patience Gym practice, currently unlockable through dedicated Empathy Lab coupons or Razorpay checkout.
-- [Sucha skill labs](https://www.suchawellness.com/skill-lab): Practice-based personal growth modules, including Self-Esteem Lab and Patience Gym, included with the shared Empathy + EQ Labs Premium bundle.
+- [Empathy + EQ Labs Premium](https://www.suchawellness.com/empathy-lab): Shared $10,000/year premium lab access for empathy, emotional intelligence, Self-Esteem Lab, Patience Gym, and Sales EQ Lab practice, currently unlockable through dedicated Empathy Lab coupons or Razorpay checkout.
+- [Sucha skill labs](https://www.suchawellness.com/skill-lab): Practice-based personal growth modules, including Self-Esteem Lab, Patience Gym, and Sales EQ Lab, included with the shared Empathy + EQ Labs Premium bundle.
 - [Care navigation](https://www.suchawellness.com/therapist-matching): Request routing to qualified, licensed, and vetted mental health professionals.
 - [Provider presence](https://www.suchawellness.com/#provider-page): Branded provider pages, bookings, payments, secure sharing, and credential verification workflow.
 
@@ -155,6 +156,12 @@ const SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
   </url>
   <url>
     <loc>https://www.suchawellness.com/patience-training</loc>
+    <lastmod>2026-08-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.suchawellness.com/sales-training</loc>
     <lastmod>2026-08-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
@@ -1819,6 +1826,7 @@ export default {
       '/skill-lab': '/skill-lab.html',
       '/self-esteem-training': '/self-esteem-training.html',
       '/patience-training': '/patience-training.html',
+      '/sales-training': '/sales-training.html',
       '/empathy-test': '/empathy-test.html',
       '/empathy-lab': '/empathy-lab.html',
       '/eq-lab': '/eq-lab.html',
