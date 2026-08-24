@@ -3,6 +3,8 @@ https://suchawellness.com/* https://www.suchawellness.com/:splat 301!
 http://www.suchawellness.com/* https://www.suchawellness.com/:splat 301!
 /admin /admin.html 200
 /tests /tests.html 200
+/self-esteem-training /self-esteem-training.html 200
+/patience-training /patience-training.html 200
 /empathy-test /empathy-test.html 200
 /empathy-lab /empathy-lab.html 200
 /eq-lab /eq-lab.html 200

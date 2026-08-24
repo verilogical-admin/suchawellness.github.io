@@ -78,6 +78,8 @@ Important interpretation notes:
 - [Care seeker matching](https://www.suchawellness.com/therapist-matching): Dedicated page for requesting connection to a licensed and vetted therapist or counsellor.
 - [Premium PDF reports](https://www.suchawellness.com/premium-reports): Dedicated page explaining premium account report access, one-time report unlocks, and separate empathy report products.
 - [Provider pages](https://www.suchawellness.com/#provider-page): Provider onboarding for branded pages powered by Sucha™ Wellness.
+- [Self-Esteem Lab](https://www.suchawellness.com/self-esteem-training): Sucha skill lab for building self-esteem through six daily-practice pillars. Included with Empathy + EQ Labs Premium.
+- [Patience Gym](https://www.suchawellness.com/patience-training): Sucha skill lab for building patience through pauses, trigger drills, and daily reps. Included with Empathy + EQ Labs Premium.
 - [Contact](https://www.suchawellness.com/#contact): General contact and support entry point.
 - [Legal disclaimer](https://www.suchawellness.com/legal-disclaimer.html): Safety, informational-use, and clinical-care disclaimers.
 
@@ -86,6 +88,7 @@ Important interpretation notes:
 - [Premium screening report unlocks](https://www.suchawellness.com/premium-reports): Optional paid downloadable reports for selected informational screening tools.
 - [Premium empathy reports](https://www.suchawellness.com/empathy-test): Separate paid 20Q comprehensive and 50Q deep empathy tests with downloadable PDF reports.
 - [Empathy + EQ Labs Premium](https://www.suchawellness.com/empathy-lab): Shared $10,000/year premium lab access for empathy and emotional intelligence practice, currently unlockable through dedicated Empathy Lab coupons or Razorpay checkout.
+- [Sucha skill labs](https://www.suchawellness.com/self-esteem-training): Practice-based personal growth modules, including Self-Esteem Lab and Patience Gym, included with the shared Empathy + EQ Labs Premium bundle.
 - [Care navigation](https://www.suchawellness.com/therapist-matching): Request routing to qualified, licensed, and vetted mental health professionals.
 - [Provider presence](https://www.suchawellness.com/#provider-page): Branded provider pages, bookings, payments, secure sharing, and credential verification workflow.
 
@@ -134,6 +137,18 @@ const SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
   <url>
     <loc>https://www.suchawellness.com/eq-lab</loc>
     <lastmod>2026-08-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.suchawellness.com/self-esteem-training</loc>
+    <lastmod>2026-08-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.suchawellness.com/patience-training</loc>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -1794,6 +1809,8 @@ export default {
       '/account': '/account.html',
       '/legal-disclaimer': '/legal-disclaimer.html',
       '/tests': '/tests.html',
+      '/self-esteem-training': '/self-esteem-training.html',
+      '/patience-training': '/patience-training.html',
       '/empathy-test': '/empathy-test.html',
       '/empathy-lab': '/empathy-lab.html',
       '/eq-lab': '/eq-lab.html',
