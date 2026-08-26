@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Negotiation Lab | Sucha Wellness</title>
+<meta name="description" content="A visual Sucha Skill Lab tool inspired by Never Split the Difference: tactical empathy, mirroring, labels, calibrated questions, no-oriented asks, and execution checks.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://www.suchawellness.com/negotiation-training">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Sucha Wellness">
+<meta property="og:title" content="Negotiation Lab | Sucha Wellness">
+<meta property="og:description" content="Practice real negotiation skills with scripts, question builders, listening drills, and deal checks.">
+<meta property="og:url" content="https://www.suchawellness.com/negotiation-training">
+<meta property="og:image" content="https://www.suchawellness.com/assets/sucha-phone-journal-human.jpg">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/sucha-web-icon-180.png">
+<style>
+  :root{color-scheme:light;--ink:#17231f;--green:#245e54;--leaf:#2d7a6b;--mint:#e7f6f1;--gold:#efc84a;--clay:#b86d55;--blue:#355f86;--plum:#65445f;--paper:#fffdf6;--cream:#f5f2eb;--muted:#58665f;--line:rgba(36,94,84,.16);--shadow:0 24px 70px rgba(22,63,53,.12);--content:min(1160px,calc(100vw - 40px));font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:linear-gradient(180deg,#fffdf6 0%,#eef8f4 42%,#f5f2eb 100%);color:var(--ink)}a{color:inherit;text-decoration:none}button,input,textarea,select{font:inherit}p,h1,h2,h3,li,span{overflow-wrap:anywhere}
+  .lab-header{align-items:center;background:rgba(255,253,246,.9);backdrop-filter:blur(18px);display:flex;justify-content:space-between;margin:0 auto;min-height:72px;position:sticky;top:0;width:var(--content);z-index:20}.lab-brand{align-items:center;color:#163f35;display:inline-flex;font-weight:900;gap:10px}.lab-brand img{border-radius:50%;height:38px;object-fit:contain;width:38px}.header-link{align-items:center;background:white;border:1px solid var(--line);box-shadow:0 12px 32px rgba(22,63,53,.06);color:var(--muted);display:inline-flex;font-size:.86rem;font-weight:850;min-height:36px;padding:0 14px}
+  .hero,.section,.footer{margin:0 auto;width:var(--content)}.hero{align-items:center;display:grid;gap:clamp(28px,5vw,72px);grid-template-columns:minmax(0,1fr) minmax(320px,.52fr);min-height:min(760px,calc(100svh - 72px));padding:54px 0 64px}.eyebrow{color:var(--clay);font-size:.78rem;font-weight:950;letter-spacing:.14em;margin:0 0 14px;text-transform:uppercase}h1,h2,h3{letter-spacing:0;margin:0}h1{color:#163f35;font-family:Georgia,"Times New Roman",serif;font-size:clamp(3rem,8vw,6.8rem);font-weight:400;line-height:.95}h2{color:#163f35;font-family:Georgia,"Times New Roman",serif;font-size:clamp(2rem,5vw,4.2rem);font-weight:400;line-height:1}.hero-copy>p,.section-intro{color:var(--muted);font-size:clamp(1.04rem,2vw,1.22rem);line-height:1.64;margin:24px 0 0;max-width:760px}.note{background:rgba(255,255,255,.72);border-left:3px solid var(--gold);color:var(--muted);line-height:1.55;margin-top:20px;padding:14px 16px}
+  .deal-map{background:#173f36;box-shadow:var(--shadow);color:white;padding:28px}.deal-map h2{color:white;font-size:2rem}.signal-stack{display:grid;gap:10px;margin:24px 0}.signal{align-items:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);display:grid;gap:10px;grid-template-columns:44px 1fr;padding:12px}.signal b{background:var(--gold);color:#173f36;display:grid;height:44px;place-items:center}.signal strong{display:block}.signal span{color:rgba(255,255,255,.76);display:block;font-size:.88rem}.deal-map p{color:rgba(255,255,255,.78);line-height:1.58}
+  .canvas{background:rgba(255,255,255,.86);border:1px solid var(--line);box-shadow:var(--shadow);margin:0 auto;overflow:hidden;width:var(--content)}.tabs{background:#fff;border-bottom:1px solid var(--line);display:grid;grid-template-columns:repeat(6,1fr)}.tab-button{background:transparent;border:0;border-right:1px solid var(--line);color:var(--muted);cursor:pointer;font-weight:950;min-height:58px}.tab-button:last-child{border-right:0}.tab-button.active,.tab-button:hover{background:var(--mint);color:var(--green)}.tab-panel{display:none;padding:clamp(24px,5vw,54px)}.tab-panel.active{display:block}.panel-head{max-width:850px}.panel-head p{color:var(--muted);font-size:1.08rem;line-height:1.62}
+  .grid{display:grid;gap:14px;margin-top:30px}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.card,.script,.builder,.score-card{background:white;border:1px solid rgba(36,94,84,.12);box-shadow:0 16px 42px rgba(22,63,53,.06);padding:22px}.card b{background:var(--mint);color:var(--green);display:inline-grid;font-size:.78rem;height:42px;margin-bottom:18px;place-items:center;width:42px}.card h3,.script h3,.builder h3,.score-card h3{font-size:1.24rem;line-height:1.12;margin:0 0 12px}.card p,.script p,.score-card p{color:var(--muted);line-height:1.58}.card ul{color:var(--muted);display:grid;gap:8px;line-height:1.48;margin:10px 0 0;padding-left:18px}
+  .flow{border:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);margin-top:30px}.flow-step{background:var(--paper);border-right:1px solid var(--line);min-height:190px;padding:18px}.flow-step:last-child{border-right:0}.flow-step span{color:var(--clay);font-size:.74rem;font-weight:950;letter-spacing:.08em;text-transform:uppercase}.flow-step strong{display:block;font-size:1.08rem;line-height:1.16;margin:12px 0}.flow-step p{color:var(--muted);line-height:1.5;margin:0}
+  .script.dark{background:#173f36;color:white}.script.dark p{color:rgba(255,255,255,.82)}.line{background:rgba(36,94,84,.08);border-left:3px solid var(--leaf);color:var(--ink)!important;font-weight:850;line-height:1.5;padding:14px}.script.dark .line{background:rgba(255,255,255,.09);border-left-color:var(--gold);color:white!important}
+  .table{border:1px solid var(--line);display:grid;margin-top:30px;overflow:hidden}.row{border-bottom:1px solid var(--line);display:grid;grid-template-columns:.8fr 1.1fr 1.2fr 1.2fr}.row:last-child{border-bottom:0}.row span{border-right:1px solid var(--line);color:var(--muted);line-height:1.45;min-width:0;padding:16px}.row span:last-child{border-right:0}.row span:first-child{color:var(--ink);font-weight:950}.head{background:#173f36}.head span,.head span:first-child{color:white;font-size:.78rem;font-weight:950;letter-spacing:.05em;text-transform:uppercase}
+  .builder label{color:var(--muted);display:grid;font-size:.88rem;font-weight:850;gap:8px;margin:14px 0}.builder input,.builder textarea,.builder select{background:#fffdf6;border:1px solid var(--line);color:var(--ink);min-height:44px;padding:10px 12px;width:100%}.builder textarea{min-height:92px;resize:vertical}.builder-output{background:#173f36;color:white;line-height:1.6;margin-top:16px;min-height:130px;padding:18px;white-space:pre-line}.mini-button{background:var(--green);border:0;color:white;cursor:pointer;font-weight:950;min-height:42px;padding:0 14px}
+  .workout{padding:86px 0 40px}.checks{display:grid;gap:12px;grid-template-columns:repeat(5,minmax(0,1fr));margin-top:28px}.checks label{align-content:space-between;background:white;border:1px solid var(--line);box-shadow:0 16px 42px rgba(22,63,53,.06);cursor:pointer;display:grid;gap:18px;min-height:150px;padding:20px}.checks input{accent-color:var(--leaf);height:24px;width:24px}.checks span{font-weight:900;line-height:1.25}.status{align-items:center;background:#173f36;color:white;display:inline-flex;font-weight:900;margin:22px 0 0;min-height:42px;padding:0 16px}.footer{align-items:center;border-top:1px solid var(--line);color:var(--muted);display:flex;justify-content:space-between;padding:34px 0 46px}
+  @media(max-width:980px){:root{--content:min(100vw - 28px,820px)}.hero,.grid.three,.grid.two{grid-template-columns:1fr}.tabs{grid-template-columns:repeat(3,1fr)}.flow,.checks{grid-template-columns:repeat(2,minmax(0,1fr))}.flow-step{border-bottom:1px solid var(--line)}.row{grid-template-columns:1fr 1fr}.row span:nth-child(2n){border-right:0}.row span:nth-child(-n+2){border-bottom:1px solid var(--line)}}@media(max-width:640px){.lab-brand span:last-child{display:none}.header-link{font-size:.78rem}.hero{min-height:auto;padding:42px 0 46px}h1{font-size:clamp(2.45rem,14vw,4.1rem)}.tabs,.flow,.checks,.row{grid-template-columns:1fr}.flow-step,.row span{border-right:0}.footer{display:grid;gap:8px}}
+</style>
+</head>
+<body>
+<header class="lab-header" aria-label="Negotiation training header">
+  <a class="lab-brand" href="/" aria-label="Sucha Wellness home"><img src="/assets/sucha-web-icon-180.png" alt="Sucha™ Wellness logo"><span>Sucha™ Wellness</span></a>
+  <a class="header-link" href="/skill-lab">Sucha Skill Lab</a>
+</header>
+<main>
+  <section class="hero" aria-labelledby="lab-title">
+    <div class="hero-copy">
+      <p class="eyebrow">Negotiation Lab</p>
+      <h1 id="lab-title">Listen your way to a better deal.</h1>
+      <p>A practical tool inspired by Chris Voss's negotiation principles in Never Split the Difference: calm the room, surface the real stakes, ask better questions, and make agreements people can execute.</p>
+      <p class="note">Use these skills ethically. Negotiation is not manipulation; it is disciplined listening, clarity, and mutual reality-testing under pressure.</p>
+    </div>
+    <aside class="deal-map" aria-label="Negotiation map">
+      <p class="eyebrow">No-split map</p>
+      <h2>Move from pressure to information.</h2>
+      <div class="signal-stack">
+        <div class="signal"><b>1</b><div><strong>Mirror</strong><span>Repeat a key phrase, then pause.</span></div></div>
+        <div class="signal"><b>2</b><div><strong>Label</strong><span>Name the emotion or concern.</span></div></div>
+        <div class="signal"><b>3</b><div><strong>Calibrate</strong><span>Ask how or what.</span></div></div>
+        <div class="signal"><b>4</b><div><strong>Confirm</strong><span>Check who does what next.</span></div></div>
+      </div>
+      <p>The goal is not to win the sentence. The goal is to discover the deal beneath the words.</p>
+    </aside>
+  </section>
+
+  <section class="canvas" aria-label="Negotiation training modules">
+    <nav class="tabs" aria-label="Training sections">
+      <button class="tab-button active" type="button" data-tab="map">Map</button>
+      <button class="tab-button" type="button" data-tab="listen">Listen</button>
+      <button class="tab-button" type="button" data-tab="no">No</button>
+      <button class="tab-button" type="button" data-tab="questions">Questions</button>
+      <button class="tab-button" type="button" data-tab="deal">Deal</button>
+      <button class="tab-button" type="button" data-tab="builder">Builder</button>
+    </nav>
+
+    <section class="tab-panel active" id="map" aria-labelledby="map-title">
+      <div class="panel-head"><p class="eyebrow">Core model</p><h2 id="map-title">The negotiation is emotional before it is logical.</h2><p>People rarely move because you have a better argument. They move when they feel understood, safe enough to say the truth, and responsible for solving the problem with you.</p></div>
+      <div class="flow">
+        <div class="flow-step"><span>Slow</span><strong>Lower the speed</strong><p>Pressure creates defensiveness. Slow tone and pauses create thinking space.</p></div>
+        <div class="flow-step"><span>Hear</span><strong>Mirror key words</strong><p>Repeat the last meaningful phrase and let silence pull more information out.</p></div>
+        <div class="flow-step"><span>Name</span><strong>Label the feeling</strong><p>"It sounds like timing is the biggest concern."</p></div>
+        <div class="flow-step"><span>Ask</span><strong>Use how and what</strong><p>Make them help solve the obstacle.</p></div>
+        <div class="flow-step"><span>Test</span><strong>Verify execution</strong><p>Confirm owners, blockers, deadlines, and hidden stakeholders.</p></div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="listen" aria-labelledby="listen-title">
+      <div class="panel-head"><p class="eyebrow">Tactical empathy</p><h2 id="listen-title">Make the other person feel accurately heard.</h2><p>This is not agreement. It is a temporary map of their world so you can negotiate with reality instead of your assumptions.</p></div>
+      <div class="grid three">
+        <article class="card"><b>M</b><h3>Mirror</h3><p>Repeat one to three important words with a calm upward tone, then pause.</p><p class="line">Them: "The deadline is impossible."<br>You: "Impossible?"</p></article>
+        <article class="card"><b>L</b><h3>Label</h3><p>Name the emotion, worry, or value you hear. Start gently.</p><p class="line">"It sounds like you are worried this will create extra work."</p></article>
+        <article class="card"><b>S</b><h3>Summary</h3><p>Paraphrase their position until they feel seen enough to correct or confirm it.</p><p class="line">"So the issue is not price alone; it is risk, timing, and trust."</p></article>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="no" aria-labelledby="no-title">
+      <div class="panel-head"><p class="eyebrow">No-oriented asks</p><h2 id="no-title">Let "no" create safety.</h2><p>A forced yes can be fake. A clean no can reveal the real objection and give the other person a sense of control.</p></div>
+      <div class="grid two">
+        <article class="script dark"><h3>Instead of chasing yes</h3><p class="line">"Would it be a bad idea to look at one option that reduces your risk?"</p><p>Useful when the other person feels pressured.</p></article>
+        <article class="script"><h3>When they go silent</h3><p class="line">"Have you decided not to move forward with this?"</p><p>Often easier to answer than another cheerful follow-up.</p></article>
+        <article class="script"><h3>When trust is low</h3><p class="line">"Is this too risky to consider right now?"</p><p>Let them correct the risk instead of defending your offer.</p></article>
+        <article class="script dark"><h3>When you need truth</h3><p class="line">"Is there something about this that does not work for you?"</p><p>Respectful no-space protects both sides from fake agreement.</p></article>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="questions" aria-labelledby="questions-title">
+      <div class="panel-head"><p class="eyebrow">Calibrated questions</p><h2 id="questions-title">Ask questions that make the problem shared.</h2><p>Use "how" and "what" to reveal constraints, priorities, and hidden information. Avoid questions that sound like cross-examination.</p></div>
+      <div class="table" role="table" aria-label="Question conversion table">
+        <div class="row head" role="row"><span>Weak question</span><span>Better question</span><span>What it reveals</span><span>When to use</span></div>
+        <div class="row" role="row"><span>Can you do this?</span><span>How would we make this work?</span><span>Capacity, constraints, ownership.</span><span>When execution is unclear.</span></div>
+        <div class="row" role="row"><span>Is the price okay?</span><span>What about the price feels difficult?</span><span>Budget, value, fear, comparison.</span><span>When money stalls the deal.</span></div>
+        <div class="row" role="row"><span>Do you agree?</span><span>What would need to be true for this to feel right?</span><span>Missing conditions.</span><span>When they are polite but hesitant.</span></div>
+        <div class="row" role="row"><span>Why not?</span><span>What is the biggest obstacle from your side?</span><span>The real blocker without blame.</span><span>When resistance appears.</span></div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="deal" aria-labelledby="deal-title">
+      <div class="panel-head"><p class="eyebrow">Execution and hidden information</p><h2 id="deal-title">A deal is not real until it can survive Monday.</h2><p>Before you celebrate, check implementation. Who else matters? What could block this? What has not been said yet?</p></div>
+      <div class="grid three">
+        <article class="card"><b>3</b><h3>Rule of three</h3><p>Get commitment in three different ways: agreement, next step, and practical confirmation.</p><ul><li>"Does that work?"</li><li>"What happens next?"</li><li>"Who needs to approve it?"</li></ul></article>
+        <article class="card"><b>B</b><h3>Behind the table</h3><p>Ask who influences the decision, who can block execution, and whose concerns are invisible.</p></article>
+        <article class="card"><b>X</b><h3>Black swan hunt</h3><p>Look for unknown information that could change everything: a hidden deadline, fear, incentive, rule, or stakeholder.</p></article>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="builder" aria-labelledby="builder-title">
+      <div class="panel-head"><p class="eyebrow">Practice tool</p><h2 id="builder-title">Build your negotiation move.</h2><p>Choose the situation, write the other person's concern, and draft a calmer move.</p></div>
+      <div class="grid two">
+        <form class="builder" id="move-builder">
+          <h3>Negotiation builder</h3>
+          <label>Situation<select id="situation"><option value="price">Price or invoice</option><option value="deadline">Deadline or workload</option><option value="relationship">Relationship conflict</option><option value="decision">Decision stalled</option></select></label>
+          <label>Their likely concern<input id="concern" type="text" placeholder="What are they worried about?"></label>
+          <label>Your goal<textarea id="goal" placeholder="What do you want to move toward?"></textarea></label>
+          <button class="mini-button" type="submit">Draft move</button>
+        </form>
+        <article class="builder">
+          <h3>Your draft</h3>
+          <div class="builder-output" id="builder-output">Your mirror, label, and calibrated question will appear here.</div>
+        </article>
+      </div>
+    </section>
+  </section>
+
+  <section class="section workout" aria-labelledby="workout-title">
+    <div class="panel-head"><p class="eyebrow">Daily practice</p><h2 id="workout-title">6-minute negotiation workout</h2><p>Train the response before the conversation gets hot.</p></div>
+    <div class="checks">
+      <label><input type="checkbox"><span>Mirror one key phrase</span></label>
+      <label><input type="checkbox"><span>Label one concern</span></label>
+      <label><input type="checkbox"><span>Ask one how or what question</span></label>
+      <label><input type="checkbox"><span>Invite one honest no</span></label>
+      <label><input type="checkbox"><span>Confirm the next step</span></label>
+    </div>
+    <p class="status" aria-live="polite">0 of 5 complete</p>
+    <p class="note">Source orientation: this module is an original Sucha practice tool inspired by the negotiation concepts summarized in Runn's chapter-by-chapter overview of Never Split the Difference.</p>
+  </section>
+</main>
+<footer class="footer"><p>Negotiation Lab</p><a href="/skill-lab">Back to Skill Lab</a></footer>
+<script src="/negotiation-training.js"></script>
+</body>
+</html>
