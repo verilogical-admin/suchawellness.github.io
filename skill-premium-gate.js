@@ -14,9 +14,11 @@
 
   function hasPremiumAccess() {
     const access = loadAccess();
-    if (!access || access.active !== true) return false;
+    if (!access) return false;
+    if (access.active === false) return false;
     if (!access.expiresAt) return true;
-    return Date.parse(access.expiresAt) > Date.now();
+    const expiresAt = Number(access.expiresAt) || Date.parse(access.expiresAt);
+    return Number.isFinite(expiresAt) && expiresAt > Date.now();
   }
 
   function lockPremiumPage() {
