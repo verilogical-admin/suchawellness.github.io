@@ -6,6 +6,10 @@ http://www.suchawellness.com/* https://www.suchawellness.com/:splat 301!
 /skill-lab /skill-lab.html 200
 /self-esteem-training /self-esteem-training.html 200
 /patience-training /patience-training.html 200
+/focus-training /focus-training.html 200
+/second-brain-training /second-brain-training.html 200
+/mental-models-training /mental-models-training.html 200
+/crucial-conversations-training /crucial-conversations-training.html 200
 /trigger-response-training /trigger-response-training.html 200
 /safe-space-training /safe-space-training.html 200
 /sales-training /sales-training.html 200
