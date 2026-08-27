@@ -1,15 +1,22 @@
 (function () {
   "use strict";
 
-  const accessKey = "suchaEmpathyLabAccess.v1";
+  const accessKeys = [
+    "suchaEmpathyLabAccess.v1",
+    "suchaEqLabAccess.v1",
+    "suchaEmpathyEqLabAccess.v1"
+  ];
 
   function loadAccess() {
-    try {
-      return JSON.parse(localStorage.getItem(accessKey) || "null");
-    } catch {
-      localStorage.removeItem(accessKey);
-      return null;
+    for (const key of accessKeys) {
+      try {
+        const access = JSON.parse(localStorage.getItem(key) || "null");
+        if (access) return access;
+      } catch {
+        localStorage.removeItem(key);
+      }
     }
+    return null;
   }
 
   function hasPremiumAccess() {
@@ -17,8 +24,10 @@
     if (!access) return false;
     if (access.active === false) return false;
     if (!access.expiresAt) return true;
-    const expiresAt = Number(access.expiresAt) || Date.parse(access.expiresAt);
-    return Number.isFinite(expiresAt) && expiresAt > Date.now();
+    const numericExpiry = Number(access.expiresAt);
+    const parsedExpiry = Number.isFinite(numericExpiry) ? numericExpiry : Date.parse(access.expiresAt);
+    if (!Number.isFinite(parsedExpiry)) return true;
+    return parsedExpiry > Date.now();
   }
 
   function lockPremiumPage() {
