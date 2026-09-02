@@ -296,8 +296,11 @@ function blendshapeScores(categories) {
   const squintStrong = signalAbove(eyeSquint, 0.26, 0.32);
   const eyeNarrow = clamp01(squintStrong * 0.68 + signalBelow(eyeWide, 0.1, 0.24) * 0.32);
   const pressStrong = signalAbove(mouthPress, 0.24, 0.32);
-  const angryEyes = Math.min(browDownStrong + signalAbove(browDown, 0.24, 0.34) * 0.2, eyeNarrow + squintStrong * 0.14);
-  const angerCore = angryEyes * 0.52 + browDownStrong * 0.24 + Math.max(squintStrong, pressStrong) * 0.18 + pressStrong * 0.06;
+  const eyeWideStrong = signalAbove(eyeWide, 0.16, 0.34);
+  const narrowAnger = Math.min(browDownStrong + signalAbove(browDown, 0.24, 0.34) * 0.2, eyeNarrow + squintStrong * 0.14);
+  const wideAnger = Math.min(eyeWideStrong, browDownStrong * 0.72 + pressStrong * 0.28);
+  const angryEyes = Math.max(narrowAnger, wideAnger);
+  const angerCore = angryEyes * 0.54 + browDownStrong * 0.22 + Math.max(squintStrong, pressStrong) * 0.18 + pressStrong * 0.06;
   const sadnessMouth = Math.max(signalAbove(frown, 0.03, 0.22), signalAbove(mouthShrug, 0.04, 0.24), signalAbove(mouthLowerDown, 0.04, 0.26));
   const sadnessBrow = signalAbove(browInner, 0.05, 0.26);
   const sadnessCore = sadnessMouth * 0.62 + sadnessBrow * 0.38;
@@ -314,7 +317,7 @@ function blendshapeScores(categories) {
     { name: "Angry", value: clamp01(angerCore * 0.72 + angryEyes * 0.16 + browDownStrong * 0.08 + pressStrong * 0.06 - sadnessBrow * 0.2 - sadnessMouth * 0.15 - smile * 0.42) },
     { name: "Disgusted", value: clamp01(disgustCore * 0.72 + signalAbove(noseSneer, 0.08, 0.26) * 0.14 + signalAbove(mouthUpperUp, 0.08, 0.28) * 0.1 - clearSmile * 0.2 - sadnessCore * 0.14 - angerCore * 0.12) },
     { name: "Contempt", value: clamp01(contemptCore * 0.62 + signalAbove(smileAsymmetry, 0.12, 0.3) * 0.16 + signalAbove(mouthDimple, 0.08, 0.28) * 0.08 - clearSmile * 0.22 - sadnessCore * 0.14 - disgustCore * 0.1) },
-    { name: "Surprised", value: clamp01(surpriseCore * 0.78 + signalAbove(eyeWide, 0.14, 0.34) * 0.12 + signalAbove(jawOpen, 0.12, 0.34) * 0.1 - sadnessBrow * 0.18 - browDownStrong * 0.24 - pressStrong * 0.12 - smile * 0.14) },
+    { name: "Surprised", value: clamp01(surpriseCore * 0.78 + eyeWideStrong * 0.12 + signalAbove(jawOpen, 0.12, 0.34) * 0.1 - wideAnger * 0.24 - sadnessBrow * 0.18 - browDownStrong * 0.24 - pressStrong * 0.12 - smile * 0.14) },
     { name: "Fearful", value: clamp01(fearCore * 0.64 + sadnessBrow * 0.2 + pressStrong * 0.08 + mouthStretch * 0.06 - surpriseCore * 0.12 - browDownStrong * 0.16 - smile * 0.24) },
     { name: "Calm", value: clamp01(neutral * 0.32 + (1 - expressive) * 0.18 + (1 - mouthPress) * 0.06 - Math.max(sadnessCore, clearSmile, angerCore, fearCore, surpriseCore, disgustCore, contemptCore, pressStrong) * 0.34 - smile * 0.12) }
   ].sort((a, b) => b.value - a.value);
