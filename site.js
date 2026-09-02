@@ -863,6 +863,14 @@ const siteNav = document.querySelector('nav');
 const navMenuToggle = document.querySelector('.nav-menu-toggle');
 const navLinksList = document.querySelector('.nav-links');
 
+function normalizeEmotionCheckLinks() {
+  document.querySelectorAll('a[href="/emo-diversity-training"]').forEach((link) => {
+    link.setAttribute('href', '/emo-diversity-training.html');
+  });
+}
+
+normalizeEmotionCheckLinks();
+
 navMenuToggle?.addEventListener('click', () => {
   const isOpen = siteNav?.classList.toggle('is-menu-open');
   navMenuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
