@@ -57,10 +57,10 @@ function loadFile(file) {
   if (!file) return;
   stopCamera();
   clearObjectUrl();
-  activeObjectUrl = URL.createObjectURL(file);
   previousFrame = null;
 
   if (file.type.startsWith("video/")) {
+    activeObjectUrl = URL.createObjectURL(file);
     const video = document.createElement("video");
     video.src = activeObjectUrl;
     video.controls = true;
@@ -71,11 +71,26 @@ function loadFile(file) {
     return;
   }
 
+  if (!file.type.startsWith("image/")) {
+    setStatus("Choose a photo or video file.");
+    return;
+  }
+
   const img = document.createElement("img");
   img.alt = "Selected local face reflection";
-  img.onload = () => setStatus("Photo loaded locally. Ready to analyze this browser-only frame.");
-  img.src = activeObjectUrl;
+  img.onload = () => {
+    setStatus("Photo loaded locally. Analyzing this browser-only frame now.");
+    analyzeVisibleFrame();
+  };
+  img.onerror = () => setStatus("This photo could not be loaded by the browser.");
   setPreviewMedia(img);
+
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    img.src = String(reader.result || "");
+  });
+  reader.addEventListener("error", () => setStatus("This photo could not be read on this device."));
+  reader.readAsDataURL(file);
 }
 
 async function startCamera() {
