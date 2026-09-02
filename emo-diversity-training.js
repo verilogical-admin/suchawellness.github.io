@@ -277,13 +277,16 @@ function blendshapeScores(categories) {
   const mouthDimple = (getBlendshape(blendshapes, "mouthDimpleLeft") + getBlendshape(blendshapes, "mouthDimpleRight")) / 2;
   const neutral = getBlendshape(blendshapes, "_neutral");
   const expressive = Math.max(smile, frown, browInner, browDown, eyeWide, jawOpen, mouthPress);
+  const angerCore = Math.min(browDown, Math.max(eyeSquint, mouthPress, frown));
+  const sadnessCore = Math.max(frown, mouthShrug) + browInner * 0.55;
+  const fearCore = Math.min(eyeWide + browInner * 0.45, jawOpen + mouthPress * 0.35);
 
   return [
     { name: "Happy", value: clamp01(smile * 1.4 + mouthDimple * 0.22 - frown * 0.35 - mouthPress * 0.12) },
-    { name: "Sad", value: clamp01(frown * 0.78 + browInner * 0.42 + mouthShrug * 0.18 - smile * 0.45) },
-    { name: "Shameful", value: clamp01(mouthPress * 0.44 + eyeDown * 0.34 + browInner * 0.24 + frown * 0.18 - smile * 0.42) },
-    { name: "Angry", value: clamp01(browDown * 0.74 + eyeSquint * 0.36 + mouthPress * 0.24 + frown * 0.18 - smile * 0.3) },
-    { name: "Fearful", value: clamp01(eyeWide * 0.58 + browInner * 0.38 + jawOpen * 0.34 + mouthPress * 0.12 - smile * 0.24) },
+    { name: "Sad", value: clamp01(sadnessCore * 0.86 + frown * 0.34 + eyeDown * 0.12 - browDown * 0.2 - smile * 0.5) },
+    { name: "Shameful", value: clamp01(mouthPress * 0.34 + eyeDown * 0.34 + browInner * 0.28 + frown * 0.12 - browDown * 0.16 - smile * 0.42) },
+    { name: "Angry", value: clamp01(angerCore * 0.92 + browDown * 0.2 + eyeSquint * 0.12 + mouthPress * 0.1 - browInner * 0.28 - smile * 0.38) },
+    { name: "Fearful", value: clamp01(fearCore * 0.84 + eyeWide * 0.18 + browInner * 0.16 - browDown * 0.14 - smile * 0.24) },
     { name: "Calm", value: clamp01(neutral * 0.58 + (1 - expressive) * 0.26 + (1 - mouthPress) * 0.1 - smile * 0.12) }
   ].sort((a, b) => b.value - a.value);
 }
