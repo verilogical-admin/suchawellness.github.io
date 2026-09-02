@@ -232,31 +232,35 @@ function addAskSuchaStyles() {
   style.id = 'ask-sucha-styles';
   style.textContent = `
     .ask-sucha {
-      background: linear-gradient(135deg, rgba(245,242,235,0.96), rgba(255,255,255,0.92));
+      background: rgba(255,253,246,0.94);
       border-block: 1px solid rgba(45,122,107,0.16);
-      padding: clamp(1.4rem, 4vw, 2.4rem) 1rem;
+      padding: 0.9rem 1rem;
     }
     .ask-sucha-inner {
+      align-items: center;
+      display: grid;
+      gap: 0.8rem;
+      grid-template-columns: auto minmax(0, 1fr);
       margin: 0 auto;
-      max-width: 980px;
+      max-width: 1080px;
     }
     .ask-sucha-title {
       color: #1f423c;
-      font-size: clamp(1.45rem, 4vw, 2rem);
-      font-weight: 600;
+      font-size: 0.88rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
       line-height: 1.2;
-      margin: 0 0 0.45rem;
+      margin: 0;
+      text-transform: uppercase;
     }
     .ask-sucha-copy {
-      color: #3f463f;
-      margin: 0 0 1rem;
-      max-width: 760px;
+      display: none;
     }
     .ask-sucha-box {
-      background: rgba(255,255,255,0.82);
-      border: 1px solid rgba(45,122,107,0.22);
-      box-shadow: 0 18px 50px rgba(45,122,107,0.1);
-      padding: 1rem;
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      padding: 0;
     }
     .ask-sucha-row {
       display: grid;
@@ -269,8 +273,8 @@ function addAskSuchaStyles() {
       border: 1px solid rgba(45,122,107,0.28);
       color: #171717;
       font: inherit;
-      min-height: 48px;
-      padding: 0.75rem 0.85rem;
+      min-height: 42px;
+      padding: 0.65rem 0.8rem;
       width: 100%;
     }
     .ask-sucha-button {
@@ -280,14 +284,14 @@ function addAskSuchaStyles() {
       cursor: pointer;
       font: inherit;
       font-weight: 700;
-      min-height: 48px;
-      padding: 0.75rem 1.1rem;
+      min-height: 42px;
+      padding: 0.6rem 0.9rem;
     }
     .ask-sucha-chips {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-top: 0.85rem;
+      gap: 0.4rem;
+      margin-top: 0.55rem;
     }
     .ask-sucha-chip {
       background: rgba(45,122,107,0.08);
@@ -295,9 +299,9 @@ function addAskSuchaStyles() {
       color: #245e54;
       cursor: pointer;
       font: inherit;
-      font-size: 0.9rem;
-      min-height: 38px;
-      padding: 0.45rem 0.7rem;
+      font-size: 0.78rem;
+      min-height: 32px;
+      padding: 0.35rem 0.55rem;
     }
     .ask-sucha-answer {
       background: rgba(245,242,235,0.72);
@@ -322,11 +326,15 @@ function addAskSuchaStyles() {
     .ask-sucha-reply.on { display: grid; }
     .ask-sucha-note {
       color: #4E534A;
-      font-size: 0.88rem;
+      font-size: 0.78rem;
       line-height: 1.5;
-      margin: 0.8rem 0 0;
+      margin: 0.55rem 0 0;
     }
     @media (max-width: 680px) {
+      .ask-sucha-inner {
+        align-items: stretch;
+        grid-template-columns: 1fr;
+      }
       .ask-sucha-row,
       .ask-sucha-reply {
         grid-template-columns: 1fr;
@@ -413,7 +421,7 @@ function initAskSucha() {
       </div>
     </div>
   `;
-  anchor.parentNode.insertBefore(section, anchor);
+  anchor.after(section);
 
   const input = section.querySelector('.ask-sucha-input');
   const askButton = section.querySelector('.ask-sucha-button');

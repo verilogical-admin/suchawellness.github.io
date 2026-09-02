@@ -784,8 +784,7 @@
   }
 
   .screening-hero {
-    display: flow-root;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
   }
 
   .screening-hero .section-subtitle {
@@ -803,7 +802,7 @@
     background: #FDFCF8;
     border: 1px solid rgba(45,122,107,0.18);
     box-shadow: 0 24px 60px rgba(45,122,107,0.18);
-    display: block;
+    display: none;
     float: right;
     height: auto;
     margin: 0 0 1.1rem 2rem;
@@ -819,7 +818,7 @@
   }
 
   .home-gateway-head {
-    align-items: end;
+    align-items: center;
     display: flex;
     gap: 1rem;
     justify-content: space-between;
@@ -846,6 +845,19 @@
     text-transform: uppercase;
   }
 
+  .home-gateway-hint {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.45rem;
+  }
+
+  .home-gateway-hint::before {
+    background: #f0c84b;
+    content: "";
+    height: 0.62rem;
+    width: 0.62rem;
+  }
+
   .home-gateway-grid {
     display: grid;
     gap: 1rem;
@@ -858,7 +870,7 @@
     color: var(--text);
     display: grid;
     gap: 1rem;
-    min-height: 255px;
+    min-height: 230px;
     overflow: hidden;
     padding: 1rem;
     position: relative;
@@ -876,7 +888,7 @@
 
   .home-gateway-card.is-featured {
     grid-row: span 2;
-    min-height: 530px;
+    min-height: 505px;
   }
 
   .home-gateway-card.is-wide {
@@ -935,6 +947,19 @@
     gap: 0.55rem;
   }
 
+  .home-gateway-symbol {
+    align-items: center;
+    background: #163f35;
+    color: #fff;
+    display: inline-flex;
+    font-size: 0.78rem;
+    font-weight: 900;
+    height: 2.4rem;
+    justify-content: center;
+    letter-spacing: 0.08em;
+    width: 2.4rem;
+  }
+
   .home-gateway-tag {
     color: var(--teal-dark);
     font-size: 0.72rem;
@@ -954,6 +979,8 @@
 
   .home-gateway-desc {
     color: var(--muted);
+    font-size: 0.94rem;
+    line-height: 1.45;
     margin: 0;
   }
 
@@ -1975,7 +2002,6 @@
     #about { grid-template-columns: 1fr; gap: 2.5rem; padding: 4rem 1.5rem; }
     .about-accent { display: none; }
     .screening-hero { display: grid; gap: 1rem; margin-bottom: 1.2rem; }
-    .screening-hero-photo { float: none; margin: 0 auto; max-width: 300px; }
     .screening-tools { grid-template-columns: 1fr; }
     .home-gateway-head {
       align-items: flex-start;
@@ -2133,14 +2159,13 @@
   <div class="section-eyebrow">Take Test</div>
   <div class="screening-hero">
     <img src="/assets/sucha-phone-journal-human.jpg" alt="A calm person using a phone for digital journaling" class="screening-hero-photo" width="1024" height="1536">
-    <h2 class="section-title">Choose your Sucha path</h2>
-    <p class="section-subtitle">Start with a private test, build a skill, write in the digital journal, or unlock premium reports. The homepage is now a quick launch board, not a long list.</p>
-    <p class="screening-disclaimer">These tests are informational only and are not a diagnosis or a substitute for clinical advice. Please consult a qualified doctor, psychologist, therapist, or licensed counsellor for clinical guidance. If you are interested in being connected to qualified licensed doctors or counsellors, or if you are a care provider looking to connect to care seekers, click here.<br><a class="btn-primary care-disclaimer-button" href="#care-seeker-match">Connect with an Expert Licensed Therapist that Sucha Recommends</a></p>
+    <h2 class="section-title">Choose your path</h2>
+    <p class="section-subtitle">Tap one card. Start small.</p>
   </div>
   <div class="home-gateway reveal" aria-label="Sucha Wellness quick paths">
     <div class="home-gateway-head">
-      <p>Pick one path and earn a small clarity win. Each card opens a focused page instead of making you scroll through everything at once.</p>
-      <span class="home-gateway-score">Today: 0/1 clarity quest</span>
+      <p class="home-gateway-hint">One tap opens one focused tool.</p>
+      <span class="home-gateway-score">Clarity quest 0/1</span>
     </div>
     <div class="home-gateway-grid">
       <a class="home-gateway-card is-featured" href="/tests">
@@ -2148,9 +2173,10 @@
           <img src="/assets/sucha-phone-journal-human.jpg" alt="Person using a phone for private digital journaling">
         </span>
         <span class="home-gateway-body">
+          <span class="home-gateway-symbol">01</span>
           <span class="home-gateway-tag">Start here</span>
           <span class="home-gateway-title">Take a private test</span>
-          <span class="home-gateway-desc">Open the dedicated test hub for depression, anxiety, ADHD, empathy, career, and other informational screens.</span>
+          <span class="home-gateway-desc">Private screens and instant reflection.</span>
           <span class="home-gateway-reward"><span class="home-gateway-meter"><span style="--progress: 82%"></span></span><span class="home-gateway-xp">+80 XP</span></span>
         </span>
       </a>
@@ -2164,9 +2190,10 @@
           </span>
         </span>
         <span class="home-gateway-body">
+          <span class="home-gateway-symbol">02</span>
           <span class="home-gateway-tag">Premium skill map</span>
           <span class="home-gateway-title">Skill Lab</span>
-          <span class="home-gateway-desc">Browse practical modules as teasers, then unlock full premium practice.</span>
+          <span class="home-gateway-desc">Teasers first. Premium practice after unlock.</span>
           <span class="home-gateway-reward"><span class="home-gateway-meter"><span style="--progress: 64%"></span></span><span class="home-gateway-xp">+60 XP</span></span>
         </span>
       </a>
@@ -2175,9 +2202,10 @@
           <img src="/assets/sucha-hero-human.jpg" alt="Calm person reflecting in a wellness setting">
         </span>
         <span class="home-gateway-body">
+          <span class="home-gateway-symbol">03</span>
           <span class="home-gateway-tag">Daily streak</span>
           <span class="home-gateway-title">Digital Journal</span>
-          <span class="home-gateway-desc">Capture mood notes, therapy takeaways, and patterns in a focused journal page.</span>
+          <span class="home-gateway-desc">Write mood notes and track patterns.</span>
           <span class="home-gateway-reward"><span class="home-gateway-meter"><span style="--progress: 48%"></span></span><span class="home-gateway-xp">+45 XP</span></span>
         </span>
       </a>
@@ -2191,9 +2219,10 @@
           </span>
         </span>
         <span class="home-gateway-body">
+          <span class="home-gateway-symbol">04</span>
           <span class="home-gateway-tag">Unlocks</span>
           <span class="home-gateway-title">Premium Reports</span>
-          <span class="home-gateway-desc">See paid report options, premium access, refund terms, and discounts.</span>
+          <span class="home-gateway-desc">PDF reports, premium access, and coupons.</span>
           <span class="home-gateway-reward"><span class="home-gateway-meter"><span style="--progress: 58%"></span></span><span class="home-gateway-xp">+55 XP</span></span>
         </span>
       </a>
@@ -2207,9 +2236,10 @@
           </span>
         </span>
         <span class="home-gateway-body">
+          <span class="home-gateway-symbol">05</span>
           <span class="home-gateway-tag">Practice arena</span>
           <span class="home-gateway-title">Empathy, EQ, and relationship skills</span>
-          <span class="home-gateway-desc">Move from insight to practice with empathy drills, EQ training, and premium Skill Lab modules.</span>
+          <span class="home-gateway-desc">Drills for reading people and responding better.</span>
           <span class="home-gateway-reward"><span class="home-gateway-meter"><span style="--progress: 72%"></span></span><span class="home-gateway-xp">+70 XP</span></span>
         </span>
       </a>
@@ -2218,14 +2248,16 @@
           <img src="/assets/sucha-phone-journal-human.jpg" alt="Person calmly using a phone to start care">
         </span>
         <span class="home-gateway-body">
+          <span class="home-gateway-symbol">06</span>
           <span class="home-gateway-tag">Human support</span>
           <span class="home-gateway-title">Therapist matching</span>
-          <span class="home-gateway-desc">For visitors who want help from a licensed expert Sucha recommends.</span>
+          <span class="home-gateway-desc">Connect with a licensed expert.</span>
           <span class="home-gateway-reward"><span class="home-gateway-meter"><span style="--progress: 52%"></span></span><span class="home-gateway-xp">+50 XP</span></span>
         </span>
       </a>
     </div>
   </div>
+  <p class="screening-disclaimer">These tools are informational only and are not a diagnosis or a substitute for clinical advice. Please consult a qualified clinician for clinical guidance.<br><a class="btn-primary care-disclaimer-button" href="#care-seeker-match">Connect with an Expert Licensed Therapist that Sucha Recommends</a></p>
   <div class="screening-tools">
     <a class="screening-card screening-card-lab reveal" href="/empathy-lab">
       <span class="screening-card-tag">Empathy Training</span>
