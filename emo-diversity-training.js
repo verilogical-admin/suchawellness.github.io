@@ -7,6 +7,7 @@ const statusText = document.querySelector("#emo-status");
 const label = document.querySelector("#emo-label");
 const summary = document.querySelector("#emo-summary");
 const promptText = document.querySelector("#emo-prompt");
+const emotionList = document.querySelector("#emo-emotions");
 const energyMeter = document.querySelector("#emo-energy");
 const tensionMeter = document.querySelector("#emo-tension");
 const mixedMeter = document.querySelector("#emo-mixed");
@@ -50,6 +51,7 @@ function resetPreview() {
   preview.innerHTML = '<span class="placeholder">Choose a photo/video or start the camera for a private check-in.</span>';
   label.textContent = "No media analyzed yet.";
   summary.textContent = "Your browser-only reflection will appear here after analysis.";
+  if (emotionList) emotionList.innerHTML = "";
   promptText.textContent = "This tool reads simple visual cues like light, contrast, color balance, and movement. It cannot know your inner life. Use it as a prompt to journal honestly.";
   [energyMeter, tensionMeter, mixedMeter].forEach((meter) => {
     meter.style.width = "0";
@@ -222,56 +224,97 @@ function analyzePixels(frame) {
   return { lightAverage, saturationAverage, contrast, warmth, motionScore, energy, tension, mixed };
 }
 
-function classifySignal(signal) {
-  const confidence = Math.round(Math.max(signal.energy, signal.tension, signal.mixed) * 100);
+function clamp01(value) {
+  return Math.max(0, Math.min(1, value));
+}
 
-  if (signal.energy > 0.58 && signal.tension > 0.48) {
-    const emotion = signal.warmth > 1.24 ? "angry or excited" : "anxious or angry";
+function emotionScores(signal) {
+  const warmBoost = clamp01((signal.warmth - 1) * 0.8);
+  const coolBoost = clamp01((1.12 - signal.warmth) * 0.9);
+  const stillness = 1 - signal.motionScore;
+  const lowLight = 1 - signal.lightAverage;
+  const lowSaturation = 1 - signal.saturationAverage;
+
+  return [
+    { name: "Happy", value: clamp01(signal.lightAverage * 0.42 + signal.saturationAverage * 0.34 + warmBoost * 0.24 - signal.tension * 0.12) },
+    { name: "Sad", value: clamp01(lowLight * 0.42 + lowSaturation * 0.32 + stillness * 0.18 - signal.energy * 0.1) },
+    { name: "Shameful", value: clamp01(signal.mixed * 0.34 + signal.tension * 0.28 + lowLight * 0.22 + stillness * 0.12) },
+    { name: "Angry", value: clamp01(signal.tension * 0.34 + signal.saturationAverage * 0.26 + warmBoost * 0.22 + signal.energy * 0.18) },
+    { name: "Fearful", value: clamp01(signal.tension * 0.42 + coolBoost * 0.24 + signal.contrast * 0.22 + signal.mixed * 0.12) },
+    { name: "Calm", value: clamp01((1 - signal.tension) * 0.38 + stillness * 0.3 + signal.lightAverage * 0.18 + lowSaturation * 0.14) }
+  ].sort((a, b) => b.value - a.value);
+}
+
+function renderEmotionScores(scores) {
+  if (!emotionList) return;
+  emotionList.innerHTML = scores.map((score) => {
+    const percent = Math.round(score.value * 100);
+    return `<div class="emotion-row"><b>${score.name}</b><div class="meter"><i style="width:${percent}%"></i></div><span>${percent}%</span></div>`;
+  }).join("");
+}
+
+function classifySignal(signal) {
+  const scores = emotionScores(signal);
+  const primary = scores[0] || { name: "Mixed", value: signal.mixed };
+  const confidence = Math.round(primary.value * 100);
+
+  if (primary.name === "Happy") {
     return {
-      emotion,
+      emotion: primary.name,
       confidence,
-      label: `Possible emotion: ${emotion}`,
-      summary: "The frame has higher visual energy and tension cues. A useful check-in: is this anger, excitement, pressure, alertness, irritation, or mixed intensity?",
-      prompt: "Journal prompt: What is my body preparing me to do, and is that action actually needed right now?"
+      scores,
+      label: "Primary possible emotion: Happy",
+      summary: "The strongest visible cue pattern points toward happiness, hope, openness, or positive energy.",
+      prompt: "Journal prompt: What feels good, alive, or meaningful here?"
     };
   }
-  if (signal.energy > 0.55) {
-    const emotion = signal.warmth > 1.18 ? "happy or hopeful" : "surprised or energized";
+  if (primary.name === "Sad") {
     return {
-      emotion,
+      emotion: primary.name,
       confidence,
-      label: `Possible emotion: ${emotion}`,
-      summary: "The frame shows brighter, more active visual cues. This may pair with happiness, enthusiasm, openness, momentum, or social energy.",
-      prompt: "Journal prompt: What feels alive or important here, and how can I channel it cleanly?"
+      scores,
+      label: "Primary possible emotion: Sad",
+      summary: "The strongest visible cue pattern points toward sadness, tiredness, heaviness, or low emotional energy.",
+      prompt: "Journal prompt: What loss, disappointment, need, or fatigue might want care?"
     };
   }
-  if (signal.tension > 0.54) {
-    const emotion = signal.mixed > 0.62 ? "shame or guarded fear" : "anxious or tense";
+  if (primary.name === "Shameful") {
     return {
-      emotion,
+      emotion: primary.name,
       confidence,
-      label: `Possible emotion: ${emotion}`,
-      summary: "The frame shows stronger contrast or alertness cues. That can be a prompt to check for shame, fear, stress, caution, fatigue, or pressure.",
-      prompt: "Journal prompt: What am I protecting, and what boundary or reassurance would help?"
+      scores,
+      label: "Primary possible emotion: Shameful",
+      summary: "The strongest visible cue pattern points toward shame, guardedness, self-consciousness, or wanting to withdraw.",
+      prompt: "Journal prompt: What part of me needs dignity, reassurance, or protection from harsh judgment?"
     };
   }
-  if (signal.lightAverage < 0.36 && signal.saturationAverage < 0.34) {
-    const emotion = "sad or tired";
+  if (primary.name === "Angry") {
     return {
-      emotion,
+      emotion: primary.name,
       confidence,
-      label: `Possible emotion: ${emotion}`,
-      summary: "The frame is visually quieter and dimmer. This can be a reason to check for sadness, tiredness, heaviness, or simple lighting limits.",
-      prompt: "Journal prompt: Do I need rest, support, food, movement, privacy, or a kinder interpretation?"
+      scores,
+      label: "Primary possible emotion: Angry",
+      summary: "The strongest visible cue pattern points toward anger, irritation, intensity, or mobilized energy.",
+      prompt: "Journal prompt: What boundary, fairness need, or blocked goal might be underneath this?"
     };
   }
-  const emotion = signal.mixed > 0.56 ? "mixed or uncertain" : "calm or neutral";
+  if (primary.name === "Fearful") {
+    return {
+      emotion: primary.name,
+      confidence,
+      scores,
+      label: "Primary possible emotion: Fearful",
+      summary: "The strongest visible cue pattern points toward fear, anxiety, alertness, or threat scanning.",
+      prompt: "Journal prompt: What would help me feel safer or more prepared right now?"
+    };
+  }
   return {
-    emotion,
+    emotion: primary.name,
     confidence,
-    label: `Possible emotion: ${emotion}`,
-    summary: "The frame has moderate cues without a strong visible signal. That may reflect calm, neutrality, mixed emotion, privacy, or simply an image with limited emotional information.",
-    prompt: "Journal prompt: What emotion is easy to name, and what smaller emotion might be underneath it?"
+    scores,
+    label: "Primary possible emotion: Calm",
+    summary: "The strongest visible cue pattern points toward calm, neutrality, steadiness, or low activation.",
+    prompt: "Journal prompt: What is settled, and what still needs gentle attention?"
   };
 }
 
@@ -279,6 +322,7 @@ function updateResult(signal) {
   const result = classifySignal(signal);
   label.textContent = result.label;
   summary.textContent = `${result.summary} Signal strength: ${result.confidence}%. This is not a diagnosis or proof of emotion. It is a private reflection cue generated from simple on-device visual signals.`;
+  renderEmotionScores(result.scores);
   promptText.textContent = result.prompt;
   energyMeter.style.width = `${Math.round(signal.energy * 100)}%`;
   tensionMeter.style.width = `${Math.round(signal.tension * 100)}%`;
