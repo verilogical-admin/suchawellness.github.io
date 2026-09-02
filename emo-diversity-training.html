@@ -36,7 +36,7 @@
   .camera-box{background:#173f36;display:grid;min-height:360px;overflow:hidden;place-items:center;position:relative}.camera-box img,.camera-box video{height:100%;max-height:520px;object-fit:contain;width:100%}.placeholder{color:rgba(255,255,255,.78);font-weight:850;padding:2rem;text-align:center}
   .actions{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1rem}.btn{background:var(--green);border:0;color:white;cursor:pointer;font-weight:950;min-height:44px;padding:.8rem 1rem;text-transform:uppercase}.btn.secondary{background:#fff;border:1px solid var(--line);color:var(--green)}.btn.warn{background:#b86d55}
   .field{display:grid;gap:.5rem;margin-top:1rem}.field span{color:var(--muted);font-size:.8rem;font-weight:950;letter-spacing:.1em;text-transform:uppercase}.field input{background:#fffdf6;border:1px solid var(--line);padding:.8rem;width:100%}
-  .privacy-callout{background:#e7f6f1;border:2px solid rgba(45,122,107,.32);color:#173f36;font-weight:950;line-height:1.45;margin:1rem 0 0;padding:1rem;text-transform:none}.emotion-list{display:grid;gap:.55rem;margin-top:1rem}.emotion-row{align-items:center;display:grid;gap:.6rem;grid-template-columns:86px 1fr 42px}.emotion-row b{color:#173f36}.score{display:grid;gap:.75rem;margin-top:1rem}.meter{background:#e8ede9;height:10px;overflow:hidden}.meter i{background:linear-gradient(90deg,#2d7a6b,#efc84a,#b86d55);display:block;height:100%;width:0}.status{color:var(--muted);font-weight:850;min-height:1.6rem}.small{font-size:.9rem}
+  .privacy-callout{background:#e7f6f1;border:2px solid rgba(45,122,107,.32);color:#173f36;font-weight:950;line-height:1.45;margin:1rem 0 0;padding:1rem;text-transform:none}.emotion-list{display:grid;gap:.55rem;margin-top:1rem}.emotion-row{align-items:center;display:grid;gap:.6rem;grid-template-columns:96px 1fr 42px}.emotion-row b{color:#173f36}.score{display:grid;gap:.75rem;margin-top:1rem}.meter{background:#e8ede9;height:10px;overflow:hidden}.meter i{background:linear-gradient(90deg,#2d7a6b,#efc84a,#b86d55);display:block;height:100%;width:0}.status{color:var(--muted);font-weight:850;min-height:1.6rem}.small{font-size:.9rem}
   .footer{border-top:1px solid var(--line);color:var(--muted);display:flex;flex-wrap:wrap;gap:1rem;padding:34px 0 46px}.footer a{color:var(--green);font-weight:850}
   @media(max-width:900px){.hero,.three,.two,.tool-shell{grid-template-columns:1fr}.range-map{grid-template-columns:repeat(2,1fr)}.camera-box{min-height:300px}}
   @media(max-width:640px){:root{--content:min(100vw - 28px,820px)}.brand span{display:none}h1{font-size:clamp(2.5rem,14vw,4rem)}.range-map{grid-template-columns:1fr}.actions{display:grid}.btn{width:100%}.footer{display:grid}}
@@ -74,7 +74,7 @@
     <p class="eyebrow privacy-eyebrow">Private browser-only tool</p>
     <h2>Photo or short video reflection.</h2>
     <p class="section-intro">Upload a photo/video or allow the camera. The file is analyzed only inside this browser tab. Nothing is sent to Sucha, no cloud model is called, and media is not saved by this page.</p>
-    <p class="privacy-callout"><strong>Photo/video is not uploaded. Everything happens privately on the user's own device/browser.</strong></p>
+    <p class="privacy-callout"><strong>Photo/video is not uploaded. Face analysis runs privately on the user's own device/browser after the browser loads the face model.</strong></p>
     <div class="tool-shell">
       <div class="tool">
         <div class="camera-box" id="emo-preview"><span class="placeholder">Choose a photo/video or start the camera for a private check-in.</span></div>
@@ -92,7 +92,7 @@
         <p id="emo-summary">Your browser-only reflection will appear here after analysis.</p>
         <div class="emotion-list" id="emo-emotions" aria-label="Possible emotion scores"></div>
         <div class="score"><span>Visible energy signal</span><div class="meter"><i id="emo-energy"></i></div><span>Visual tension signal</span><div class="meter"><i id="emo-tension"></i></div><span>Mixed-state signal</span><div class="meter"><i id="emo-mixed"></i></div></div>
-        <p class="small" id="emo-prompt">This tool reads simple visual cues like light, contrast, color balance, and movement. It cannot know your inner life. Use it as a prompt to journal honestly.</p>
+        <p class="small" id="emo-prompt">This tool uses browser-side face expression signals when the face model loads. It cannot know your inner life. Use it as a prompt to journal honestly.</p>
       </article>
     </div>
   </section>
@@ -107,6 +107,6 @@
   </section>
 </main>
 <footer class="footer"><span>Emo Diversity Lab</span><a href="/skill-lab">Back to Skill Lab</a><a href="/legal-disclaimer">Legal Disclaimer</a></footer>
-<script type="module" src="/emo-diversity-training.js?v=2026-09-02-named-emotions"></script>
+<script type="module" src="/emo-diversity-training.js?v=2026-09-02-face-blendshapes"></script>
 </body>
 </html>

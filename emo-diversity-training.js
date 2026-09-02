@@ -1,3 +1,5 @@
+import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/vision_bundle.mjs";
+
 const fileInput = document.querySelector("#emo-file");
 const preview = document.querySelector("#emo-preview");
 const startCameraButton = document.querySelector("#emo-camera-start");
@@ -18,6 +20,11 @@ let activeStream = null;
 let activeFile = null;
 let activeBitmap = null;
 let previousFrame = null;
+let faceLandmarker = null;
+let faceMode = "IMAGE";
+
+const faceModelUrl = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task";
+const wasmRootUrl = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
 
 function setStatus(message) {
   if (statusText) statusText.textContent = message;
@@ -219,7 +226,7 @@ function analyzePixels(frame) {
 
   const energy = Math.min(1, lightAverage * 0.45 + saturationAverage * 0.38 + motionScore * 0.3);
   const tension = Math.min(1, contrast * 1.9 + motionScore * 0.42 + (warmth < 1.05 ? 0.16 : 0));
-  const mixed = Math.min(1, Math.abs(energy - tension) < 0.18 ? 0.58 + saturationAverage * 0.22 : (energy + tension) * 0.32);
+  const mixed = Math.min(1, Math.abs(energy - tension) < 0.18 ? 0.36 + saturationAverage * 0.12 : (energy + tension) * 0.26);
 
   return { lightAverage, saturationAverage, contrast, warmth, motionScore, energy, tension, mixed };
 }
@@ -228,20 +235,56 @@ function clamp01(value) {
   return Math.max(0, Math.min(1, value));
 }
 
-function emotionScores(signal) {
-  const warmBoost = clamp01((signal.warmth - 1) * 0.8);
-  const coolBoost = clamp01((1.12 - signal.warmth) * 0.9);
-  const stillness = 1 - signal.motionScore;
-  const lowLight = 1 - signal.lightAverage;
-  const lowSaturation = 1 - signal.saturationAverage;
+async function ensureFaceLandmarker(mode) {
+  if (!faceLandmarker) {
+    setStatus("Loading private on-device face expression model...");
+    const vision = await FilesetResolver.forVisionTasks(wasmRootUrl);
+    faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
+      baseOptions: { modelAssetPath: faceModelUrl },
+      outputFaceBlendshapes: true,
+      runningMode: mode,
+      numFaces: 1
+    });
+    faceMode = mode;
+  } else if (faceMode !== mode) {
+    await faceLandmarker.setOptions({ runningMode: mode });
+    faceMode = mode;
+  }
+  return faceLandmarker;
+}
+
+function getBlendshape(blendshapes, names) {
+  const wanted = Array.isArray(names) ? names : [names];
+  let score = 0;
+  wanted.forEach((name) => {
+    score = Math.max(score, blendshapes.get(name) || 0);
+  });
+  return score;
+}
+
+function blendshapeScores(categories) {
+  const blendshapes = new Map(categories.map((category) => [category.categoryName, category.score]));
+  const smile = (getBlendshape(blendshapes, "mouthSmileLeft") + getBlendshape(blendshapes, "mouthSmileRight")) / 2;
+  const frown = (getBlendshape(blendshapes, "mouthFrownLeft") + getBlendshape(blendshapes, "mouthFrownRight")) / 2;
+  const browInner = getBlendshape(blendshapes, "browInnerUp");
+  const browDown = (getBlendshape(blendshapes, "browDownLeft") + getBlendshape(blendshapes, "browDownRight")) / 2;
+  const eyeWide = (getBlendshape(blendshapes, "eyeWideLeft") + getBlendshape(blendshapes, "eyeWideRight")) / 2;
+  const eyeSquint = (getBlendshape(blendshapes, "eyeSquintLeft") + getBlendshape(blendshapes, "eyeSquintRight")) / 2;
+  const eyeDown = (getBlendshape(blendshapes, "eyeLookDownLeft") + getBlendshape(blendshapes, "eyeLookDownRight")) / 2;
+  const jawOpen = getBlendshape(blendshapes, "jawOpen");
+  const mouthPress = (getBlendshape(blendshapes, "mouthPressLeft") + getBlendshape(blendshapes, "mouthPressRight")) / 2;
+  const mouthShrug = Math.max(getBlendshape(blendshapes, "mouthShrugLower"), getBlendshape(blendshapes, "mouthShrugUpper"));
+  const mouthDimple = (getBlendshape(blendshapes, "mouthDimpleLeft") + getBlendshape(blendshapes, "mouthDimpleRight")) / 2;
+  const neutral = getBlendshape(blendshapes, "_neutral");
+  const expressive = Math.max(smile, frown, browInner, browDown, eyeWide, jawOpen, mouthPress);
 
   return [
-    { name: "Happy", value: clamp01(signal.lightAverage * 0.42 + signal.saturationAverage * 0.34 + warmBoost * 0.24 - signal.tension * 0.12) },
-    { name: "Sad", value: clamp01(lowLight * 0.42 + lowSaturation * 0.32 + stillness * 0.18 - signal.energy * 0.1) },
-    { name: "Shameful", value: clamp01(signal.mixed * 0.34 + signal.tension * 0.28 + lowLight * 0.22 + stillness * 0.12) },
-    { name: "Angry", value: clamp01(signal.tension * 0.34 + signal.saturationAverage * 0.26 + warmBoost * 0.22 + signal.energy * 0.18) },
-    { name: "Fearful", value: clamp01(signal.tension * 0.42 + coolBoost * 0.24 + signal.contrast * 0.22 + signal.mixed * 0.12) },
-    { name: "Calm", value: clamp01((1 - signal.tension) * 0.38 + stillness * 0.3 + signal.lightAverage * 0.18 + lowSaturation * 0.14) }
+    { name: "Happy", value: clamp01(smile * 1.4 + mouthDimple * 0.22 - frown * 0.35 - mouthPress * 0.12) },
+    { name: "Sad", value: clamp01(frown * 0.78 + browInner * 0.42 + mouthShrug * 0.18 - smile * 0.45) },
+    { name: "Shameful", value: clamp01(mouthPress * 0.44 + eyeDown * 0.34 + browInner * 0.24 + frown * 0.18 - smile * 0.42) },
+    { name: "Angry", value: clamp01(browDown * 0.74 + eyeSquint * 0.36 + mouthPress * 0.24 + frown * 0.18 - smile * 0.3) },
+    { name: "Fearful", value: clamp01(eyeWide * 0.58 + browInner * 0.38 + jawOpen * 0.34 + mouthPress * 0.12 - smile * 0.24) },
+    { name: "Calm", value: clamp01(neutral * 0.58 + (1 - expressive) * 0.26 + (1 - mouthPress) * 0.1 - smile * 0.12) }
   ].sort((a, b) => b.value - a.value);
 }
 
@@ -253,9 +296,8 @@ function renderEmotionScores(scores) {
   }).join("");
 }
 
-function classifySignal(signal) {
-  const scores = emotionScores(signal);
-  const primary = scores[0] || { name: "Mixed", value: signal.mixed };
+function classifyScores(scores) {
+  const primary = scores[0] || { name: "Calm", value: 0 };
   const confidence = Math.round(primary.value * 100);
 
   if (primary.name === "Happy") {
@@ -319,36 +361,56 @@ function classifySignal(signal) {
 }
 
 function updateResult(signal) {
-  const result = classifySignal(signal);
+  const result = classifyScores(signal.scores);
+  const energy = Math.max(signal.scores.find((score) => score.name === "Happy")?.value || 0, signal.scores.find((score) => score.name === "Angry")?.value || 0, signal.scores.find((score) => score.name === "Fearful")?.value || 0);
+  const tension = Math.max(signal.scores.find((score) => score.name === "Angry")?.value || 0, signal.scores.find((score) => score.name === "Fearful")?.value || 0, signal.scores.find((score) => score.name === "Shameful")?.value || 0);
+  const mixed = signal.scores[1] ? clamp01(signal.scores[1].value / Math.max(signal.scores[0].value, 0.01)) : 0;
   label.textContent = result.label;
   summary.textContent = `${result.summary} Signal strength: ${result.confidence}%. This is not a diagnosis or proof of emotion. It is a private reflection cue generated from simple on-device visual signals.`;
   renderEmotionScores(result.scores);
   promptText.textContent = result.prompt;
-  energyMeter.style.width = `${Math.round(signal.energy * 100)}%`;
-  tensionMeter.style.width = `${Math.round(signal.tension * 100)}%`;
-  mixedMeter.style.width = `${Math.round(signal.mixed * 100)}%`;
+  energyMeter.style.width = `${Math.round(energy * 100)}%`;
+  tensionMeter.style.width = `${Math.round(tension * 100)}%`;
+  mixedMeter.style.width = `${Math.round(mixed * 100)}%`;
   setStatus("Analysis complete locally in this browser. No upload happened.");
 }
 
 async function analyzeVisibleFrame() {
-  let frame = drawFrame(activeMedia);
-  if (!frame && activeFile?.type?.startsWith("image/")) {
+  let media = activeMedia;
+  if (!frameSourceReady(media) && activeFile?.type?.startsWith("image/")) {
     setStatus("Decoding photo locally before analysis...");
     try {
       clearBitmap();
       activeBitmap = await decodeImageFile(activeFile);
       activeMedia = activeBitmap;
-      frame = drawFrame(activeMedia);
+      media = activeBitmap;
     } catch {
       setStatus("This photo could not be decoded for analysis.");
       return;
     }
   }
-  if (!frame) {
+  if (!frameSourceReady(media)) {
     setStatus("Choose a loaded photo/video or start the camera before analyzing.");
     return;
   }
-  updateResult(analyzePixels(frame));
+  const mode = media instanceof HTMLVideoElement ? "VIDEO" : "IMAGE";
+  try {
+    const landmarker = await ensureFaceLandmarker(mode);
+    const result = mode === "VIDEO" ? landmarker.detectForVideo(media, performance.now()) : landmarker.detect(media);
+    const categories = result.faceBlendshapes?.[0]?.categories;
+    if (!categories?.length) {
+      label.textContent = "No face expression detected.";
+      summary.textContent = "I could not find a clear face expression in this photo or video frame. Try a front-facing, uncropped face with visible eyes and mouth.";
+      if (emotionList) emotionList.innerHTML = "";
+      setStatus("No face expression found. Nothing was uploaded.");
+      return;
+    }
+    updateResult({ scores: blendshapeScores(categories) });
+  } catch (error) {
+    label.textContent = "Face model could not run.";
+    summary.textContent = "The browser could not load or run the on-device face expression model. Check the internet connection for model download, then try again.";
+    setStatus(error?.message || "Face expression model failed to run.");
+  }
 }
 
 fileInput?.addEventListener("change", (event) => loadFile(event.target.files?.[0]));
