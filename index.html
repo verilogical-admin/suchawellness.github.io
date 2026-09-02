@@ -845,33 +845,6 @@
     margin-top: 1.6rem;
   }
 
-  .home-gateway-head {
-    align-items: center;
-    display: flex;
-    gap: 1rem;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-  }
-
-  .home-gateway-head p {
-    color: var(--muted);
-    margin: 0;
-    max-width: 540px;
-  }
-
-  .home-gateway-hint {
-    align-items: center;
-    display: inline-flex;
-    gap: 0.45rem;
-  }
-
-  .home-gateway-hint::before {
-    background: #f0c84b;
-    content: "";
-    height: 0.62rem;
-    width: 0.62rem;
-  }
-
   .home-gateway-grid {
     display: grid;
     gap: 1rem;
@@ -2021,14 +1994,6 @@
     .about-accent { display: none; }
     .screening-hero { display: grid; gap: 1rem; margin-bottom: 1.2rem; }
     .screening-tools { grid-template-columns: 1fr; }
-    .home-gateway-head {
-      align-items: flex-start;
-      flex-direction: column;
-    }
-    .home-gateway-score {
-      width: 100%;
-      justify-content: center;
-    }
     .home-gateway-grid,
     .home-gateway-card.is-wide {
       grid-template-columns: 1fr;
@@ -2178,9 +2143,6 @@
 <section id="take-test">
   <div class="section-eyebrow">Take Test</div>
   <div class="home-gateway reveal" aria-label="Sucha Wellness quick paths">
-    <div class="home-gateway-head">
-      <p class="home-gateway-hint">One tap opens one focused tool.</p>
-    </div>
     <div class="home-gateway-grid">
       <a class="home-gateway-card" href="/tests">
         <span class="home-gateway-media">
