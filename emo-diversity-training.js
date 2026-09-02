@@ -290,11 +290,12 @@ function blendshapeScores(categories) {
   const sadnessMouth = Math.max(signalAbove(frown, 0.03, 0.22), signalAbove(mouthShrug, 0.04, 0.24), signalAbove(mouthLowerDown, 0.04, 0.26));
   const sadnessBrow = signalAbove(browInner, 0.05, 0.26);
   const sadnessCore = sadnessMouth * 0.62 + sadnessBrow * 0.38;
+  const clearSmile = signalAbove(smile, 0.22, 0.34);
   const fearCore = Math.min(signalAbove(eyeWide, 0.12, 0.34) + sadnessBrow * 0.24, signalAbove(jawOpen, 0.1, 0.34) + pressStrong * 0.2);
 
   return [
-    { name: "Happy", value: clamp01(smile * 1.4 + mouthDimple * 0.22 - frown * 0.35 - mouthPress * 0.12) },
-    { name: "Sad", value: clamp01(sadnessCore * 0.74 + sadnessMouth * 0.18 + eyeDown * 0.1 - browDownStrong * 0.12 - smile * 0.34) },
+    { name: "Happy", value: clamp01(clearSmile * 0.82 + mouthDimple * 0.18 - sadnessCore * 0.42 - sadnessMouth * 0.18 - frown * 0.32 - mouthPress * 0.16) },
+    { name: "Sad", value: clamp01(sadnessCore * 0.8 + sadnessMouth * 0.2 + eyeDown * 0.1 - browDownStrong * 0.12 - clearSmile * 0.2) },
     { name: "Shameful", value: clamp01(pressStrong * 0.28 + eyeDown * 0.28 + sadnessBrow * 0.22 + sadnessMouth * 0.12 - browDownStrong * 0.18 - smile * 0.36) },
     { name: "Angry", value: clamp01(angerCore * 0.58 + browDownStrong * 0.08 + squintStrong * 0.06 + pressStrong * 0.06 - sadnessBrow * 0.34 - sadnessMouth * 0.24 - smile * 0.5) },
     { name: "Fearful", value: clamp01(fearCore * 0.72 + signalAbove(eyeWide, 0.12, 0.34) * 0.12 + sadnessBrow * 0.12 + mouthStretch * 0.08 - browDownStrong * 0.16 - smile * 0.24) },
@@ -313,7 +314,12 @@ function renderEmotionScores(scores) {
 function classifyScores(scores) {
   const sortedScores = [...scores].sort((a, b) => b.value - a.value);
   const angry = sortedScores.find((score) => score.name === "Angry");
+  const happy = sortedScores.find((score) => score.name === "Happy");
+  const sad = sortedScores.find((score) => score.name === "Sad");
   let primary = sortedScores[0] || { name: "Calm", value: 0 };
+  if (primary.name === "Happy" && sad && happy && sad.value >= happy.value - 0.08 && sad.value >= 0.2) {
+    primary = sad;
+  }
   if (primary.name === "Angry") {
     const nextNonAngry = sortedScores.find((score) => score.name !== "Angry") || { value: 0 };
     if (!angry || angry.value < 0.42 || angry.value < nextNonAngry.value + 0.12) {
