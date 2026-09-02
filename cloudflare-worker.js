@@ -8,7 +8,7 @@ const SECURITY_HEADERS = {
   'Cross-Origin-Opener-Policy': 'same-origin',
   'X-Permitted-Cross-Domain-Policies': 'none',
   'X-Robots-Tag': 'index, follow',
-  'Permissions-Policy': 'accelerometer=(), autoplay=(), camera=(), clipboard-read=(), clipboard-write=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(self), usb=()',
+  'Permissions-Policy': 'accelerometer=(), autoplay=(), camera=(self), clipboard-read=(), clipboard-write=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(self), usb=()',
 };
 
 const STATIC_ASSET_VERSION = '2026-08-27-skill-access-v2';
