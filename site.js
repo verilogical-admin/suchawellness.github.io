@@ -1923,7 +1923,7 @@ function ensureJournalMarkup() {
   addJournalStyles();
 
   const navLinks = document.querySelector('.nav-links');
-  if (navLinks && !navLinks.querySelector('a[href="#journal"]')) {
+  if (navLinks && !navLinks.querySelector('a[href="/journal"], a[href="#journal"]')) {
     const item = document.createElement('li');
     const link = document.createElement('a');
     link.href = '#journal';
