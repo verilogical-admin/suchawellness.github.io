@@ -317,8 +317,17 @@ function classifyScores(scores) {
   const happy = sortedScores.find((score) => score.name === "Happy");
   const sad = sortedScores.find((score) => score.name === "Sad");
   let primary = sortedScores[0] || { name: "Calm", value: 0 };
-  if (primary.name === "Happy" && sad && happy && sad.value >= happy.value - 0.08 && sad.value >= 0.2) {
-    primary = sad;
+  const happySadGap = happy && sad ? Math.abs(happy.value - sad.value) : 1;
+  if (happy && sad && happySadGap <= 0.12 && Math.max(happy.value, sad.value) >= 0.18) {
+    const confidence = Math.round(Math.max(happy.value, sad.value) * 100);
+    return {
+      emotion: "Mixed sad-happy cues",
+      confidence,
+      scores,
+      label: "Primary possible emotion: Mixed sad-happy cues",
+      summary: "The visible cue pattern is too close to separate cleanly between sadness and happiness. This often happens with polite smiles, bittersweet expressions, tired smiles, or a face that does not match the inner feeling.",
+      prompt: "Journal prompt: Is this more joy, sadness, relief, exhaustion, politeness, or a mix?"
+    };
   }
   if (primary.name === "Angry") {
     const nextNonAngry = sortedScores.find((score) => score.name !== "Angry") || { value: 0 };
