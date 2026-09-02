@@ -235,6 +235,10 @@ function clamp01(value) {
   return Math.max(0, Math.min(1, value));
 }
 
+function signalAbove(value, threshold, range = 0.35) {
+  return clamp01((value - threshold) / range);
+}
+
 async function ensureFaceLandmarker(mode) {
   if (!faceLandmarker) {
     setStatus("Loading private on-device face expression model...");
@@ -275,18 +279,25 @@ function blendshapeScores(categories) {
   const mouthPress = (getBlendshape(blendshapes, "mouthPressLeft") + getBlendshape(blendshapes, "mouthPressRight")) / 2;
   const mouthShrug = Math.max(getBlendshape(blendshapes, "mouthShrugLower"), getBlendshape(blendshapes, "mouthShrugUpper"));
   const mouthDimple = (getBlendshape(blendshapes, "mouthDimpleLeft") + getBlendshape(blendshapes, "mouthDimpleRight")) / 2;
+  const mouthLowerDown = (getBlendshape(blendshapes, "mouthLowerDownLeft") + getBlendshape(blendshapes, "mouthLowerDownRight")) / 2;
+  const mouthStretch = (getBlendshape(blendshapes, "mouthStretchLeft") + getBlendshape(blendshapes, "mouthStretchRight")) / 2;
   const neutral = getBlendshape(blendshapes, "_neutral");
   const expressive = Math.max(smile, frown, browInner, browDown, eyeWide, jawOpen, mouthPress);
-  const angerCore = Math.min(browDown, Math.max(eyeSquint, mouthPress, frown));
-  const sadnessCore = Math.max(frown, mouthShrug) + browInner * 0.55;
-  const fearCore = Math.min(eyeWide + browInner * 0.45, jawOpen + mouthPress * 0.35);
+  const browDownStrong = signalAbove(browDown, 0.32, 0.34);
+  const squintStrong = signalAbove(eyeSquint, 0.24, 0.32);
+  const pressStrong = signalAbove(mouthPress, 0.22, 0.32);
+  const angerCore = Math.min(browDownStrong, Math.max(squintStrong, pressStrong));
+  const sadnessMouth = Math.max(signalAbove(frown, 0.03, 0.22), signalAbove(mouthShrug, 0.04, 0.24), signalAbove(mouthLowerDown, 0.04, 0.26));
+  const sadnessBrow = signalAbove(browInner, 0.05, 0.26);
+  const sadnessCore = sadnessMouth * 0.62 + sadnessBrow * 0.38;
+  const fearCore = Math.min(signalAbove(eyeWide, 0.12, 0.34) + sadnessBrow * 0.24, signalAbove(jawOpen, 0.1, 0.34) + pressStrong * 0.2);
 
   return [
     { name: "Happy", value: clamp01(smile * 1.4 + mouthDimple * 0.22 - frown * 0.35 - mouthPress * 0.12) },
-    { name: "Sad", value: clamp01(sadnessCore * 0.86 + frown * 0.34 + eyeDown * 0.12 - browDown * 0.2 - smile * 0.5) },
-    { name: "Shameful", value: clamp01(mouthPress * 0.34 + eyeDown * 0.34 + browInner * 0.28 + frown * 0.12 - browDown * 0.16 - smile * 0.42) },
-    { name: "Angry", value: clamp01(angerCore * 0.92 + browDown * 0.2 + eyeSquint * 0.12 + mouthPress * 0.1 - browInner * 0.28 - smile * 0.38) },
-    { name: "Fearful", value: clamp01(fearCore * 0.84 + eyeWide * 0.18 + browInner * 0.16 - browDown * 0.14 - smile * 0.24) },
+    { name: "Sad", value: clamp01(sadnessCore * 0.74 + sadnessMouth * 0.18 + eyeDown * 0.1 - browDownStrong * 0.12 - smile * 0.34) },
+    { name: "Shameful", value: clamp01(pressStrong * 0.28 + eyeDown * 0.28 + sadnessBrow * 0.22 + sadnessMouth * 0.12 - browDownStrong * 0.18 - smile * 0.36) },
+    { name: "Angry", value: clamp01(angerCore * 0.7 + browDownStrong * 0.12 + squintStrong * 0.08 + pressStrong * 0.08 - sadnessBrow * 0.28 - sadnessMouth * 0.18 - smile * 0.42) },
+    { name: "Fearful", value: clamp01(fearCore * 0.72 + signalAbove(eyeWide, 0.12, 0.34) * 0.12 + sadnessBrow * 0.12 + mouthStretch * 0.08 - browDownStrong * 0.16 - smile * 0.24) },
     { name: "Calm", value: clamp01(neutral * 0.58 + (1 - expressive) * 0.26 + (1 - mouthPress) * 0.1 - smile * 0.12) }
   ].sort((a, b) => b.value - a.value);
 }
