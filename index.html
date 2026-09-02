@@ -861,7 +861,8 @@
   .home-gateway-grid {
     display: grid;
     gap: 1rem;
-    grid-template-columns: 1.15fr 1fr 1fr;
+    grid-auto-rows: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .home-gateway-card {
@@ -870,6 +871,7 @@
     color: var(--text);
     display: grid;
     gap: 1rem;
+    grid-template-rows: auto 1fr;
     min-height: 0;
     overflow: hidden;
     padding: 1rem;
@@ -892,8 +894,8 @@
   }
 
   .home-gateway-card.is-wide {
-    grid-column: span 2;
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
+    grid-column: auto;
+    grid-template-columns: 1fr;
   }
 
   .home-gateway-media {
@@ -946,6 +948,7 @@
     align-self: end;
     display: grid;
     gap: 0.55rem;
+    grid-template-rows: auto auto minmax(4.9rem, auto) minmax(2.9rem, auto) auto;
   }
 
   .home-gateway-symbol {
@@ -2017,11 +2020,15 @@
       grid-template-columns: 1fr;
     }
     .home-gateway-grid {
+      grid-auto-rows: auto;
       gap: 0.85rem;
     }
     .home-gateway-card {
       min-height: 0;
       padding: 0.85rem;
+    }
+    .home-gateway-body {
+      grid-template-rows: auto auto auto auto auto;
     }
     .home-gateway-card.is-featured,
     .home-gateway-card.is-wide {
@@ -2178,21 +2185,16 @@
           <span class="home-gateway-reward"><span class="home-gateway-meter"><span style="--progress: 82%"></span></span><span class="home-gateway-xp">+80 XP</span></span>
         </span>
       </a>
-      <a class="home-gateway-card" href="/skill-lab">
+      <a class="home-gateway-card" href="/therapist-matching">
         <span class="home-gateway-media">
-          <span class="home-gateway-graphic" aria-hidden="true">
-            <span class="home-gateway-chip">Self-esteem</span>
-            <span class="home-gateway-chip">Patience</span>
-            <span class="home-gateway-chip">Boundaries</span>
-            <span class="home-gateway-chip">Drama skill</span>
-          </span>
+          <img src="/assets/sucha-male-phone-journal.png" alt="Calm man using a phone for digital mental wellness reflection">
         </span>
         <span class="home-gateway-body">
           <span class="home-gateway-symbol">02</span>
-          <span class="home-gateway-tag">Premium skill map</span>
-          <span class="home-gateway-title">Skill Lab</span>
-          <span class="home-gateway-desc">Teasers first. Premium practice after unlock.</span>
-          <span class="home-gateway-reward"><span class="home-gateway-meter"><span style="--progress: 64%"></span></span><span class="home-gateway-xp">+60 XP</span></span>
+          <span class="home-gateway-tag">Human support</span>
+          <span class="home-gateway-title">Therapist matching</span>
+          <span class="home-gateway-desc">Connect with a licensed expert.</span>
+          <span class="home-gateway-reward"><span class="home-gateway-meter"><span style="--progress: 52%"></span></span><span class="home-gateway-xp">+50 XP</span></span>
         </span>
       </a>
       <a class="home-gateway-card" href="/journal">
@@ -2207,6 +2209,23 @@
           <span class="home-gateway-reward"><span class="home-gateway-meter"><span style="--progress: 48%"></span></span><span class="home-gateway-xp">+45 XP</span></span>
         </span>
       </a>
+      <a class="home-gateway-card" href="/skill-lab">
+        <span class="home-gateway-media">
+          <span class="home-gateway-graphic" aria-hidden="true">
+            <span class="home-gateway-chip">Self-esteem</span>
+            <span class="home-gateway-chip">Patience</span>
+            <span class="home-gateway-chip">Boundaries</span>
+            <span class="home-gateway-chip">Drama skill</span>
+          </span>
+        </span>
+        <span class="home-gateway-body">
+          <span class="home-gateway-symbol">04</span>
+          <span class="home-gateway-tag">Premium skill map</span>
+          <span class="home-gateway-title">Skill Lab</span>
+          <span class="home-gateway-desc">Teasers first. Premium practice after unlock.</span>
+          <span class="home-gateway-reward"><span class="home-gateway-meter"><span style="--progress: 64%"></span></span><span class="home-gateway-xp">+60 XP</span></span>
+        </span>
+      </a>
       <a class="home-gateway-card" href="/premium-reports">
         <span class="home-gateway-media">
           <span class="home-gateway-graphic" aria-hidden="true">
@@ -2217,7 +2236,7 @@
           </span>
         </span>
         <span class="home-gateway-body">
-          <span class="home-gateway-symbol">04</span>
+          <span class="home-gateway-symbol">05</span>
           <span class="home-gateway-tag">Unlocks</span>
           <span class="home-gateway-title">Premium Reports</span>
           <span class="home-gateway-desc">PDF reports, premium access, and coupons.</span>
@@ -2234,23 +2253,11 @@
           </span>
         </span>
         <span class="home-gateway-body">
-          <span class="home-gateway-symbol">05</span>
+          <span class="home-gateway-symbol">06</span>
           <span class="home-gateway-tag">Practice arena</span>
           <span class="home-gateway-title">Empathy, EQ, and relationship skills</span>
           <span class="home-gateway-desc">Drills for reading people and responding better.</span>
           <span class="home-gateway-reward"><span class="home-gateway-meter"><span style="--progress: 72%"></span></span><span class="home-gateway-xp">+70 XP</span></span>
-        </span>
-      </a>
-      <a class="home-gateway-card" href="/therapist-matching">
-        <span class="home-gateway-media">
-          <img src="/assets/sucha-male-phone-journal.png" alt="Calm man using a phone for digital mental wellness reflection">
-        </span>
-        <span class="home-gateway-body">
-          <span class="home-gateway-symbol">06</span>
-          <span class="home-gateway-tag">Human support</span>
-          <span class="home-gateway-title">Therapist matching</span>
-          <span class="home-gateway-desc">Connect with a licensed expert.</span>
-          <span class="home-gateway-reward"><span class="home-gateway-meter"><span style="--progress: 52%"></span></span><span class="home-gateway-xp">+50 XP</span></span>
         </span>
       </a>
     </div>
