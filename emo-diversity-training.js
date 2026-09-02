@@ -273,8 +273,43 @@ function getBlendshape(blendshapes, names) {
   return score;
 }
 
-function blendshapeScores(categories) {
+function pointDistance(a, b) {
+  if (!a || !b) return 0;
+  return Math.hypot((a.x || 0) - (b.x || 0), (a.y || 0) - (b.y || 0));
+}
+
+function averagePoints(points) {
+  const usable = points.filter(Boolean);
+  if (!usable.length) return null;
+  return {
+    x: usable.reduce((sum, point) => sum + (point.x || 0), 0) / usable.length,
+    y: usable.reduce((sum, point) => sum + (point.y || 0), 0) / usable.length
+  };
+}
+
+function eyeGeometrySignals(landmarks = []) {
+  const leftWidth = pointDistance(landmarks[33], landmarks[133]);
+  const rightWidth = pointDistance(landmarks[263], landmarks[362]);
+  const leftOpen = pointDistance(landmarks[159], landmarks[145]) / Math.max(leftWidth, 0.001);
+  const rightOpen = pointDistance(landmarks[386], landmarks[374]) / Math.max(rightWidth, 0.001);
+  const eyeOpenRatio = (leftOpen + rightOpen) / 2;
+  const leftBrow = averagePoints([landmarks[70], landmarks[105], landmarks[107]]);
+  const rightBrow = averagePoints([landmarks[300], landmarks[334], landmarks[336]]);
+  const leftEyeTop = averagePoints([landmarks[159], landmarks[160], landmarks[158]]);
+  const rightEyeTop = averagePoints([landmarks[386], landmarks[385], landmarks[387]]);
+  const leftBrowGap = leftEyeTop && leftBrow ? Math.abs(leftEyeTop.y - leftBrow.y) / Math.max(leftWidth, 0.001) : 1;
+  const rightBrowGap = rightEyeTop && rightBrow ? Math.abs(rightEyeTop.y - rightBrow.y) / Math.max(rightWidth, 0.001) : 1;
+  const browGapRatio = (leftBrowGap + rightBrowGap) / 2;
+  return {
+    narrow: signalBelow(eyeOpenRatio, 0.22, 0.1),
+    wide: signalAbove(eyeOpenRatio, 0.3, 0.16),
+    browClose: signalBelow(browGapRatio, 0.5, 0.22)
+  };
+}
+
+function blendshapeScores(categories, landmarks = []) {
   const blendshapes = new Map(categories.map((category) => [category.categoryName, category.score]));
+  const eyeGeometry = eyeGeometrySignals(landmarks);
   const smileLeft = getBlendshape(blendshapes, "mouthSmileLeft");
   const smileRight = getBlendshape(blendshapes, "mouthSmileRight");
   const smile = (smileLeft + smileRight) / 2;
@@ -295,11 +330,11 @@ function blendshapeScores(categories) {
   const smileAsymmetry = Math.abs(smileLeft - smileRight);
   const neutral = getBlendshape(blendshapes, "_neutral");
   const expressive = Math.max(smile, frown, browInner, browDown, eyeWide, jawOpen, mouthPress);
-  const browDownStrong = signalAbove(browDown, 0.24, 0.34);
-  const squintStrong = signalAbove(eyeSquint, 0.2, 0.32);
-  const eyeNarrow = clamp01(squintStrong * 0.68 + signalBelow(eyeWide, 0.1, 0.24) * 0.32);
+  const browDownStrong = Math.max(signalAbove(browDown, 0.24, 0.34), eyeGeometry.browClose * 0.9);
+  const squintStrong = Math.max(signalAbove(eyeSquint, 0.2, 0.32), eyeGeometry.narrow * 0.85);
+  const eyeNarrow = clamp01(squintStrong * 0.62 + signalBelow(eyeWide, 0.1, 0.24) * 0.22 + eyeGeometry.narrow * 0.32);
   const pressStrong = signalAbove(mouthPress, 0.24, 0.32);
-  const eyeWideStrong = signalAbove(eyeWide, 0.16, 0.34);
+  const eyeWideStrong = Math.max(signalAbove(eyeWide, 0.16, 0.34), eyeGeometry.wide * 0.82);
   const narrowAnger = Math.min(browDownStrong + signalAbove(browDown, 0.24, 0.34) * 0.2, eyeNarrow + squintStrong * 0.14);
   const wideAnger = Math.min(eyeWideStrong, browDownStrong * 0.62 + pressStrong * 0.38);
   const angryEyes = Math.max(narrowAnger, wideAnger);
@@ -314,7 +349,7 @@ function blendshapeScores(categories) {
   const contemptCore = Math.min(signalAbove(smileAsymmetry, 0.12, 0.3), Math.max(signalAbove(mouthPress, 0.14, 0.3), signalAbove(mouthDimple, 0.08, 0.28)));
   const fearCore = Math.min(signalAbove(eyeWide, 0.12, 0.34) + sadnessBrow * 0.24, signalAbove(jawOpen, 0.1, 0.34) + pressStrong * 0.2);
   lastCueInsights = [
-    { name: "Anger eye cue", value: Math.max(intenseEyes, angryEyes), text: "lowered brow with narrowed eyes, tense wide eyes, or mouth press" },
+    { name: "Anger eye cue", value: Math.max(intenseEyes, angryEyes, eyeGeometry.browClose * eyeGeometry.narrow), text: "lowered brow with narrowed eyes, tense wide eyes, or mouth press" },
     { name: "Surprise cue", value: surpriseCore, text: "wide eyes with jaw opening or stretched mouth" },
     { name: "Sadness cue", value: sadnessCore, text: "inner brow lift with downturned or heavy mouth signals" },
     { name: "Disgust cue", value: disgustCore, text: "nose sneer or upper-lip raise" },
@@ -528,7 +563,7 @@ async function analyzeVisibleFrame() {
       setStatus("No face expression found. Nothing was uploaded.");
       return;
     }
-    updateResult({ scores: blendshapeScores(categories) });
+    updateResult({ scores: blendshapeScores(categories, result.faceLandmarks?.[0] || []) });
   } catch (error) {
     label.textContent = "Face model could not run.";
     summary.textContent = "The browser could not load or run the on-device face expression model. Check the internet connection for model download, then try again.";
