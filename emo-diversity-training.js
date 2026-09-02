@@ -10,6 +10,7 @@ const label = document.querySelector("#emo-label");
 const summary = document.querySelector("#emo-summary");
 const promptText = document.querySelector("#emo-prompt");
 const emotionList = document.querySelector("#emo-emotions");
+const cueInsightList = document.querySelector("#emo-cue-insights");
 const energyMeter = document.querySelector("#emo-energy");
 const tensionMeter = document.querySelector("#emo-tension");
 const mixedMeter = document.querySelector("#emo-mixed");
@@ -22,6 +23,7 @@ let activeBitmap = null;
 let previousFrame = null;
 let faceLandmarker = null;
 let faceMode = "IMAGE";
+let lastCueInsights = [];
 
 const faceModelUrl = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task";
 const wasmRootUrl = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
@@ -59,7 +61,8 @@ function resetPreview() {
   label.textContent = "No media analyzed yet.";
   summary.textContent = "Your browser-only reflection will appear here after analysis.";
   if (emotionList) emotionList.innerHTML = "";
-  promptText.textContent = "This tool reads simple visual cues like light, contrast, color balance, and movement. It cannot know your inner life. Use it as a prompt to journal honestly.";
+  if (cueInsightList) cueInsightList.innerHTML = "";
+  promptText.textContent = "This tool uses browser-side face expression signals when the face model loads. It cannot know your inner life. Use it as a prompt to journal honestly.";
   [energyMeter, tensionMeter, mixedMeter].forEach((meter) => {
     meter.style.width = "0";
   });
@@ -310,6 +313,15 @@ function blendshapeScores(categories) {
   const disgustCore = Math.max(signalAbove(noseSneer, 0.08, 0.26), signalAbove(mouthUpperUp, 0.08, 0.28));
   const contemptCore = Math.min(signalAbove(smileAsymmetry, 0.12, 0.3), Math.max(signalAbove(mouthPress, 0.14, 0.3), signalAbove(mouthDimple, 0.08, 0.28)));
   const fearCore = Math.min(signalAbove(eyeWide, 0.12, 0.34) + sadnessBrow * 0.24, signalAbove(jawOpen, 0.1, 0.34) + pressStrong * 0.2);
+  lastCueInsights = [
+    { name: "Anger eye cue", value: Math.max(intenseEyes, angryEyes), text: "lowered brow with narrowed eyes, tense wide eyes, or mouth press" },
+    { name: "Surprise cue", value: surpriseCore, text: "wide eyes with jaw opening or stretched mouth" },
+    { name: "Sadness cue", value: sadnessCore, text: "inner brow lift with downturned or heavy mouth signals" },
+    { name: "Disgust cue", value: disgustCore, text: "nose sneer or upper-lip raise" },
+    { name: "Contempt cue", value: contemptCore, text: "one-sided mouth movement with distancing tension" },
+    { name: "Happy cue", value: clearSmile, text: "clear smile signal, especially when sadness cues are low" },
+    { name: "Fear cue", value: fearCore, text: "wide eyes with alert brow or mouth tension" }
+  ].sort((a, b) => b.value - a.value);
 
   return [
     { name: "Happy", value: clamp01(clearSmile * 0.82 + mouthDimple * 0.18 - sadnessCore * 0.42 - sadnessMouth * 0.18 - frown * 0.32 - mouthPress * 0.16) },
@@ -329,6 +341,19 @@ function renderEmotionScores(scores) {
   emotionList.innerHTML = scores.map((score) => {
     const percent = Math.round(score.value * 100);
     return `<div class="emotion-row"><b>${score.name} cue</b><div class="meter"><i style="width:${percent}%"></i></div><span>${percent}%</span></div>`;
+  }).join("");
+}
+
+function renderCueInsights() {
+  if (!cueInsightList) return;
+  const visibleInsights = lastCueInsights.filter((cue) => cue.value >= 0.08).slice(0, 4);
+  if (!visibleInsights.length) {
+    cueInsightList.innerHTML = "<li>No strong micro-cue family stood out.</li>";
+    return;
+  }
+  cueInsightList.innerHTML = visibleInsights.map((cue) => {
+    const percent = Math.round(cue.value * 100);
+    return `<li><b>${cue.name}:</b> ${percent}% - ${cue.text}.</li>`;
   }).join("");
 }
 
@@ -464,6 +489,7 @@ function updateResult(signal) {
   label.textContent = result.label;
   summary.textContent = `${result.summary} Primary signal strength: ${result.confidence}%. The other bars are lower-confidence facial cue scores, not simultaneous emotion labels. This is not a diagnosis or proof of emotion. It is a private reflection cue generated from simple on-device visual signals.`;
   renderEmotionScores(result.scores);
+  renderCueInsights();
   promptText.textContent = result.prompt;
   energyMeter.style.width = `${Math.round(energy * 100)}%`;
   tensionMeter.style.width = `${Math.round(tension * 100)}%`;
@@ -498,6 +524,7 @@ async function analyzeVisibleFrame() {
       label.textContent = "No face expression detected.";
       summary.textContent = "I could not find a clear face expression in this photo or video frame. Try a front-facing, uncropped face with visible eyes and mouth.";
       if (emotionList) emotionList.innerHTML = "";
+      if (cueInsightList) cueInsightList.innerHTML = "";
       setStatus("No face expression found. Nothing was uploaded.");
       return;
     }
