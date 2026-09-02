@@ -268,7 +268,9 @@ function getBlendshape(blendshapes, names) {
 
 function blendshapeScores(categories) {
   const blendshapes = new Map(categories.map((category) => [category.categoryName, category.score]));
-  const smile = (getBlendshape(blendshapes, "mouthSmileLeft") + getBlendshape(blendshapes, "mouthSmileRight")) / 2;
+  const smileLeft = getBlendshape(blendshapes, "mouthSmileLeft");
+  const smileRight = getBlendshape(blendshapes, "mouthSmileRight");
+  const smile = (smileLeft + smileRight) / 2;
   const frown = (getBlendshape(blendshapes, "mouthFrownLeft") + getBlendshape(blendshapes, "mouthFrownRight")) / 2;
   const browInner = getBlendshape(blendshapes, "browInnerUp");
   const browDown = (getBlendshape(blendshapes, "browDownLeft") + getBlendshape(blendshapes, "browDownRight")) / 2;
@@ -280,7 +282,10 @@ function blendshapeScores(categories) {
   const mouthShrug = Math.max(getBlendshape(blendshapes, "mouthShrugLower"), getBlendshape(blendshapes, "mouthShrugUpper"));
   const mouthDimple = (getBlendshape(blendshapes, "mouthDimpleLeft") + getBlendshape(blendshapes, "mouthDimpleRight")) / 2;
   const mouthLowerDown = (getBlendshape(blendshapes, "mouthLowerDownLeft") + getBlendshape(blendshapes, "mouthLowerDownRight")) / 2;
+  const mouthUpperUp = (getBlendshape(blendshapes, "mouthUpperUpLeft") + getBlendshape(blendshapes, "mouthUpperUpRight")) / 2;
   const mouthStretch = (getBlendshape(blendshapes, "mouthStretchLeft") + getBlendshape(blendshapes, "mouthStretchRight")) / 2;
+  const noseSneer = (getBlendshape(blendshapes, "noseSneerLeft") + getBlendshape(blendshapes, "noseSneerRight")) / 2;
+  const smileAsymmetry = Math.abs(smileLeft - smileRight);
   const neutral = getBlendshape(blendshapes, "_neutral");
   const expressive = Math.max(smile, frown, browInner, browDown, eyeWide, jawOpen, mouthPress);
   const browDownStrong = signalAbove(browDown, 0.42, 0.3);
@@ -291,6 +296,9 @@ function blendshapeScores(categories) {
   const sadnessBrow = signalAbove(browInner, 0.05, 0.26);
   const sadnessCore = sadnessMouth * 0.62 + sadnessBrow * 0.38;
   const clearSmile = signalAbove(smile, 0.22, 0.34);
+  const surpriseCore = Math.min(signalAbove(eyeWide, 0.14, 0.34), Math.max(signalAbove(jawOpen, 0.12, 0.34), signalAbove(mouthStretch, 0.12, 0.32)));
+  const disgustCore = Math.max(signalAbove(noseSneer, 0.08, 0.26), signalAbove(mouthUpperUp, 0.08, 0.28));
+  const contemptCore = Math.min(signalAbove(smileAsymmetry, 0.12, 0.3), Math.max(signalAbove(mouthPress, 0.14, 0.3), signalAbove(mouthDimple, 0.08, 0.28)));
   const fearCore = Math.min(signalAbove(eyeWide, 0.12, 0.34) + sadnessBrow * 0.24, signalAbove(jawOpen, 0.1, 0.34) + pressStrong * 0.2);
 
   return [
@@ -298,8 +306,11 @@ function blendshapeScores(categories) {
     { name: "Sad", value: clamp01(sadnessCore * 0.8 + sadnessMouth * 0.2 + eyeDown * 0.1 - browDownStrong * 0.12 - clearSmile * 0.2) },
     { name: "Shameful", value: clamp01(pressStrong * 0.28 + eyeDown * 0.28 + sadnessBrow * 0.22 + sadnessMouth * 0.12 - browDownStrong * 0.18 - smile * 0.36) },
     { name: "Angry", value: clamp01(angerCore * 0.58 + browDownStrong * 0.08 + squintStrong * 0.06 + pressStrong * 0.06 - sadnessBrow * 0.34 - sadnessMouth * 0.24 - smile * 0.5) },
-    { name: "Fearful", value: clamp01(fearCore * 0.72 + signalAbove(eyeWide, 0.12, 0.34) * 0.12 + sadnessBrow * 0.12 + mouthStretch * 0.08 - browDownStrong * 0.16 - smile * 0.24) },
-    { name: "Calm", value: clamp01(neutral * 0.32 + (1 - expressive) * 0.18 + (1 - mouthPress) * 0.06 - Math.max(sadnessCore, clearSmile, angerCore, fearCore, pressStrong) * 0.34 - smile * 0.12) }
+    { name: "Disgusted", value: clamp01(disgustCore * 0.72 + signalAbove(noseSneer, 0.08, 0.26) * 0.14 + signalAbove(mouthUpperUp, 0.08, 0.28) * 0.1 - clearSmile * 0.2 - sadnessCore * 0.14 - angerCore * 0.12) },
+    { name: "Contempt", value: clamp01(contemptCore * 0.62 + signalAbove(smileAsymmetry, 0.12, 0.3) * 0.16 + signalAbove(mouthDimple, 0.08, 0.28) * 0.08 - clearSmile * 0.22 - sadnessCore * 0.14 - disgustCore * 0.1) },
+    { name: "Surprised", value: clamp01(surpriseCore * 0.78 + signalAbove(eyeWide, 0.14, 0.34) * 0.12 + signalAbove(jawOpen, 0.12, 0.34) * 0.1 - sadnessBrow * 0.18 - browDownStrong * 0.24 - pressStrong * 0.12 - smile * 0.14) },
+    { name: "Fearful", value: clamp01(fearCore * 0.64 + sadnessBrow * 0.2 + pressStrong * 0.08 + mouthStretch * 0.06 - surpriseCore * 0.12 - browDownStrong * 0.16 - smile * 0.24) },
+    { name: "Calm", value: clamp01(neutral * 0.32 + (1 - expressive) * 0.18 + (1 - mouthPress) * 0.06 - Math.max(sadnessCore, clearSmile, angerCore, fearCore, surpriseCore, disgustCore, contemptCore, pressStrong) * 0.34 - smile * 0.12) }
   ].sort((a, b) => b.value - a.value);
 }
 
@@ -393,6 +404,36 @@ function classifyScores(scores) {
       prompt: "Journal prompt: What would help me feel safer or more prepared right now?"
     };
   }
+  if (primary.name === "Disgusted") {
+    return {
+      emotion: primary.name,
+      confidence,
+      scores,
+      label: "Primary possible emotion: Disgusted",
+      summary: "The strongest visible cue pattern points toward disgust, aversion, rejection, or a strong no response.",
+      prompt: "Journal prompt: What feels wrong, unwanted, unsafe, or out of alignment?"
+    };
+  }
+  if (primary.name === "Contempt") {
+    return {
+      emotion: primary.name,
+      confidence,
+      scores,
+      label: "Primary possible emotion: Contempt",
+      summary: "The strongest visible cue pattern points toward contempt, dismissal, superiority, or emotional distancing.",
+      prompt: "Journal prompt: Is there disrespect, resentment, disappointment, or a need for distance underneath this?"
+    };
+  }
+  if (primary.name === "Surprised") {
+    return {
+      emotion: primary.name,
+      confidence,
+      scores,
+      label: "Primary possible emotion: Surprised",
+      summary: "The strongest visible cue pattern points toward surprise, startle, sudden attention, or unexpectedness.",
+      prompt: "Journal prompt: What changed, caught my attention, or interrupted my expectation?"
+    };
+  }
   return {
     emotion: primary.name,
     confidence,
@@ -405,8 +446,8 @@ function classifyScores(scores) {
 
 function updateResult(signal) {
   const result = classifyScores(signal.scores);
-  const energy = Math.max(signal.scores.find((score) => score.name === "Happy")?.value || 0, signal.scores.find((score) => score.name === "Angry")?.value || 0, signal.scores.find((score) => score.name === "Fearful")?.value || 0);
-  const tension = Math.max(signal.scores.find((score) => score.name === "Angry")?.value || 0, signal.scores.find((score) => score.name === "Fearful")?.value || 0, signal.scores.find((score) => score.name === "Shameful")?.value || 0);
+  const energy = Math.max(signal.scores.find((score) => score.name === "Happy")?.value || 0, signal.scores.find((score) => score.name === "Angry")?.value || 0, signal.scores.find((score) => score.name === "Fearful")?.value || 0, signal.scores.find((score) => score.name === "Surprised")?.value || 0);
+  const tension = Math.max(signal.scores.find((score) => score.name === "Angry")?.value || 0, signal.scores.find((score) => score.name === "Fearful")?.value || 0, signal.scores.find((score) => score.name === "Shameful")?.value || 0, signal.scores.find((score) => score.name === "Surprised")?.value || 0, signal.scores.find((score) => score.name === "Disgusted")?.value || 0, signal.scores.find((score) => score.name === "Contempt")?.value || 0);
   const mixed = signal.scores[1] ? clamp01(signal.scores[1].value / Math.max(signal.scores[0].value, 0.01)) : 0;
   label.textContent = result.label;
   summary.textContent = `${result.summary} Primary signal strength: ${result.confidence}%. The other bars are lower-confidence facial cue scores, not simultaneous emotion labels. This is not a diagnosis or proof of emotion. It is a private reflection cue generated from simple on-device visual signals.`;
