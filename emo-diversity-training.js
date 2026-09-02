@@ -299,7 +299,7 @@ function blendshapeScores(categories) {
     { name: "Shameful", value: clamp01(pressStrong * 0.28 + eyeDown * 0.28 + sadnessBrow * 0.22 + sadnessMouth * 0.12 - browDownStrong * 0.18 - smile * 0.36) },
     { name: "Angry", value: clamp01(angerCore * 0.58 + browDownStrong * 0.08 + squintStrong * 0.06 + pressStrong * 0.06 - sadnessBrow * 0.34 - sadnessMouth * 0.24 - smile * 0.5) },
     { name: "Fearful", value: clamp01(fearCore * 0.72 + signalAbove(eyeWide, 0.12, 0.34) * 0.12 + sadnessBrow * 0.12 + mouthStretch * 0.08 - browDownStrong * 0.16 - smile * 0.24) },
-    { name: "Calm", value: clamp01(neutral * 0.58 + (1 - expressive) * 0.26 + (1 - mouthPress) * 0.1 - smile * 0.12) }
+    { name: "Calm", value: clamp01(neutral * 0.32 + (1 - expressive) * 0.18 + (1 - mouthPress) * 0.06 - Math.max(sadnessCore, clearSmile, angerCore, fearCore, pressStrong) * 0.34 - smile * 0.12) }
   ].sort((a, b) => b.value - a.value);
 }
 
@@ -317,6 +317,12 @@ function classifyScores(scores) {
   const happy = sortedScores.find((score) => score.name === "Happy");
   const sad = sortedScores.find((score) => score.name === "Sad");
   let primary = sortedScores[0] || { name: "Calm", value: 0 };
+  if (primary.name === "Calm") {
+    const topNonCalm = sortedScores.find((score) => score.name !== "Calm") || { value: 0 };
+    if (topNonCalm.value >= 0.16 || primary.value < 0.34 || primary.value < topNonCalm.value + 0.14) {
+      primary = topNonCalm;
+    }
+  }
   const happySadGap = happy && sad ? Math.abs(happy.value - sad.value) : 1;
   if (happy && sad && happySadGap <= 0.12 && Math.max(happy.value, sad.value) >= 0.18) {
     const confidence = Math.round(Math.max(happy.value, sad.value) * 100);
