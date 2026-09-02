@@ -543,6 +543,34 @@
     line-height: 1.8;
   }
 
+  .step-action {
+    align-items: center;
+    background: rgba(232,247,243,0.74);
+    border: 1px solid rgba(45,122,107,0.18);
+    color: var(--teal-dark);
+    display: inline-flex;
+    font-size: 0.86rem;
+    font-weight: 500;
+    gap: 0.5rem;
+    margin-top: 1.2rem;
+    padding: 0.72rem 0.9rem;
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  }
+
+  .step-action:hover {
+    background: rgba(213,239,232,0.95);
+    border-color: rgba(45,122,107,0.32);
+    transform: translateY(-1px);
+  }
+
+  .step-note {
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.6;
+    margin-top: 0.85rem;
+  }
+
   /* ── ABOUT / PITCH ── */
   #about {
     background: var(--cream);
@@ -2879,6 +2907,8 @@
       <div class="step-num">01</div>
       <div class="step-title">Selfie Analysis</div>
       <p class="step-body">A private selfie or face video can be used as a browser-only reflection signal where available. Outputs should be treated as prompts for self-awareness, not diagnosis or proof of emotion.</p>
+      <a class="step-action" href="/emo-diversity-training" aria-label="Try the private emotion detection module">Try private emotion check <span aria-hidden="true">→</span></a>
+      <p class="step-note"><b>Photo/video is not uploaded.</b> Analysis happens on the user's own device/browser.</p>
     </div>
     <div class="step-card reveal">
       <div class="step-num">02</div>
