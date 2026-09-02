@@ -377,8 +377,8 @@ function blendshapeScores(categories, landmarks = []) {
   const lowAngleSadBias = Math.min(signalAbove(eyeDown, 0.08, 0.3), signalBelow(sadnessMouth, 0.14, 0.14), signalBelow(sadnessBrow, 0.14, 0.14));
   const sadnessCore = clamp01(sadnessMouth * 0.62 + sadnessBrow * 0.38 - lowAngleSadBias * 0.42);
   const clearSmile = signalAbove(smile, 0.22, 0.34);
-  const neutralGuard = signalAbove(neutral, 0.42, 0.34) * signalBelow(expressive, 0.18, 0.22);
-  const shameWithdrawal = Math.min(signalAbove(eyeDown, 0.14, 0.28) + eyeGeometry.narrow * 0.18, Math.max(pressStrong, sadnessBrow, sadnessMouth) + 0.1);
+  const neutralGuard = Math.max(signalAbove(neutral, 0.34, 0.36), signalBelow(expressive, 0.2, 0.24));
+  const shameWithdrawal = Math.min(signalAbove(eyeDown, 0.18, 0.26) + eyeGeometry.narrow * 0.12, Math.max(pressStrong, sadnessBrow, sadnessMouth));
   const shameTension = Math.max(pressStrong, sadnessBrow * 0.84, sadnessMouth * 0.72);
   const surpriseCore = Math.min(signalAbove(eyeWide, 0.14, 0.34), Math.max(signalAbove(jawOpen, 0.12, 0.34), signalAbove(mouthStretch, 0.12, 0.32)));
   const noseSneerSignal = signalAbove(noseSneer, 0.1, 0.28);
@@ -391,7 +391,7 @@ function blendshapeScores(categories, landmarks = []) {
     { name: "Anger eye cue", value: Math.max(angerEyePattern, geometryAnger, eyeGeometry.browClose * eyeGeometry.narrow), text: "lowered brow with narrowed eyes, tense wide eyes, or mouth press" },
     { name: "Surprise cue", value: surpriseCore, text: "wide eyes with jaw opening or stretched mouth" },
     { name: "Sadness cue", value: sadnessCore, text: "inner brow lift with downturned or heavy mouth signals" },
-    { name: "Shame cue", value: Math.max(shameWithdrawal, shameTension), text: "downward gaze combined with pressed mouth, sadness brow, or withdrawal tension" },
+    { name: "Shame cue", value: Math.min(Math.max(shameWithdrawal, shameTension), 1 - neutralGuard * 0.72), text: "downward gaze combined with pressed mouth, sadness brow, or withdrawal tension" },
     { name: "Disgust cue", value: disgustCore, text: "nose sneer with upper-lip raise and low smile signal" },
     { name: "Contempt cue", value: contemptCore, text: "one-sided mouth movement with distancing tension" },
     { name: "Happy cue", value: clearSmile, text: "clear smile signal, especially when sadness cues are low" },
@@ -404,7 +404,9 @@ function blendshapeScores(categories, landmarks = []) {
   const disgustRaw = clamp01(disgustCore * 0.68 + noseSneerSignal * 0.18 + mouthUpperSignal * 0.06 - clearSmile * 0.34 - smile * 0.22 - sadnessCore * 0.14 - angerCore * 0.12);
   const disgustSmileCap = clearSmile > 0.2 && noseSneerSignal < 0.42 ? 0.12 + noseSneerSignal * 0.24 : 1;
   const disgustScore = Math.min(disgustRaw, disgustSmileCap);
-  const shameScore = clamp01(shameWithdrawal * 0.48 + shameTension * 0.28 + sadnessCore * 0.1 - neutralGuard * 0.42 - browDownStrong * 0.16 - smile * 0.34 - clearSmile * 0.18);
+  const shameRaw = clamp01(shameWithdrawal * 0.46 + shameTension * 0.24 + sadnessCore * 0.08 - neutralGuard * 0.58 - browDownStrong * 0.16 - smile * 0.34 - clearSmile * 0.18);
+  const shameNeutralCap = neutralGuard > 0.35 && shameTension < 0.28 ? 0.08 + shameTension * 0.18 : 1;
+  const shameScore = Math.min(shameRaw, shameNeutralCap);
 
   return [
     { name: "Happy", value: clamp01(clearSmile * 0.72 + mouthDimple * 0.14 + signalBelow(eyeExpression, 0.16, 0.2) * 0.08 - sadnessCore * 0.42 - sadnessMouth * 0.18 - frown * 0.32 - mouthPress * 0.16) },
