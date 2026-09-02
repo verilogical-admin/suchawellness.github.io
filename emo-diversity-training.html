@@ -90,7 +90,8 @@
         <p class="eyebrow">Reflection output</p>
         <h3 id="emo-label">No media analyzed yet.</h3>
         <p id="emo-summary">Your browser-only reflection will appear here after analysis.</p>
-        <div class="emotion-list" id="emo-emotions" aria-label="Possible emotion scores"></div>
+        <p class="small"><b>Facial cue scores, not extra emotions:</b> these bars show weak-to-strong visual resemblance to each category. They are not proof that the person feels all of them.</p>
+        <div class="emotion-list" id="emo-emotions" aria-label="Facial cue scores"></div>
         <div class="score"><span>Visible energy signal</span><div class="meter"><i id="emo-energy"></i></div><span>Visual tension signal</span><div class="meter"><i id="emo-tension"></i></div><span>Mixed-state signal</span><div class="meter"><i id="emo-mixed"></i></div></div>
         <p class="small" id="emo-prompt">This tool uses browser-side face expression signals when the face model loads. It cannot know your inner life. Use it as a prompt to journal honestly.</p>
       </article>
@@ -107,6 +108,6 @@
   </section>
 </main>
 <footer class="footer"><span>Emo Diversity Lab</span><a href="/skill-lab">Back to Skill Lab</a><a href="/legal-disclaimer">Legal Disclaimer</a></footer>
-<script type="module" src="/emo-diversity-training.js?v=2026-09-02-sad-boost-angry-gate"></script>
+<script type="module" src="/emo-diversity-training.js?v=2026-09-02-angry-strict-cues"></script>
 </body>
 </html>

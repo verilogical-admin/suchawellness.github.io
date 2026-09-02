@@ -283,9 +283,9 @@ function blendshapeScores(categories) {
   const mouthStretch = (getBlendshape(blendshapes, "mouthStretchLeft") + getBlendshape(blendshapes, "mouthStretchRight")) / 2;
   const neutral = getBlendshape(blendshapes, "_neutral");
   const expressive = Math.max(smile, frown, browInner, browDown, eyeWide, jawOpen, mouthPress);
-  const browDownStrong = signalAbove(browDown, 0.32, 0.34);
-  const squintStrong = signalAbove(eyeSquint, 0.24, 0.32);
-  const pressStrong = signalAbove(mouthPress, 0.22, 0.32);
+  const browDownStrong = signalAbove(browDown, 0.42, 0.3);
+  const squintStrong = signalAbove(eyeSquint, 0.32, 0.28);
+  const pressStrong = signalAbove(mouthPress, 0.3, 0.28);
   const angerCore = Math.min(browDownStrong, Math.max(squintStrong, pressStrong));
   const sadnessMouth = Math.max(signalAbove(frown, 0.03, 0.22), signalAbove(mouthShrug, 0.04, 0.24), signalAbove(mouthLowerDown, 0.04, 0.26));
   const sadnessBrow = signalAbove(browInner, 0.05, 0.26);
@@ -296,7 +296,7 @@ function blendshapeScores(categories) {
     { name: "Happy", value: clamp01(smile * 1.4 + mouthDimple * 0.22 - frown * 0.35 - mouthPress * 0.12) },
     { name: "Sad", value: clamp01(sadnessCore * 0.74 + sadnessMouth * 0.18 + eyeDown * 0.1 - browDownStrong * 0.12 - smile * 0.34) },
     { name: "Shameful", value: clamp01(pressStrong * 0.28 + eyeDown * 0.28 + sadnessBrow * 0.22 + sadnessMouth * 0.12 - browDownStrong * 0.18 - smile * 0.36) },
-    { name: "Angry", value: clamp01(angerCore * 0.7 + browDownStrong * 0.12 + squintStrong * 0.08 + pressStrong * 0.08 - sadnessBrow * 0.28 - sadnessMouth * 0.18 - smile * 0.42) },
+    { name: "Angry", value: clamp01(angerCore * 0.58 + browDownStrong * 0.08 + squintStrong * 0.06 + pressStrong * 0.06 - sadnessBrow * 0.34 - sadnessMouth * 0.24 - smile * 0.5) },
     { name: "Fearful", value: clamp01(fearCore * 0.72 + signalAbove(eyeWide, 0.12, 0.34) * 0.12 + sadnessBrow * 0.12 + mouthStretch * 0.08 - browDownStrong * 0.16 - smile * 0.24) },
     { name: "Calm", value: clamp01(neutral * 0.58 + (1 - expressive) * 0.26 + (1 - mouthPress) * 0.1 - smile * 0.12) }
   ].sort((a, b) => b.value - a.value);
@@ -306,12 +306,20 @@ function renderEmotionScores(scores) {
   if (!emotionList) return;
   emotionList.innerHTML = scores.map((score) => {
     const percent = Math.round(score.value * 100);
-    return `<div class="emotion-row"><b>${score.name}</b><div class="meter"><i style="width:${percent}%"></i></div><span>${percent}%</span></div>`;
+    return `<div class="emotion-row"><b>${score.name} cue</b><div class="meter"><i style="width:${percent}%"></i></div><span>${percent}%</span></div>`;
   }).join("");
 }
 
 function classifyScores(scores) {
-  const primary = scores[0] || { name: "Calm", value: 0 };
+  const sortedScores = [...scores].sort((a, b) => b.value - a.value);
+  const angry = sortedScores.find((score) => score.name === "Angry");
+  let primary = sortedScores[0] || { name: "Calm", value: 0 };
+  if (primary.name === "Angry") {
+    const nextNonAngry = sortedScores.find((score) => score.name !== "Angry") || { value: 0 };
+    if (!angry || angry.value < 0.42 || angry.value < nextNonAngry.value + 0.12) {
+      primary = nextNonAngry;
+    }
+  }
   const confidence = Math.round(primary.value * 100);
 
   if (primary.name === "Happy") {
@@ -380,7 +388,7 @@ function updateResult(signal) {
   const tension = Math.max(signal.scores.find((score) => score.name === "Angry")?.value || 0, signal.scores.find((score) => score.name === "Fearful")?.value || 0, signal.scores.find((score) => score.name === "Shameful")?.value || 0);
   const mixed = signal.scores[1] ? clamp01(signal.scores[1].value / Math.max(signal.scores[0].value, 0.01)) : 0;
   label.textContent = result.label;
-  summary.textContent = `${result.summary} Signal strength: ${result.confidence}%. This is not a diagnosis or proof of emotion. It is a private reflection cue generated from simple on-device visual signals.`;
+  summary.textContent = `${result.summary} Primary signal strength: ${result.confidence}%. The other bars are lower-confidence facial cue scores, not simultaneous emotion labels. This is not a diagnosis or proof of emotion. It is a private reflection cue generated from simple on-device visual signals.`;
   renderEmotionScores(result.scores);
   promptText.textContent = result.prompt;
   energyMeter.style.width = `${Math.round(energy * 100)}%`;
