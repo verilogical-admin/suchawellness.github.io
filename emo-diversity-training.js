@@ -236,7 +236,7 @@ function classifyLiveCameraScores(scores) {
   const angry = scores.find((score) => score.name === "Angry") || { value: 0 };
   const calm = scores.find((score) => score.name === "Calm") || { value: 0 };
   const nextNonAngry = scores.find((score) => score.name !== "Angry") || { value: 0 };
-  const angerIsClear = angry.value >= 0.52 && angry.value >= nextNonAngry.value + 0.1 && angry.value >= calm.value + 0.14;
+  const angerIsClear = angry.value >= 0.46 && angry.value >= nextNonAngry.value + 0.06 && angry.value >= calm.value + 0.08;
   liveAngerStreak = angerIsClear ? liveAngerStreak + 1 : 0;
   if (liveFrameCount <= 3 || (classified.emotion === "Angry" && liveAngerStreak < 2)) {
     return { emotion: "Calm", confidence: Math.round(Math.max(calm.value, 0) * 100) };
@@ -520,10 +520,10 @@ function blendshapeScores(categories, landmarks = []) {
     { name: "Fear cue", value: fearCore, text: "wide eyes with alert brow or mouth tension" }
   ].sort((a, b) => b.value - a.value);
   const eyeOnlyAnger = Math.max(angerEyePattern, geometryAnger);
-  const angerNeutralGuard = neutralGuard * signalBelow(angerEyePattern, 0.56, 0.32);
-  const angryRaw = clamp01(angerCore * 0.5 + angerEyePattern * 0.18 + intenseEyes * 0.06 + eyeGeometry.browSlant * 0.06 + browDownStrong * 0.03 + eyeOnlyAnger * 0.04 - sadnessBrow * 0.18 - sadnessMouth * 0.12 - clearSmile * 0.42 - smile * 0.28 - angerNeutralGuard * 0.28);
+  const angerNeutralGuard = neutralGuard * signalBelow(angerEyePattern, 0.38, 0.26);
+  const angryRaw = clamp01(angerCore * 0.56 + angerEyePattern * 0.24 + intenseEyes * 0.08 + eyeGeometry.browSlant * 0.06 + browDownStrong * 0.04 + eyeOnlyAnger * 0.05 - sadnessBrow * 0.14 - sadnessMouth * 0.1 - clearSmile * 0.4 - smile * 0.24 - angerNeutralGuard * 0.16);
   const angrySmileCap = clearSmile > 0.2 && angerEyePattern < 0.62 ? 0.18 + angerEyePattern * 0.18 : 1;
-  const angryNeutralCap = neutralGuard > 0.28 && angerEyePattern < 0.58 ? 0.12 + angerEyePattern * 0.22 : 1;
+  const angryNeutralCap = neutralGuard > 0.34 && angerEyePattern < 0.36 ? 0.16 + angerEyePattern * 0.34 : 1;
   const angryScore = Math.min(angryRaw, angrySmileCap, angryNeutralCap);
   const disgustRaw = clamp01(disgustCore * 0.68 + noseSneerSignal * 0.18 + mouthUpperSignal * 0.06 - clearSmile * 0.34 - smile * 0.22 - sadnessCore * 0.14 - angerCore * 0.12);
   const disgustSmileCap = clearSmile > 0.2 && noseSneerSignal < 0.42 ? 0.12 + noseSneerSignal * 0.24 : 1;
@@ -545,7 +545,7 @@ function blendshapeScores(categories, landmarks = []) {
     { name: "Angry", value: angryScore },
     { name: "Disgusted", value: disgustScore },
     { name: "Contempt", value: clamp01(contemptCore * 0.62 + signalAbove(smileAsymmetry, 0.12, 0.3) * 0.16 + signalAbove(mouthDimple, 0.08, 0.28) * 0.08 - clearSmile * 0.22 - sadnessCore * 0.14 - disgustCore * 0.1) },
-    { name: "Surprised", value: clamp01(surpriseCore * 0.78 + eyeWideStrong * 0.12 + signalAbove(jawOpen, 0.12, 0.34) * 0.1 - roundWideEyeIntensity * 0.14 - wideAnger * 0.3 - intenseEyes * 0.16 - sadnessBrow * 0.18 - browDownStrong * 0.24 - pressStrong * 0.12 - smile * 0.14) },
+    { name: "Surprised", value: clamp01(surpriseCore * 0.88 + eyeWideStrong * 0.2 + signalAbove(jawOpen, 0.1, 0.34) * 0.14 + signalAbove(mouthStretch, 0.12, 0.32) * 0.08 - wideAnger * 0.14 - intenseEyes * 0.08 - sadnessBrow * 0.12 - browDownStrong * 0.16 - pressStrong * 0.08 - smile * 0.12) },
     { name: "Fearful", value: clamp01(fearCore * 0.52 + Math.max(eyeWideStrong, eyeGeometry.wide) * 0.18 + sadnessBrow * 0.2 + pressStrong * 0.06 + mouthStretch * 0.04 - surpriseCore * 0.12 - browDownStrong * 0.16 - smile * 0.24) },
     { name: "Calm", value: clamp01(calmBase * 0.34 + (1 - expressive) * 0.1 + (1 - mouthPress) * 0.04 - Math.max(finalSadScore * 0.72, clearSmile, angerCore, intenseEyes * 0.82, fearCore, surpriseCore, disgustCore, contemptCore, pressStrong) * 0.48 - smile * 0.1) }
   ].sort((a, b) => b.value - a.value);
@@ -577,14 +577,15 @@ function classifyScores(scores) {
   const angry = sortedScores.find((score) => score.name === "Angry");
   const happy = sortedScores.find((score) => score.name === "Happy");
   const sad = sortedScores.find((score) => score.name === "Sad");
+  const surprised = sortedScores.find((score) => score.name === "Surprised");
   const calm = sortedScores.find((score) => score.name === "Calm");
   let primary = sortedScores[0] || { name: "Calm", value: 0 };
   const topNonCalm = sortedScores.find((score) => score.name !== "Calm") || { value: 0 };
-  if (calm && topNonCalm.value < 0.4) {
+  if (calm && topNonCalm.value < 0.34) {
     primary = calm;
   }
   if (primary.name === "Calm") {
-    if (topNonCalm.value >= 0.42 && (primary.value < 0.24 || primary.value < topNonCalm.value)) {
+    if (topNonCalm.value >= 0.36 && (primary.value < 0.24 || primary.value < topNonCalm.value)) {
       primary = topNonCalm;
     }
   }
@@ -605,11 +606,14 @@ function classifyScores(scores) {
   }
   if (primary.name === "Angry") {
     const nextNonAngry = sortedScores.find((score) => score.name !== "Angry") || { value: 0 };
-    if (!angry || angry.value < 0.5 || angry.value < nextNonAngry.value + 0.1) {
+    if (!angry || angry.value < 0.44 || angry.value < nextNonAngry.value + 0.06) {
       primary = calm || nextNonAngry;
     }
-  } else if (angry && angry.value >= 0.56 && primary.value <= angry.value - 0.02) {
+  } else if (angry && angry.value >= 0.5 && primary.value <= angry.value) {
     primary = angry;
+  }
+  if (surprised && surprised.value >= 0.42 && primary.value <= surprised.value + 0.04) {
+    primary = surprised;
   }
   const confidence = Math.round(primary.value * 100);
 
