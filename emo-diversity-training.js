@@ -236,8 +236,8 @@ function classifyLiveCameraScores(scores) {
   const angry = scores.find((score) => score.name === "Angry") || { value: 0 };
   const calm = scores.find((score) => score.name === "Calm") || { value: 0 };
   const nextNonAngry = scores.find((score) => score.name !== "Angry") || { value: 0 };
-  const angerIsUnmistakable = angry.value >= 0.74 && angry.value >= nextNonAngry.value + 0.22 && angry.value >= calm.value + 0.26;
-  liveAngerStreak = angerIsUnmistakable ? liveAngerStreak + 1 : 0;
+  const angerIsClear = angry.value >= 0.52 && angry.value >= nextNonAngry.value + 0.1 && angry.value >= calm.value + 0.14;
+  liveAngerStreak = angerIsClear ? liveAngerStreak + 1 : 0;
   if (liveFrameCount <= 3 || (classified.emotion === "Angry" && liveAngerStreak < 2)) {
     return { emotion: "Calm", confidence: Math.round(Math.max(calm.value, 0) * 100) };
   }
@@ -605,10 +605,10 @@ function classifyScores(scores) {
   }
   if (primary.name === "Angry") {
     const nextNonAngry = sortedScores.find((score) => score.name !== "Angry") || { value: 0 };
-    if (!angry || angry.value < 0.58 || angry.value < nextNonAngry.value + 0.18) {
+    if (!angry || angry.value < 0.5 || angry.value < nextNonAngry.value + 0.1) {
       primary = calm || nextNonAngry;
     }
-  } else if (angry && angry.value >= 0.62 && primary.value <= angry.value - 0.04) {
+  } else if (angry && angry.value >= 0.56 && primary.value <= angry.value - 0.02) {
     primary = angry;
   }
   const confidence = Math.round(primary.value * 100);
