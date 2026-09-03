@@ -378,8 +378,9 @@ function blendshapeScores(categories, landmarks = []) {
   const sadnessCore = clamp01(sadnessMouth * 0.62 + sadnessBrow * 0.38 - lowAngleSadBias * 0.42);
   const clearSmile = signalAbove(smile, 0.22, 0.34);
   const neutralGuard = Math.max(signalAbove(neutral, 0.34, 0.36), signalBelow(expressive, 0.2, 0.24));
-  const shameWithdrawal = Math.min(signalAbove(eyeDown, 0.18, 0.26) + eyeGeometry.narrow * 0.12, Math.max(pressStrong, sadnessBrow, sadnessMouth));
+  const shameWithdrawal = Math.min(signalAbove(eyeDown, 0.22, 0.24) + eyeGeometry.narrow * 0.08, Math.max(pressStrong, sadnessBrow, sadnessMouth));
   const shameTension = Math.max(pressStrong, sadnessBrow * 0.84, sadnessMouth * 0.72);
+  const shamePattern = Math.min(shameWithdrawal, shameTension);
   const surpriseCore = Math.min(signalAbove(eyeWide, 0.14, 0.34), Math.max(signalAbove(jawOpen, 0.12, 0.34), signalAbove(mouthStretch, 0.12, 0.32)));
   const noseSneerSignal = signalAbove(noseSneer, 0.1, 0.28);
   const mouthUpperSignal = signalAbove(mouthUpperUp, 0.12, 0.3);
@@ -391,7 +392,7 @@ function blendshapeScores(categories, landmarks = []) {
     { name: "Anger eye cue", value: Math.max(angerEyePattern, geometryAnger, eyeGeometry.browClose * eyeGeometry.narrow), text: "lowered brow with narrowed eyes, tense wide eyes, or mouth press" },
     { name: "Surprise cue", value: surpriseCore, text: "wide eyes with jaw opening or stretched mouth" },
     { name: "Sadness cue", value: sadnessCore, text: "inner brow lift with downturned or heavy mouth signals" },
-    { name: "Shame cue", value: Math.min(Math.max(shameWithdrawal, shameTension), 1 - neutralGuard * 0.72), text: "downward gaze combined with pressed mouth, sadness brow, or withdrawal tension" },
+    { name: "Self-conscious cue", value: Math.min(shamePattern, 1 - neutralGuard * 0.82), text: "downward gaze combined with pressed mouth, sadness brow, or withdrawal tension" },
     { name: "Disgust cue", value: disgustCore, text: "nose sneer with upper-lip raise and low smile signal" },
     { name: "Contempt cue", value: contemptCore, text: "one-sided mouth movement with distancing tension" },
     { name: "Happy cue", value: clearSmile, text: "clear smile signal, especially when sadness cues are low" },
@@ -404,14 +405,14 @@ function blendshapeScores(categories, landmarks = []) {
   const disgustRaw = clamp01(disgustCore * 0.68 + noseSneerSignal * 0.18 + mouthUpperSignal * 0.06 - clearSmile * 0.34 - smile * 0.22 - sadnessCore * 0.14 - angerCore * 0.12);
   const disgustSmileCap = clearSmile > 0.2 && noseSneerSignal < 0.42 ? 0.12 + noseSneerSignal * 0.24 : 1;
   const disgustScore = Math.min(disgustRaw, disgustSmileCap);
-  const shameRaw = clamp01(shameWithdrawal * 0.46 + shameTension * 0.24 + sadnessCore * 0.08 - neutralGuard * 0.58 - browDownStrong * 0.16 - smile * 0.34 - clearSmile * 0.18);
-  const shameNeutralCap = neutralGuard > 0.35 && shameTension < 0.28 ? 0.08 + shameTension * 0.18 : 1;
-  const shameScore = Math.min(shameRaw, shameNeutralCap);
+  const selfConsciousRaw = clamp01(shamePattern * 0.68 + shameWithdrawal * 0.12 + sadnessCore * 0.04 - neutralGuard * 0.7 - browDownStrong * 0.16 - smile * 0.34 - clearSmile * 0.18);
+  const selfConsciousNeutralCap = neutralGuard > 0.28 && shameTension < 0.34 ? 0.04 + shamePattern * 0.12 : 1;
+  const selfConsciousScore = Math.min(selfConsciousRaw, selfConsciousNeutralCap);
 
   return [
     { name: "Happy", value: clamp01(clearSmile * 0.72 + mouthDimple * 0.14 + signalBelow(eyeExpression, 0.16, 0.2) * 0.08 - sadnessCore * 0.42 - sadnessMouth * 0.18 - frown * 0.32 - mouthPress * 0.16) },
     { name: "Sad", value: clamp01(sadnessCore * 0.7 + sadnessMouth * 0.16 + Math.max(eyeDown, sadnessBrow, eyeGeometry.browClose * 0.32) * 0.18 - lowAngleSadBias * 0.34 - browDownStrong * 0.12 - clearSmile * 0.2) },
-    { name: "Shameful", value: shameScore },
+    { name: "Self-conscious", value: selfConsciousScore < 0.12 ? 0 : selfConsciousScore },
     { name: "Angry", value: angryScore },
     { name: "Disgusted", value: disgustScore },
     { name: "Contempt", value: clamp01(contemptCore * 0.62 + signalAbove(smileAsymmetry, 0.12, 0.3) * 0.16 + signalAbove(mouthDimple, 0.08, 0.28) * 0.08 - clearSmile * 0.22 - sadnessCore * 0.14 - disgustCore * 0.1) },
@@ -496,13 +497,13 @@ function classifyScores(scores) {
       prompt: "Journal prompt: What loss, disappointment, need, or fatigue might want care?"
     };
   }
-  if (primary.name === "Shameful") {
+  if (primary.name === "Self-conscious") {
     return {
       emotion: primary.name,
       confidence,
       scores,
-      label: "Primary possible emotion: Shameful",
-      summary: "The strongest visible cue pattern points toward shame, guardedness, self-consciousness, or wanting to withdraw.",
+      label: "Primary possible emotion: Self-conscious",
+      summary: "The strongest visible cue pattern may point toward guardedness, self-consciousness, embarrassment, or wanting to withdraw. This is a cautious cue, not proof of shame.",
       prompt: "Journal prompt: What part of me needs dignity, reassurance, or protection from harsh judgment?"
     };
   }
@@ -569,7 +570,7 @@ function classifyScores(scores) {
 function updateResult(signal) {
   const result = classifyScores(signal.scores);
   const energy = Math.max(signal.scores.find((score) => score.name === "Happy")?.value || 0, signal.scores.find((score) => score.name === "Angry")?.value || 0, signal.scores.find((score) => score.name === "Fearful")?.value || 0, signal.scores.find((score) => score.name === "Surprised")?.value || 0);
-  const tension = Math.max(signal.scores.find((score) => score.name === "Angry")?.value || 0, signal.scores.find((score) => score.name === "Fearful")?.value || 0, signal.scores.find((score) => score.name === "Shameful")?.value || 0, signal.scores.find((score) => score.name === "Surprised")?.value || 0, signal.scores.find((score) => score.name === "Disgusted")?.value || 0, signal.scores.find((score) => score.name === "Contempt")?.value || 0);
+  const tension = Math.max(signal.scores.find((score) => score.name === "Angry")?.value || 0, signal.scores.find((score) => score.name === "Fearful")?.value || 0, signal.scores.find((score) => score.name === "Self-conscious")?.value || 0, signal.scores.find((score) => score.name === "Surprised")?.value || 0, signal.scores.find((score) => score.name === "Disgusted")?.value || 0, signal.scores.find((score) => score.name === "Contempt")?.value || 0);
   const mixed = signal.scores[1] ? clamp01(signal.scores[1].value / Math.max(signal.scores[0].value, 0.01)) : 0;
   label.textContent = result.label;
   summary.textContent = `${result.summary} Primary signal strength: ${result.confidence}%. The other bars are lower-confidence facial cue scores, not simultaneous emotion labels. This is not a diagnosis or proof of emotion. It is a private reflection cue generated from simple on-device visual signals.`;
