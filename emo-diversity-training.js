@@ -6,6 +6,7 @@ const startCameraButton = document.querySelector("#emo-camera-start");
 const analyzeButton = document.querySelector("#emo-analyze");
 const clearButton = document.querySelector("#emo-clear");
 const statusText = document.querySelector("#emo-status");
+const resultPanel = document.querySelector(".result");
 const label = document.querySelector("#emo-label");
 const summary = document.querySelector("#emo-summary");
 const promptText = document.querySelector("#emo-prompt");
@@ -76,6 +77,11 @@ function setPreviewMedia(element) {
 
 function scrollToPreview() {
   preview?.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function scrollToResultOnMobile() {
+  if (!window.matchMedia("(max-width: 900px)").matches) return;
+  resultPanel?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function loadFile(file) {
@@ -600,6 +606,7 @@ function updateResult(signal) {
   tensionMeter.style.width = `${Math.round(tension * 100)}%`;
   mixedMeter.style.width = `${Math.round(mixed * 100)}%`;
   setStatus("Analysis complete locally in this browser. No upload happened.");
+  scrollToResultOnMobile();
 }
 
 async function analyzeVisibleFrame() {
