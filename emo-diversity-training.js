@@ -225,7 +225,7 @@ async function analyzeLiveCameraFrame(video) {
     const categories = result.faceBlendshapes?.[0]?.categories;
     if (categories?.length) {
       const scores = blendshapeScores(categories, result.faceLandmarks?.[0] || []);
-      const classified = updateResult({ scores }, { scrollMobile: false });
+      const classified = classifyScores(scores);
       setLiveScoreOverlay(`${classified.emotion}: ${classified.confidence}%`, "Live private score");
       setStatus("Camera is running locally. Live score updates on this device.");
     } else {
