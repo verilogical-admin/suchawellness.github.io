@@ -231,13 +231,10 @@ async function analyzeLiveCameraFrame(video) {
     return;
   }
   try {
-    const landmarker = await ensureFaceLandmarker("VIDEO");
+    const analysis = await analyzeMediaFrame(video);
     if (!liveScoreActive || activeMedia !== video) return;
-    const result = landmarker.detectForVideo(video, performance.now());
-    const categories = result.faceBlendshapes?.[0]?.categories;
-    if (categories?.length) {
-      const scores = blendshapeScores(categories, result.faceLandmarks?.[0] || []);
-      const classified = classifyScores(scores);
+    if (analysis?.scores?.length) {
+      const classified = updateResult(analysis, { scrollMobile: false, setStatusMessage: false });
       setLiveScoreOverlay(`${classified.emotion}: ${classified.confidence}%`, "Live private score");
       setStatus("Camera is running locally. Live score updates on this device.");
     } else {
@@ -248,6 +245,15 @@ async function analyzeLiveCameraFrame(video) {
     setStatus(error?.message || "Face expression model is loading.");
   }
   liveScoreTimer = window.setTimeout(() => analyzeLiveCameraFrame(video), 900);
+}
+
+async function analyzeMediaFrame(media) {
+  const mode = media instanceof HTMLVideoElement ? "VIDEO" : "IMAGE";
+  const landmarker = await ensureFaceLandmarker(mode);
+  const result = mode === "VIDEO" ? landmarker.detectForVideo(media, performance.now()) : landmarker.detect(media);
+  const categories = result.faceBlendshapes?.[0]?.categories;
+  if (!categories?.length) return null;
+  return { scores: blendshapeScores(categories, result.faceLandmarks?.[0] || []) };
 }
 
 function frameSourceReady(media) {
@@ -701,7 +707,7 @@ function classifyScores(scores) {
 }
 
 function updateResult(signal, options = {}) {
-  const { scrollMobile = true } = options;
+  const { scrollMobile = true, setStatusMessage = true } = options;
   const result = classifyScores(signal.scores);
   const energy = Math.max(signal.scores.find((score) => score.name === "Happy")?.value || 0, signal.scores.find((score) => score.name === "Angry")?.value || 0, signal.scores.find((score) => score.name === "Fearful")?.value || 0, signal.scores.find((score) => score.name === "Surprised")?.value || 0);
   const tension = Math.max(signal.scores.find((score) => score.name === "Angry")?.value || 0, signal.scores.find((score) => score.name === "Fearful")?.value || 0, signal.scores.find((score) => score.name === "Self-conscious")?.value || 0, signal.scores.find((score) => score.name === "Surprised")?.value || 0, signal.scores.find((score) => score.name === "Disgusted")?.value || 0, signal.scores.find((score) => score.name === "Contempt")?.value || 0);
@@ -714,7 +720,7 @@ function updateResult(signal, options = {}) {
   energyMeter.style.width = `${Math.round(energy * 100)}%`;
   tensionMeter.style.width = `${Math.round(tension * 100)}%`;
   mixedMeter.style.width = `${Math.round(mixed * 100)}%`;
-  setStatus("Analysis complete locally in this browser. No upload happened.");
+  if (setStatusMessage) setStatus("Analysis complete locally in this browser. No upload happened.");
   if (scrollMobile) scrollToResultOnMobile();
   return result;
 }
@@ -737,12 +743,9 @@ async function analyzeVisibleFrame() {
     setStatus("Choose a loaded photo/video or start the camera before analyzing.");
     return;
   }
-  const mode = media instanceof HTMLVideoElement ? "VIDEO" : "IMAGE";
   try {
-    const landmarker = await ensureFaceLandmarker(mode);
-    const result = mode === "VIDEO" ? landmarker.detectForVideo(media, performance.now()) : landmarker.detect(media);
-    const categories = result.faceBlendshapes?.[0]?.categories;
-    if (!categories?.length) {
+    const analysis = await analyzeMediaFrame(media);
+    if (!analysis?.scores?.length) {
       label.textContent = "No face expression detected.";
       summary.textContent = "I could not find a clear face expression in this photo or video frame. Try a front-facing, uncropped face with visible eyes and mouth.";
       if (emotionList) emotionList.innerHTML = "";
@@ -750,7 +753,7 @@ async function analyzeVisibleFrame() {
       setStatus("No face expression found. Nothing was uploaded.");
       return;
     }
-    updateResult({ scores: blendshapeScores(categories, result.faceLandmarks?.[0] || []) });
+    updateResult(analysis);
   } catch (error) {
     label.textContent = "Face model could not run.";
     summary.textContent = "The browser could not load or run the on-device face expression model. Check the internet connection for model download, then try again.";
