@@ -27,6 +27,8 @@ let faceMode = "IMAGE";
 let lastCueInsights = [];
 let liveScoreTimer = null;
 let liveScoreActive = false;
+let liveFrameCount = 0;
+let liveAngerStreak = 0;
 
 const faceModelUrl = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task";
 const wasmRootUrl = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
@@ -188,7 +190,7 @@ async function startCamera() {
     setLiveScoreOverlay("Starting camera...", "Private on-device analysis");
     if (!isMobileLayout()) video.addEventListener("loadedmetadata", scrollToPreview, { once: true });
     video.addEventListener("loadedmetadata", () => {
-      if (isMobileLayout()) startLiveCameraScore(video);
+      if (isMobileLayout() && !liveScoreActive) startLiveCameraScore(video);
     }, { once: true });
     if (isMobileLayout()) startLiveCameraScore(video);
     setStatus("Camera is running locally in this browser. Nothing is uploaded.");
@@ -199,6 +201,8 @@ async function startCamera() {
 
 function stopLiveCameraScore() {
   liveScoreActive = false;
+  liveFrameCount = 0;
+  liveAngerStreak = 0;
   if (liveScoreTimer) window.clearTimeout(liveScoreTimer);
   liveScoreTimer = null;
   clearLiveScoreOverlay();
@@ -208,8 +212,24 @@ function startLiveCameraScore(video) {
   stopLiveCameraScore();
   if (!isMobileLayout()) return;
   liveScoreActive = true;
+  liveFrameCount = 0;
+  liveAngerStreak = 0;
   setLiveScoreOverlay("Calm: 0%", "Warming up private live score");
   analyzeLiveCameraFrame(video);
+}
+
+function classifyLiveCameraScores(scores) {
+  liveFrameCount += 1;
+  const classified = classifyScores(scores);
+  const angry = scores.find((score) => score.name === "Angry") || { value: 0 };
+  const calm = scores.find((score) => score.name === "Calm") || { value: 0 };
+  const nextNonAngry = scores.find((score) => score.name !== "Angry") || { value: 0 };
+  const angerIsUnmistakable = angry.value >= 0.74 && angry.value >= nextNonAngry.value + 0.22 && angry.value >= calm.value + 0.26;
+  liveAngerStreak = angerIsUnmistakable ? liveAngerStreak + 1 : 0;
+  if (liveFrameCount <= 3 || (classified.emotion === "Angry" && liveAngerStreak < 2)) {
+    return { emotion: "Calm", confidence: Math.round(Math.max(calm.value, 0) * 100) };
+  }
+  return classified;
 }
 
 async function analyzeLiveCameraFrame(video) {
@@ -225,7 +245,7 @@ async function analyzeLiveCameraFrame(video) {
     const categories = result.faceBlendshapes?.[0]?.categories;
     if (categories?.length) {
       const scores = blendshapeScores(categories, result.faceLandmarks?.[0] || []);
-      const classified = classifyScores(scores);
+      const classified = classifyLiveCameraScores(scores);
       setLiveScoreOverlay(`${classified.emotion}: ${classified.confidence}%`, "Live private score");
       setStatus("Camera is running locally. Live score updates on this device.");
     } else {
