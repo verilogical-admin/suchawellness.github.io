@@ -27,6 +27,7 @@ let faceMode = "IMAGE";
 let lastCueInsights = [];
 let liveScoreTimer = null;
 let liveScoreActive = false;
+let liveScoreFrames = [];
 
 const faceModelUrl = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task";
 const wasmRootUrl = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
@@ -240,6 +241,7 @@ async function startCamera() {
 
 function stopLiveCameraScore() {
   liveScoreActive = false;
+  liveScoreFrames = [];
   if (liveScoreTimer) window.clearTimeout(liveScoreTimer);
   liveScoreTimer = null;
   clearLiveScoreOverlay();
@@ -249,6 +251,7 @@ function startLiveCameraScore(video) {
   stopLiveCameraScore();
   if (!isMobileLayout()) return;
   liveScoreActive = true;
+  liveScoreFrames = [];
   setLiveScoreOverlay("Looking for face...", "Same private analyzer");
   analyzeLiveCameraFrame(video);
 }
@@ -263,7 +266,13 @@ async function analyzeLiveCameraFrame(video) {
     const analysis = await analyzeMediaFrame(video);
     if (!liveScoreActive || activeMedia !== video) return;
     if (analysis?.scores?.length) {
-      const classified = updateResult(analysis, { scrollMobile: false, setStatusMessage: false });
+      const liveAnalysis = stableLiveCameraAnalysis(analysis);
+      if (!liveAnalysis) {
+        setLiveScoreOverlay("Reading face...", "Stabilizing live score");
+        liveScoreTimer = window.setTimeout(() => analyzeLiveCameraFrame(video), 450);
+        return;
+      }
+      const classified = updateResult(liveAnalysis, { scrollMobile: false, setStatusMessage: false });
       setLiveScoreOverlay(`${classified.emotion}: ${classified.confidence}%`, "Same private analyzer");
       setStatus("Camera is running locally. Live score updates on this device.");
     } else {
@@ -274,6 +283,22 @@ async function analyzeLiveCameraFrame(video) {
     setStatus(error?.message || "Face expression model is loading.");
   }
   liveScoreTimer = window.setTimeout(() => analyzeLiveCameraFrame(video), 900);
+}
+
+function stableLiveCameraAnalysis(analysis) {
+  liveScoreFrames.push(analysis.scores);
+  liveScoreFrames = liveScoreFrames.slice(-4);
+  if (liveScoreFrames.length < 3) return null;
+
+  const scoreNames = liveScoreFrames[0].map((score) => score.name);
+  const averagedScores = scoreNames.map((name) => {
+    const total = liveScoreFrames.reduce((sum, frameScores) => {
+      return sum + (frameScores.find((score) => score.name === name)?.value || 0);
+    }, 0);
+    return { name, value: total / liveScoreFrames.length };
+  }).sort((a, b) => b.value - a.value);
+
+  return { scores: averagedScores };
 }
 
 async function analyzeMediaFrame(media) {
