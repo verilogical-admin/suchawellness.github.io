@@ -25,10 +25,6 @@ let previousFrame = null;
 let faceLandmarker = null;
 let faceMode = "IMAGE";
 let lastCueInsights = [];
-let liveScoreTimer = null;
-let liveScoreActive = false;
-let liveScoreFrames = [];
-let liveScoreClassifications = [];
 
 const faceModelUrl = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task";
 const wasmRootUrl = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
@@ -228,99 +224,16 @@ async function startCamera() {
     video.playsInline = true;
     video.srcObject = activeStream;
     setPreviewMedia(video);
-    setLiveScoreOverlay("Starting camera...", "Private on-device analysis");
+    clearLiveScoreOverlay();
     if (!isMobileLayout()) video.addEventListener("loadedmetadata", scrollToPreview, { once: true });
-    video.addEventListener("loadedmetadata", () => {
-      if (isMobileLayout() && !liveScoreActive) startLiveCameraScore(video);
-    }, { once: true });
-    if (isMobileLayout()) startLiveCameraScore(video);
-    setStatus("Camera is running locally in this browser. Nothing is uploaded.");
+    setStatus("Camera is running locally. Frame your face, then tap Analyze Visible Frame. Nothing is uploaded.");
   } catch (error) {
     setStatus(error?.name === "NotAllowedError" ? "Camera permission was not allowed." : "Camera could not start on this device.");
   }
 }
 
 function stopLiveCameraScore() {
-  liveScoreActive = false;
-  liveScoreFrames = [];
-  liveScoreClassifications = [];
-  if (liveScoreTimer) window.clearTimeout(liveScoreTimer);
-  liveScoreTimer = null;
   clearLiveScoreOverlay();
-}
-
-function startLiveCameraScore(video) {
-  stopLiveCameraScore();
-  if (!isMobileLayout()) return;
-  liveScoreActive = true;
-  liveScoreFrames = [];
-  liveScoreClassifications = [];
-  setLiveScoreOverlay("Looking for face...", "Same private analyzer");
-  analyzeLiveCameraFrame(video);
-}
-
-async function analyzeLiveCameraFrame(video) {
-  if (!liveScoreActive || activeMedia !== video || !isMobileLayout()) return;
-  if (!frameSourceReady(video)) {
-    liveScoreTimer = window.setTimeout(() => analyzeLiveCameraFrame(video), 300);
-    return;
-  }
-  try {
-    const analysis = await analyzeMediaFrame(video);
-    if (!liveScoreActive || activeMedia !== video) return;
-    if (analysis?.scores?.length) {
-      const liveAnalysis = stableLiveCameraAnalysis(analysis);
-      if (!liveAnalysis) {
-        setLiveScoreOverlay("Reading face...", "Stabilizing live score");
-        liveScoreTimer = window.setTimeout(() => analyzeLiveCameraFrame(video), 450);
-        return;
-      }
-      const classified = updateResult(liveAnalysis, { scrollMobile: false, setStatusMessage: false });
-      setLiveScoreOverlay(`${classified.emotion}: ${classified.confidence}%`, "Same private analyzer");
-      setStatus("Camera is running locally. Live score updates on this device.");
-    } else {
-      setLiveScoreOverlay("No clear face", "Bring eyes and mouth into the frame");
-    }
-  } catch (error) {
-    setLiveScoreOverlay("Model loading...", "Live score will appear here");
-    setStatus(error?.message || "Face expression model is loading.");
-  }
-  liveScoreTimer = window.setTimeout(() => analyzeLiveCameraFrame(video), 900);
-}
-
-function stableLiveCameraAnalysis(analysis) {
-  liveScoreFrames.push(analysis.scores);
-  liveScoreFrames = liveScoreFrames.slice(-5);
-  const frameClassification = classifyScores(analysis.scores);
-  liveScoreClassifications.push(frameClassification);
-  liveScoreClassifications = liveScoreClassifications.slice(-5);
-  if (liveScoreFrames.length < 4) return null;
-
-  const scoreNames = liveScoreFrames[0].map((score) => score.name);
-  const averagedScores = scoreNames.map((name) => {
-    const total = liveScoreFrames.reduce((sum, frameScores) => {
-      return sum + (frameScores.find((score) => score.name === name)?.value || 0);
-    }, 0);
-    return { name, value: total / liveScoreFrames.length };
-  }).sort((a, b) => b.value - a.value);
-  const averagedClassification = classifyScores(averagedScores);
-  const recentClassifications = liveScoreClassifications.slice(-3);
-  const repeatedEmotionCount = recentClassifications.filter((result) => result.emotion === averagedClassification.emotion).length;
-  const topScore = averagedScores[0]?.value || 0;
-  const secondScore = averagedScores[1]?.value || 0;
-  const hasClearMargin = topScore >= secondScore + 0.1;
-  const isStrongNonCalm = averagedClassification.emotion !== "Calm" && averagedClassification.confidence >= 62 && repeatedEmotionCount >= 3 && hasClearMargin;
-
-  if (averagedClassification.emotion !== "Calm" && !isStrongNonCalm) {
-    return {
-      scores: averagedScores.map((score) => {
-        if (score.name === "Calm") return { ...score, value: Math.max(score.value, 0.58) };
-        return { ...score, value: Math.min(score.value, 0.34) };
-      }).sort((a, b) => b.value - a.value)
-    };
-  }
-
-  return { scores: averagedScores };
 }
 
 async function analyzeMediaFrame(media) {
@@ -853,7 +766,10 @@ async function analyzeVisibleFrame() {
       setStatus("No face expression found. Nothing was uploaded.");
       return;
     }
-    updateResult(analysis);
+    const result = updateResult(analysis);
+    if (isMobileLayout() && activeMedia instanceof HTMLVideoElement) {
+      setLiveScoreOverlay(`${result.emotion}: ${result.confidence}%`, "Frame analysis. Not live.");
+    }
   } catch (error) {
     label.textContent = "Face model could not run.";
     summary.textContent = "The browser could not load or run the on-device face expression model. Check the internet connection for model download, then try again.";
