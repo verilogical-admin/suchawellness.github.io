@@ -237,7 +237,8 @@ async function analyzeLiveCameraFrame(video) {
     const result = landmarker.detectForVideo(video, performance.now());
     const categories = result.faceBlendshapes?.[0]?.categories;
     if (categories?.length) {
-      const scores = blendshapeScores(categories, result.faceLandmarks?.[0] || []);
+      const frameStats = frameStatsFor(video);
+      const scores = blendshapeScores(categories, result.faceLandmarks?.[0] || [], frameStats);
       const classified = updateResult({ scores }, { scrollMobile: false });
       setLiveScoreOverlay(`${classified.emotion}: ${classified.confidence}%`, "Live private score");
       setStatus("Camera is running locally. Live score updates on this device.");
@@ -331,6 +332,11 @@ function analyzePixels(frame) {
   const mixed = Math.min(1, Math.abs(energy - tension) < 0.18 ? 0.36 + saturationAverage * 0.12 : (energy + tension) * 0.26);
 
   return { lightAverage, saturationAverage, contrast, warmth, motionScore, energy, tension, mixed };
+}
+
+function frameStatsFor(media) {
+  const frame = drawFrame(media);
+  return frame ? analyzePixels(frame) : {};
 }
 
 function clamp01(value) {
@@ -430,9 +436,10 @@ function eyeGeometrySignals(landmarks = []) {
   };
 }
 
-function blendshapeScores(categories, landmarks = []) {
+function blendshapeScores(categories, landmarks = [], frameStats = {}) {
   const blendshapes = new Map(categories.map((category) => [category.categoryName, category.score]));
   const eyeGeometry = eyeGeometrySignals(landmarks);
+  const lowLight = signalBelow(frameStats?.lightAverage ?? 0.56, 0.32, 0.22);
   const smileLeft = getBlendshape(blendshapes, "mouthSmileLeft");
   const smileRight = getBlendshape(blendshapes, "mouthSmileRight");
   const smile = (smileLeft + smileRight) / 2;
@@ -501,9 +508,11 @@ function blendshapeScores(categories, landmarks = []) {
     { name: "Fear cue", value: fearCore, text: "wide eyes with alert brow or mouth tension" }
   ].sort((a, b) => b.value - a.value);
   const eyeOnlyAnger = Math.max(angerEyePattern, geometryAnger);
-  const angryRaw = clamp01(angerCore * 0.5 + angerEyePattern * 0.18 + intenseEyes * 0.06 + eyeGeometry.browSlant * 0.06 + browDownStrong * 0.03 + eyeOnlyAnger * 0.04 - sadnessBrow * 0.18 - sadnessMouth * 0.12 - clearSmile * 0.42 - smile * 0.28);
+  const lowLightAngerGuard = lowLight * signalBelow(angerEyePattern, 0.52, 0.34);
+  const angryRaw = clamp01(angerCore * 0.5 + angerEyePattern * 0.18 + intenseEyes * 0.06 + eyeGeometry.browSlant * 0.06 + browDownStrong * 0.03 + eyeOnlyAnger * 0.04 - sadnessBrow * 0.18 - sadnessMouth * 0.12 - clearSmile * 0.42 - smile * 0.28 - lowLightAngerGuard * 0.32);
   const angrySmileCap = clearSmile > 0.2 && angerEyePattern < 0.62 ? 0.18 + angerEyePattern * 0.18 : 1;
-  const angryScore = Math.min(angryRaw, angrySmileCap);
+  const angryLowLightCap = lowLight > 0.34 && angerEyePattern < 0.58 ? 0.14 + angerEyePattern * 0.28 + browDownStrong * 0.08 : 1;
+  const angryScore = Math.min(angryRaw, angrySmileCap, angryLowLightCap);
   const disgustRaw = clamp01(disgustCore * 0.68 + noseSneerSignal * 0.18 + mouthUpperSignal * 0.06 - clearSmile * 0.34 - smile * 0.22 - sadnessCore * 0.14 - angerCore * 0.12);
   const disgustSmileCap = clearSmile > 0.2 && noseSneerSignal < 0.42 ? 0.12 + noseSneerSignal * 0.24 : 1;
   const disgustScore = Math.min(disgustRaw, disgustSmileCap);
@@ -729,7 +738,7 @@ async function analyzeVisibleFrame() {
       setStatus("No face expression found. Nothing was uploaded.");
       return;
     }
-    updateResult({ scores: blendshapeScores(categories, result.faceLandmarks?.[0] || []) });
+    updateResult({ scores: blendshapeScores(categories, result.faceLandmarks?.[0] || [], frameStatsFor(media)) });
   } catch (error) {
     label.textContent = "Face model could not run.";
     summary.textContent = "The browser could not load or run the on-device face expression model. Check the internet connection for model download, then try again.";
