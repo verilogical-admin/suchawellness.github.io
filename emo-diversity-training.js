@@ -63,7 +63,7 @@ function resetPreview() {
   activeMedia = null;
   activeFile = null;
   if (fileInput) fileInput.value = "";
-  preview.innerHTML = '<span class="placeholder">Choose a photo/video or start the camera for a private check-in.</span>';
+  preview.innerHTML = '<button class="camera-refresh" id="emo-refresh" type="button" aria-label="Refresh emotion check">&#8635;</button><span class="placeholder">Choose a photo/video or start the camera for a private check-in.</span>';
   label.textContent = "No media analyzed yet.";
   summary.textContent = "Your browser-only reflection will appear here after analysis.";
   if (emotionList) emotionList.innerHTML = "";
@@ -77,7 +77,19 @@ function resetPreview() {
 
 function setPreviewMedia(element) {
   preview.replaceChildren(element);
+  ensureRefreshButton();
   activeMedia = element;
+}
+
+function ensureRefreshButton() {
+  if (!preview || preview.querySelector("#emo-refresh")) return;
+  const button = document.createElement("button");
+  button.className = "camera-refresh";
+  button.id = "emo-refresh";
+  button.type = "button";
+  button.setAttribute("aria-label", "Refresh emotion check");
+  button.innerHTML = "&#8635;";
+  preview.append(button);
 }
 
 function liveScoreOverlay() {
@@ -753,6 +765,9 @@ fileInput?.addEventListener("change", (event) => loadFile(event.target.files?.[0
 startCameraButton?.addEventListener("click", startCamera);
 analyzeButton?.addEventListener("click", () => analyzeVisibleFrame());
 clearButton?.addEventListener("click", resetPreview);
+preview?.addEventListener("click", (event) => {
+  if (event.target.closest("#emo-refresh")) window.location.reload();
+});
 window.addEventListener("pagehide", stopCamera);
 
 function handleLandingAction() {
