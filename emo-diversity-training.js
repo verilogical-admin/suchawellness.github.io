@@ -260,8 +260,7 @@ async function analyzeLiveCameraFrame(video) {
     return;
   }
   try {
-    const snapshot = snapshotVideoFrame(video);
-    const analysis = await analyzeMediaFrame(snapshot || video);
+    const analysis = await analyzeMediaFrame(video);
     if (!liveScoreActive || activeMedia !== video) return;
     if (analysis?.scores?.length) {
       const classified = updateResult(analysis, { scrollMobile: false, setStatusMessage: false });
@@ -275,17 +274,6 @@ async function analyzeLiveCameraFrame(video) {
     setStatus(error?.message || "Face expression model is loading.");
   }
   liveScoreTimer = window.setTimeout(() => analyzeLiveCameraFrame(video), 900);
-}
-
-function snapshotVideoFrame(video) {
-  if (!frameSourceReady(video)) return null;
-  const canvas = document.createElement("canvas");
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  const context = canvas.getContext("2d");
-  if (!context) return null;
-  context.drawImage(video, 0, 0, canvas.width, canvas.height);
-  return canvas;
 }
 
 async function analyzeMediaFrame(media) {
