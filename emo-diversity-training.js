@@ -408,10 +408,13 @@ function blendshapeScores(categories, landmarks = []) {
   const selfConsciousRaw = clamp01(shamePattern * 0.68 + shameWithdrawal * 0.12 + sadnessCore * 0.04 - neutralGuard * 0.7 - browDownStrong * 0.16 - smile * 0.34 - clearSmile * 0.18);
   const selfConsciousNeutralCap = neutralGuard > 0.28 && shameTension < 0.34 ? 0.04 + shamePattern * 0.12 : 1;
   const selfConsciousScore = Math.min(selfConsciousRaw, selfConsciousNeutralCap);
+  const sadRaw = clamp01(sadnessCore * 0.7 + sadnessMouth * 0.16 + Math.max(eyeDown, sadnessBrow, eyeGeometry.browClose * 0.32) * 0.18 - lowAngleSadBias * 0.34 - browDownStrong * 0.12 - clearSmile * 0.34 - smile * 0.2);
+  const sadSmileCap = clearSmile > 0.18 && sadnessBrow < 0.22 ? 0.1 + sadnessBrow * 0.28 + sadnessMouth * 0.08 : 1;
+  const sadScore = Math.min(sadRaw, sadSmileCap);
 
   return [
     { name: "Happy", value: clamp01(clearSmile * 0.72 + mouthDimple * 0.14 + signalBelow(eyeExpression, 0.16, 0.2) * 0.08 - sadnessCore * 0.42 - sadnessMouth * 0.18 - frown * 0.32 - mouthPress * 0.16) },
-    { name: "Sad", value: clamp01(sadnessCore * 0.7 + sadnessMouth * 0.16 + Math.max(eyeDown, sadnessBrow, eyeGeometry.browClose * 0.32) * 0.18 - lowAngleSadBias * 0.34 - browDownStrong * 0.12 - clearSmile * 0.2) },
+    { name: "Sad", value: sadScore },
     { name: "Self-conscious", value: selfConsciousScore < 0.12 ? 0 : selfConsciousScore },
     { name: "Angry", value: angryScore },
     { name: "Disgusted", value: disgustScore },
