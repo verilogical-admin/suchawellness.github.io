@@ -74,6 +74,10 @@ function setPreviewMedia(element) {
   activeMedia = element;
 }
 
+function scrollToPreview() {
+  preview?.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
 function loadFile(file) {
   if (!file) return;
   stopCamera();
@@ -138,6 +142,7 @@ async function startCamera() {
   stopCamera();
   clearObjectUrl();
   previousFrame = null;
+  scrollToPreview();
   try {
     activeStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
     const video = document.createElement("video");
@@ -146,6 +151,7 @@ async function startCamera() {
     video.playsInline = true;
     video.srcObject = activeStream;
     setPreviewMedia(video);
+    video.addEventListener("loadedmetadata", scrollToPreview, { once: true });
     setStatus("Camera is running locally in this browser. Nothing is uploaded.");
   } catch (error) {
     setStatus(error?.name === "NotAllowedError" ? "Camera permission was not allowed." : "Camera could not start on this device.");
@@ -640,3 +646,19 @@ startCameraButton?.addEventListener("click", startCamera);
 analyzeButton?.addEventListener("click", () => analyzeVisibleFrame());
 clearButton?.addEventListener("click", resetPreview);
 window.addEventListener("pagehide", stopCamera);
+
+function handleLandingAction() {
+  const params = new URLSearchParams(window.location.search);
+  const shouldStartCamera = params.get("start") === "camera" || window.location.hash === "#emo-camera-start";
+  if (shouldStartCamera) {
+    startCameraButton?.focus({ preventScroll: true });
+    startCamera();
+    return;
+  }
+  if (window.location.hash === "#upload-media") {
+    fileInput?.focus({ preventScroll: true });
+    document.querySelector("#upload-media")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+}
+
+handleLandingAction();
