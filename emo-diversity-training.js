@@ -28,6 +28,7 @@ let lastCueInsights = [];
 let liveScoreTimer = null;
 let liveScoreActive = false;
 let liveScoreFrames = [];
+let liveScoreClassifications = [];
 
 const faceModelUrl = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task";
 const wasmRootUrl = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
@@ -242,6 +243,7 @@ async function startCamera() {
 function stopLiveCameraScore() {
   liveScoreActive = false;
   liveScoreFrames = [];
+  liveScoreClassifications = [];
   if (liveScoreTimer) window.clearTimeout(liveScoreTimer);
   liveScoreTimer = null;
   clearLiveScoreOverlay();
@@ -252,6 +254,7 @@ function startLiveCameraScore(video) {
   if (!isMobileLayout()) return;
   liveScoreActive = true;
   liveScoreFrames = [];
+  liveScoreClassifications = [];
   setLiveScoreOverlay("Looking for face...", "Same private analyzer");
   analyzeLiveCameraFrame(video);
 }
@@ -287,8 +290,11 @@ async function analyzeLiveCameraFrame(video) {
 
 function stableLiveCameraAnalysis(analysis) {
   liveScoreFrames.push(analysis.scores);
-  liveScoreFrames = liveScoreFrames.slice(-4);
-  if (liveScoreFrames.length < 3) return null;
+  liveScoreFrames = liveScoreFrames.slice(-5);
+  const frameClassification = classifyScores(analysis.scores);
+  liveScoreClassifications.push(frameClassification);
+  liveScoreClassifications = liveScoreClassifications.slice(-5);
+  if (liveScoreFrames.length < 4) return null;
 
   const scoreNames = liveScoreFrames[0].map((score) => score.name);
   const averagedScores = scoreNames.map((name) => {
@@ -297,6 +303,19 @@ function stableLiveCameraAnalysis(analysis) {
     }, 0);
     return { name, value: total / liveScoreFrames.length };
   }).sort((a, b) => b.value - a.value);
+  const averagedClassification = classifyScores(averagedScores);
+  const recentClassifications = liveScoreClassifications.slice(-3);
+  const repeatedEmotionCount = recentClassifications.filter((result) => result.emotion === averagedClassification.emotion).length;
+  const topScore = averagedScores[0]?.value || 0;
+  const secondScore = averagedScores[1]?.value || 0;
+  const hasClearMargin = topScore >= secondScore + 0.1;
+  const isStrongNonCalm = averagedClassification.emotion !== "Calm" && averagedClassification.confidence >= 46 && repeatedEmotionCount >= 2 && hasClearMargin;
+
+  if (averagedClassification.emotion !== "Calm" && !isStrongNonCalm) {
+    return {
+      scores: averagedScores.map((score) => score.name === "Calm" ? { ...score, value: Math.max(score.value, 0.46) } : score).sort((a, b) => b.value - a.value)
+    };
+  }
 
   return { scores: averagedScores };
 }
