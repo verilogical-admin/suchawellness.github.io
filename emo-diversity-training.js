@@ -487,6 +487,7 @@ function blendshapeScores(categories, landmarks = []) {
   const noseSneerSignal = signalAbove(noseSneer, 0.1, 0.28);
   const mouthUpperSignal = signalAbove(mouthUpperUp, 0.12, 0.3);
   const disgustCore = Math.max(noseSneerSignal, Math.min(mouthUpperSignal, signalBelow(smile, 0.2, 0.18) + noseSneerSignal * 0.45));
+  const disgustPattern = Math.max(disgustCore, Math.min(noseSneerSignal + 0.12, mouthUpperSignal + 0.08));
   const contemptCore = Math.min(signalAbove(smileAsymmetry, 0.12, 0.3), Math.max(signalAbove(mouthPress, 0.14, 0.3), signalAbove(mouthDimple, 0.08, 0.28)));
   const fearCore = Math.min(signalAbove(eyeWide, 0.12, 0.34) + sadnessBrow * 0.24, signalAbove(jawOpen, 0.1, 0.34) + pressStrong * 0.2);
   lastCueInsights = [
@@ -502,11 +503,11 @@ function blendshapeScores(categories, landmarks = []) {
   ].sort((a, b) => b.value - a.value);
   const eyeOnlyAnger = Math.max(angerEyePattern, geometryAnger);
   const angerNeutralGuard = neutralGuard * signalBelow(angerEyePattern, 0.3, 0.24);
-  const angryRaw = clamp01(angerCore * 0.62 + angerEyePattern * 0.3 + intenseEyes * 0.12 + eyeGeometry.browSlant * 0.08 + browDownStrong * 0.06 + eyeOnlyAnger * 0.08 - surpriseSignal * 0.3 - sadnessBrow * 0.1 - sadnessMouth * 0.08 - clearSmile * 0.34 - smile * 0.2 - angerNeutralGuard * 0.08);
+  const angryRaw = clamp01(angerCore * 0.62 + angerEyePattern * 0.3 + intenseEyes * 0.12 + eyeGeometry.browSlant * 0.08 + browDownStrong * 0.06 + eyeOnlyAnger * 0.08 - disgustPattern * 0.38 - surpriseSignal * 0.3 - sadnessBrow * 0.1 - sadnessMouth * 0.08 - clearSmile * 0.34 - smile * 0.2 - angerNeutralGuard * 0.08);
   const angrySmileCap = clearSmile > 0.2 && angerEyePattern < 0.62 ? 0.18 + angerEyePattern * 0.18 : 1;
   const angryNeutralCap = neutralGuard > 0.36 && angerEyePattern < 0.28 ? 0.18 + angerEyePattern * 0.44 : 1;
-  const angryScore = Math.max(Math.min(angryRaw, angrySmileCap, angryNeutralCap), angerEyePattern > 0.44 ? angerEyePattern * 0.76 : 0);
-  const disgustRaw = clamp01(disgustCore * 0.68 + noseSneerSignal * 0.18 + mouthUpperSignal * 0.06 - clearSmile * 0.34 - smile * 0.22 - sadnessCore * 0.14 - angerCore * 0.12);
+  const angryScore = Math.max(Math.min(angryRaw, angrySmileCap, angryNeutralCap), angerEyePattern > 0.44 && disgustPattern < 0.34 ? angerEyePattern * 0.76 : 0);
+  const disgustRaw = clamp01(disgustPattern * 0.72 + noseSneerSignal * 0.18 + mouthUpperSignal * 0.1 - clearSmile * 0.34 - smile * 0.22 - sadnessCore * 0.14 - angerCore * 0.08);
   const disgustSmileCap = clearSmile > 0.2 && noseSneerSignal < 0.42 ? 0.12 + noseSneerSignal * 0.24 : 1;
   const disgustScore = Math.min(disgustRaw, disgustSmileCap);
   const selfConsciousRaw = clamp01(shamePattern * 0.68 + shameWithdrawal * 0.12 + sadnessCore * 0.04 - surpriseSignal * 0.52 - neutralGuard * 0.7 - browDownStrong * 0.16 - smile * 0.34 - clearSmile * 0.18);
@@ -560,6 +561,7 @@ function classifyScores(scores) {
   const happy = sortedScores.find((score) => score.name === "Happy");
   const sad = sortedScores.find((score) => score.name === "Sad");
   const surprised = sortedScores.find((score) => score.name === "Surprised");
+  const disgusted = sortedScores.find((score) => score.name === "Disgusted");
   const calm = sortedScores.find((score) => score.name === "Calm");
   let primary = sortedScores[0] || { name: "Calm", value: 0 };
   const topNonCalm = sortedScores.find((score) => score.name !== "Calm") || { value: 0 };
@@ -591,6 +593,9 @@ function classifyScores(scores) {
   }
   if ((primary.name === "Angry" || primary.name === "Self-conscious") && surprised && surprised.value >= 0.32 && primary.value <= surprised.value + 0.14) {
     primary = surprised;
+  }
+  if (primary.name === "Angry" && disgusted && disgusted.value >= 0.3 && angry && angry.value <= disgusted.value + 0.16) {
+    primary = disgusted;
   }
   if (primary.name === "Angry") {
     const nextNonAngry = sortedScores.find((score) => score.name !== "Angry") || { value: 0 };
