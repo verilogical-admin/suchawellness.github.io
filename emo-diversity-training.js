@@ -499,10 +499,15 @@ function blendshapeScores(categories, landmarks = []) {
   const smileAsymmetry = Math.abs(smileLeft - smileRight);
   const neutral = getBlendshape(blendshapes, "_neutral");
   const expressive = Math.max(smile, frown, browInner, browDown, eyeWide, jawOpen, mouthPress);
-  const browDownStrong = Math.max(signalAbove(browDown, 0.18, 0.34), eyeGeometry.browClose, eyeGeometry.browSlant * 0.95);
+  const pressStrong = signalAbove(mouthPress, 0.18, 0.32);
+  const browLowerSignal = signalAbove(browDown, 0.18, 0.34);
+  const browGeometryAnger = Math.max(
+    Math.min(eyeGeometry.browClose, eyeGeometry.narrow + pressStrong * 0.34),
+    Math.min(eyeGeometry.browSlant, eyeGeometry.narrow + pressStrong * 0.34)
+  );
+  const browDownStrong = Math.max(browLowerSignal, browGeometryAnger);
   const squintStrong = Math.max(signalAbove(eyeSquint, 0.16, 0.32), eyeGeometry.narrow);
   const eyeNarrow = clamp01(squintStrong * 0.5 + signalBelow(eyeWide, 0.14, 0.24) * 0.18 + eyeGeometry.narrow * 0.46);
-  const pressStrong = signalAbove(mouthPress, 0.18, 0.32);
   const eyeWideStrong = Math.max(signalAbove(eyeWide, 0.14, 0.34), eyeGeometry.wide);
   const narrowAnger = Math.min(browDownStrong + signalAbove(browDown, 0.24, 0.34) * 0.2, eyeNarrow + squintStrong * 0.14);
   const wideAnger = Math.min(eyeWideStrong, Math.min(browDownStrong, Math.max(pressStrong, eyeGeometry.browSlant)) * 0.82);
@@ -553,9 +558,21 @@ function blendshapeScores(categories, landmarks = []) {
   const angryRaw = clamp01(angerCore * 0.54 + angerEyePattern * 0.24 + intenseEyes * 0.08 + eyeGeometry.browSlant * 0.06 + browDownStrong * 0.04 + eyeOnlyAnger * 0.04 - disgustPattern * 0.38 - surpriseSignal * 0.3 - sadnessBrow * 0.1 - sadnessMouth * 0.08 - clearSmile * 0.34 - smile * 0.2 - angerNeutralGuard * 0.18);
   const angrySmileCap = clearSmile > 0.2 && angerEyePattern < 0.62 ? 0.18 + angerEyePattern * 0.18 : 1;
   const angryNeutralCap = neutralGuard > 0.36 && angerEyePattern < 0.28 ? 0.18 + angerEyePattern * 0.44 : 1;
-  const angryEyeBoost = Math.max(eyeGeometry.narrow, eyeGeometry.browSlant, eyeGeometry.browPinch);
-  const angryDefaultCap = neutralGuard > 0.18 && clearSmile < 0.12 && angerEyePattern < 0.5 ? 0.1 + angerEyePattern * 0.32 : 1;
-  const angryScore = Math.max(Math.min(angryRaw, angrySmileCap, angryNeutralCap, angryDefaultCap), angryEyeBoost > 0.54 && disgustPattern < 0.34 && surpriseSignal < 0.36 ? angryEyeBoost * 0.7 : 0);
+  const angryEyeBoost = Math.max(
+    Math.min(eyeGeometry.narrow, Math.max(eyeGeometry.browClose, eyeGeometry.browSlant, eyeGeometry.browPinch)),
+    Math.min(eyeGeometry.browSlant, Math.max(pressStrong, browLowerSignal))
+  );
+  const angerActivation = Math.max(
+    browLowerSignal,
+    Math.min(eyeGeometry.narrow, Math.max(eyeGeometry.browClose, eyeGeometry.browSlant, eyeGeometry.browPinch)),
+    Math.min(pressStrong, eyeGeometry.browSlant)
+  );
+  const angryDefaultCap = neutralGuard > 0.18 && clearSmile < 0.12 && angerActivation < 0.56 ? 0.04 + angerActivation * 0.18 : 1;
+  const angryFloor = angryEyeBoost > 0.62 && angerActivation > 0.52 && disgustPattern < 0.34 && surpriseSignal < 0.36 ? angryEyeBoost * 0.62 : 0;
+  let angryScore = angerActivation < 0.32 ? Math.min(angryRaw, 0.08) : Math.max(Math.min(angryRaw, angrySmileCap, angryNeutralCap, angryDefaultCap), angryFloor);
+  if (neutralGuard > 0.16 && angerActivation < 0.45 && surpriseSignal < 0.3 && disgustPattern < 0.28 && clearSmile < 0.18) {
+    angryScore = Math.min(angryScore, 0.04 + angerActivation * 0.12);
+  }
   const disgustRaw = clamp01(disgustPattern * 0.72 + noseSneerSignal * 0.18 + mouthUpperSignal * 0.1 - clearSmile * 0.34 - smile * 0.22 - sadnessCore * 0.14 - angerCore * 0.08);
   const disgustSmileCap = clearSmile > 0.2 && noseSneerSignal < 0.42 ? 0.12 + noseSneerSignal * 0.24 : 1;
   const disgustScore = Math.min(disgustRaw, disgustSmileCap);
@@ -569,6 +586,11 @@ function blendshapeScores(categories, landmarks = []) {
   const sadScore = Math.min(sadRaw, sadSmileCap, sadNeutralCap, sadSurpriseCap);
   const finalSadScore = sadScore < 0.22 ? 0 : sadScore;
   const calmBase = Math.max(signalBelow(expressive, 0.26, 0.34), neutral);
+  const lowEmotionEvidence = Math.max(finalSadScore, clearSmile, angryScore, fearCore, surpriseSignal, disgustScore, contemptCore, selfConsciousScore) < 0.32;
+  let calmScore = clamp01(calmBase * 0.42 + (1 - expressive) * 0.14 + (1 - mouthPress) * 0.06 - Math.max(finalSadScore * 0.72, clearSmile, angryScore * 0.72, fearCore, surpriseCore, disgustCore, contemptCore, pressStrong) * 0.42 - smile * 0.1);
+  if (lowEmotionEvidence || neutralGuard > 0.22 && angerActivation < 0.45 && surpriseSignal < 0.3 && clearSmile < 0.2) {
+    calmScore = Math.max(calmScore, 0.44 + neutralGuard * 0.28);
+  }
 
   return [
     { name: "Happy", value: clamp01(clearSmile * 0.72 + mouthDimple * 0.14 + signalBelow(eyeExpression, 0.16, 0.2) * 0.08 - sadnessCore * 0.42 - sadnessMouth * 0.18 - frown * 0.32 - mouthPress * 0.16) },
@@ -579,7 +601,7 @@ function blendshapeScores(categories, landmarks = []) {
     { name: "Contempt", value: clamp01(contemptCore * 0.62 + signalAbove(smileAsymmetry, 0.12, 0.3) * 0.16 + signalAbove(mouthDimple, 0.08, 0.28) * 0.08 - clearSmile * 0.22 - sadnessCore * 0.14 - disgustCore * 0.1) },
     { name: "Surprised", value: surpriseSignal },
     { name: "Fearful", value: clamp01(fearCore * 0.52 + Math.max(eyeWideStrong, eyeGeometry.wide) * 0.18 + sadnessBrow * 0.2 + pressStrong * 0.06 + mouthStretch * 0.04 - surpriseCore * 0.12 - browDownStrong * 0.16 - smile * 0.24) },
-    { name: "Calm", value: clamp01(calmBase * 0.34 + (1 - expressive) * 0.1 + (1 - mouthPress) * 0.04 - Math.max(finalSadScore * 0.72, clearSmile, angerCore, intenseEyes * 0.82, fearCore, surpriseCore, disgustCore, contemptCore, pressStrong) * 0.48 - smile * 0.1) }
+    { name: "Calm", value: calmScore }
   ].sort((a, b) => b.value - a.value);
 }
 
