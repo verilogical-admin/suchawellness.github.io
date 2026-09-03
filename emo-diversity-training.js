@@ -27,8 +27,6 @@ let faceMode = "IMAGE";
 let lastCueInsights = [];
 let liveScoreTimer = null;
 let liveScoreActive = false;
-let liveFrameCount = 0;
-let liveAngerStreak = 0;
 
 const faceModelUrl = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task";
 const wasmRootUrl = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
@@ -213,8 +211,6 @@ async function startCamera() {
 
 function stopLiveCameraScore() {
   liveScoreActive = false;
-  liveFrameCount = 0;
-  liveAngerStreak = 0;
   if (liveScoreTimer) window.clearTimeout(liveScoreTimer);
   liveScoreTimer = null;
   clearLiveScoreOverlay();
@@ -224,24 +220,8 @@ function startLiveCameraScore(video) {
   stopLiveCameraScore();
   if (!isMobileLayout()) return;
   liveScoreActive = true;
-  liveFrameCount = 0;
-  liveAngerStreak = 0;
-  setLiveScoreOverlay("Calm: 0%", "Warming up private live score");
+  setLiveScoreOverlay("Looking for face...", "Live private score");
   analyzeLiveCameraFrame(video);
-}
-
-function classifyLiveCameraScores(scores) {
-  liveFrameCount += 1;
-  const classified = classifyScores(scores);
-  const angry = scores.find((score) => score.name === "Angry") || { value: 0 };
-  const calm = scores.find((score) => score.name === "Calm") || { value: 0 };
-  const nextNonAngry = scores.find((score) => score.name !== "Angry") || { value: 0 };
-  const angerIsClear = angry.value >= 0.38 && angry.value >= nextNonAngry.value + 0.02 && angry.value >= calm.value + 0.04;
-  liveAngerStreak = angerIsClear ? liveAngerStreak + 1 : 0;
-  if (liveFrameCount <= 2 || (classified.emotion === "Angry" && liveAngerStreak < 2)) {
-    return { emotion: "Calm", confidence: Math.round(Math.max(calm.value, 0) * 100) };
-  }
-  return classified;
 }
 
 async function analyzeLiveCameraFrame(video) {
@@ -257,7 +237,7 @@ async function analyzeLiveCameraFrame(video) {
     const categories = result.faceBlendshapes?.[0]?.categories;
     if (categories?.length) {
       const scores = blendshapeScores(categories, result.faceLandmarks?.[0] || []);
-      const classified = classifyLiveCameraScores(scores);
+      const classified = classifyScores(scores);
       setLiveScoreOverlay(`${classified.emotion}: ${classified.confidence}%`, "Live private score");
       setStatus("Camera is running locally. Live score updates on this device.");
     } else {
