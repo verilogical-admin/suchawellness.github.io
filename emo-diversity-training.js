@@ -422,7 +422,7 @@ function blendshapeScores(categories, landmarks = []) {
     { name: "Contempt", value: clamp01(contemptCore * 0.62 + signalAbove(smileAsymmetry, 0.12, 0.3) * 0.16 + signalAbove(mouthDimple, 0.08, 0.28) * 0.08 - clearSmile * 0.22 - sadnessCore * 0.14 - disgustCore * 0.1) },
     { name: "Surprised", value: clamp01(surpriseCore * 0.78 + eyeWideStrong * 0.12 + signalAbove(jawOpen, 0.12, 0.34) * 0.1 - roundWideEyeIntensity * 0.14 - wideAnger * 0.3 - intenseEyes * 0.16 - sadnessBrow * 0.18 - browDownStrong * 0.24 - pressStrong * 0.12 - smile * 0.14) },
     { name: "Fearful", value: clamp01(fearCore * 0.52 + Math.max(eyeWideStrong, eyeGeometry.wide) * 0.18 + sadnessBrow * 0.2 + pressStrong * 0.06 + mouthStretch * 0.04 - surpriseCore * 0.12 - browDownStrong * 0.16 - smile * 0.24) },
-    { name: "Calm", value: clamp01(neutral * 0.18 + (1 - expressive) * 0.08 + (1 - mouthPress) * 0.02 - Math.max(sadnessCore, clearSmile, angerCore, intenseEyes, eyeExpression, fearCore, surpriseCore, disgustCore, contemptCore, pressStrong) * 0.72 - smile * 0.12) }
+    { name: "Calm", value: clamp01(neutral * 0.22 + (1 - expressive) * 0.12 + (1 - mouthPress) * 0.03 - Math.max(sadScore, clearSmile, angerCore, intenseEyes, eyeExpression, fearCore, surpriseCore, disgustCore, contemptCore, pressStrong) * 0.62 - smile * 0.12) }
   ].sort((a, b) => b.value - a.value);
 }
 
@@ -452,6 +452,7 @@ function classifyScores(scores) {
   const angry = sortedScores.find((score) => score.name === "Angry");
   const happy = sortedScores.find((score) => score.name === "Happy");
   const sad = sortedScores.find((score) => score.name === "Sad");
+  const calm = sortedScores.find((score) => score.name === "Calm");
   let primary = sortedScores[0] || { name: "Calm", value: 0 };
   if (primary.name === "Calm") {
     const topNonCalm = sortedScores.find((score) => score.name !== "Calm") || { value: 0 };
@@ -470,6 +471,9 @@ function classifyScores(scores) {
       summary: "The visible cue pattern is too close to separate cleanly between sadness and happiness. This often happens with polite smiles, bittersweet expressions, tired smiles, or a face that does not match the inner feeling.",
       prompt: "Journal prompt: Is this more joy, sadness, relief, exhaustion, politeness, or a mix?"
     };
+  }
+  if (primary.name === "Sad" && calm && (sad.value < 0.28 || sad.value < calm.value + 0.08)) {
+    primary = calm;
   }
   if (primary.name === "Angry") {
     const nextNonAngry = sortedScores.find((score) => score.name !== "Angry") || { value: 0 };
