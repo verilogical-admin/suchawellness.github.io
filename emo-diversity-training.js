@@ -208,7 +208,7 @@ function startLiveCameraScore(video) {
   stopLiveCameraScore();
   if (!isMobileLayout()) return;
   liveScoreActive = true;
-  setLiveScoreOverlay("Looking for face...", "Score updates as your expression changes");
+  setLiveScoreOverlay("Calm: 0%", "Warming up private live score");
   analyzeLiveCameraFrame(video);
 }
 
@@ -548,11 +548,11 @@ function classifyScores(scores) {
   const calm = sortedScores.find((score) => score.name === "Calm");
   let primary = sortedScores[0] || { name: "Calm", value: 0 };
   const topNonCalm = sortedScores.find((score) => score.name !== "Calm") || { value: 0 };
-  if (calm && topNonCalm.value < 0.32) {
+  if (calm && topNonCalm.value < 0.4) {
     primary = calm;
   }
   if (primary.name === "Calm") {
-    if (topNonCalm.value >= 0.34 && (primary.value < 0.26 || primary.value < topNonCalm.value + 0.04)) {
+    if (topNonCalm.value >= 0.42 && (primary.value < 0.24 || primary.value < topNonCalm.value)) {
       primary = topNonCalm;
     }
   }
@@ -573,10 +573,10 @@ function classifyScores(scores) {
   }
   if (primary.name === "Angry") {
     const nextNonAngry = sortedScores.find((score) => score.name !== "Angry") || { value: 0 };
-    if (!angry || angry.value < 0.42 || angry.value < nextNonAngry.value + 0.12) {
-      primary = nextNonAngry;
+    if (!angry || angry.value < 0.58 || angry.value < nextNonAngry.value + 0.18) {
+      primary = calm || nextNonAngry;
     }
-  } else if (angry && angry.value >= 0.46 && primary.value <= angry.value + 0.02) {
+  } else if (angry && angry.value >= 0.62 && primary.value <= angry.value - 0.04) {
     primary = angry;
   }
   const confidence = Math.round(primary.value * 100);
