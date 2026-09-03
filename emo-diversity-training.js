@@ -25,6 +25,8 @@ let previousFrame = null;
 let faceLandmarker = null;
 let faceMode = "IMAGE";
 let lastCueInsights = [];
+let liveScoreTimer = null;
+let liveScoreActive = false;
 
 const faceModelUrl = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task";
 const wasmRootUrl = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
@@ -39,6 +41,7 @@ function clearObjectUrl() {
 }
 
 function stopCamera() {
+  stopLiveCameraScore();
   if (activeStream) {
     activeStream.getTracks().forEach((track) => track.stop());
     activeStream = null;
@@ -73,6 +76,27 @@ function resetPreview() {
 function setPreviewMedia(element) {
   preview.replaceChildren(element);
   activeMedia = element;
+}
+
+function liveScoreOverlay() {
+  let overlay = preview?.querySelector(".live-score-overlay");
+  if (!overlay && preview) {
+    overlay = document.createElement("div");
+    overlay.className = "live-score-overlay";
+    overlay.setAttribute("aria-live", "polite");
+    preview.append(overlay);
+  }
+  return overlay;
+}
+
+function setLiveScoreOverlay(text, detail = "Live private score") {
+  const overlay = liveScoreOverlay();
+  if (!overlay) return;
+  overlay.innerHTML = `${text}<small>${detail}</small>`;
+}
+
+function clearLiveScoreOverlay() {
+  preview?.querySelector(".live-score-overlay")?.remove();
 }
 
 function scrollToPreview() {
@@ -161,9 +185,10 @@ async function startCamera() {
     video.playsInline = true;
     video.srcObject = activeStream;
     setPreviewMedia(video);
+    setLiveScoreOverlay("Starting camera...", "Private on-device analysis");
     video.addEventListener("loadedmetadata", scrollToPreview, { once: true });
     video.addEventListener("loadedmetadata", () => {
-      if (isMobileLayout()) analyzeCameraFrameWhenReady(video);
+      if (isMobileLayout()) startLiveCameraScore(video);
     }, { once: true });
     setStatus("Camera is running locally in this browser. Nothing is uploaded.");
   } catch (error) {
@@ -183,6 +208,47 @@ function analyzeCameraFrameWhenReady(video, attempt = 0) {
     return;
   }
   window.setTimeout(() => analyzeCameraFrameWhenReady(video, attempt + 1), 350);
+}
+
+function stopLiveCameraScore() {
+  liveScoreActive = false;
+  if (liveScoreTimer) window.clearTimeout(liveScoreTimer);
+  liveScoreTimer = null;
+  clearLiveScoreOverlay();
+}
+
+function startLiveCameraScore(video) {
+  stopLiveCameraScore();
+  if (!isMobileLayout()) return;
+  liveScoreActive = true;
+  setLiveScoreOverlay("Looking for face...", "Score updates as your expression changes");
+  analyzeLiveCameraFrame(video);
+}
+
+async function analyzeLiveCameraFrame(video) {
+  if (!liveScoreActive || activeMedia !== video || !isMobileLayout()) return;
+  if (!frameSourceReady(video)) {
+    liveScoreTimer = window.setTimeout(() => analyzeLiveCameraFrame(video), 300);
+    return;
+  }
+  try {
+    const landmarker = await ensureFaceLandmarker("VIDEO");
+    if (!liveScoreActive || activeMedia !== video) return;
+    const result = landmarker.detectForVideo(video, performance.now());
+    const categories = result.faceBlendshapes?.[0]?.categories;
+    if (categories?.length) {
+      const scores = blendshapeScores(categories, result.faceLandmarks?.[0] || []);
+      const classified = updateResult({ scores }, { scrollMobile: false });
+      setLiveScoreOverlay(`${classified.emotion}: ${classified.confidence}%`, "Live private score");
+      setStatus("Camera is running locally. Live score updates on this device.");
+    } else {
+      setLiveScoreOverlay("No clear face", "Bring eyes and mouth into the frame");
+    }
+  } catch (error) {
+    setLiveScoreOverlay("Model loading...", "Live score will appear here");
+    setStatus(error?.message || "Face expression model is loading.");
+  }
+  liveScoreTimer = window.setTimeout(() => analyzeLiveCameraFrame(video), 900);
 }
 
 function frameSourceReady(media) {
@@ -613,7 +679,8 @@ function classifyScores(scores) {
   };
 }
 
-function updateResult(signal) {
+function updateResult(signal, options = {}) {
+  const { scrollMobile = true } = options;
   const result = classifyScores(signal.scores);
   const energy = Math.max(signal.scores.find((score) => score.name === "Happy")?.value || 0, signal.scores.find((score) => score.name === "Angry")?.value || 0, signal.scores.find((score) => score.name === "Fearful")?.value || 0, signal.scores.find((score) => score.name === "Surprised")?.value || 0);
   const tension = Math.max(signal.scores.find((score) => score.name === "Angry")?.value || 0, signal.scores.find((score) => score.name === "Fearful")?.value || 0, signal.scores.find((score) => score.name === "Self-conscious")?.value || 0, signal.scores.find((score) => score.name === "Surprised")?.value || 0, signal.scores.find((score) => score.name === "Disgusted")?.value || 0, signal.scores.find((score) => score.name === "Contempt")?.value || 0);
@@ -627,7 +694,8 @@ function updateResult(signal) {
   tensionMeter.style.width = `${Math.round(tension * 100)}%`;
   mixedMeter.style.width = `${Math.round(mixed * 100)}%`;
   setStatus("Analysis complete locally in this browser. No upload happened.");
-  scrollToResultOnMobile();
+  if (scrollMobile) scrollToResultOnMobile();
+  return result;
 }
 
 async function analyzeVisibleFrame() {
