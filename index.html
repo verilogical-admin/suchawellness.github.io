@@ -845,6 +845,178 @@
     margin-top: 1.6rem;
   }
 
+  .emotion-entry {
+    align-items: stretch;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.94), rgba(232,247,243,0.86));
+    border: 1px solid rgba(45,122,107,0.18);
+    box-shadow: 0 24px 70px rgba(22,63,53,0.12);
+    color: var(--text);
+    display: grid;
+    gap: 1.4rem;
+    grid-template-columns: minmax(0, 1.08fr) minmax(260px, 0.92fr);
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+    padding: 1.2rem;
+    text-decoration: none;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  }
+
+  .emotion-entry:hover,
+  .emotion-entry:focus-visible {
+    border-color: rgba(45,122,107,0.38);
+    box-shadow: 0 28px 78px rgba(22,63,53,0.16);
+    outline: none;
+    transform: translateY(-2px);
+  }
+
+  .emotion-entry-copy {
+    align-content: center;
+    display: grid;
+    gap: 0.85rem;
+    padding: clamp(1rem, 3vw, 2.2rem);
+  }
+
+  .emotion-entry-kicker {
+    color: var(--teal);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .emotion-entry-title {
+    color: var(--teal-dark);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.25rem, 5vw, 4.8rem);
+    font-weight: 400;
+    line-height: 0.98;
+  }
+
+  .emotion-entry-text {
+    color: var(--muted);
+    font-size: clamp(1rem, 1.7vw, 1.18rem);
+    line-height: 1.65;
+    max-width: 620px;
+  }
+
+  .emotion-entry-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 0.25rem;
+  }
+
+  .emotion-entry-pill {
+    align-items: center;
+    background: #163f35;
+    color: #fff;
+    display: inline-flex;
+    font-size: 0.9rem;
+    font-weight: 700;
+    gap: 0.48rem;
+    min-height: 44px;
+    padding: 0.72rem 0.95rem;
+  }
+
+  .emotion-entry-pill.secondary {
+    background: #fff;
+    border: 1px solid rgba(45,122,107,0.2);
+    color: var(--teal-dark);
+  }
+
+  .emotion-entry-privacy {
+    color: #31574e;
+    font-size: 0.84rem;
+    line-height: 1.55;
+    margin-top: 0.2rem;
+  }
+
+  .emotion-entry-visual {
+    background:
+      linear-gradient(180deg, rgba(22,63,53,0.96), rgba(45,122,107,0.9));
+    color: white;
+    display: grid;
+    min-height: 320px;
+    overflow: hidden;
+    place-items: center;
+    position: relative;
+  }
+
+  .emotion-entry-phone {
+    aspect-ratio: 9 / 16;
+    background: #fdfcf8;
+    border: 8px solid rgba(255,255,255,0.2);
+    box-shadow: 0 18px 46px rgba(0,0,0,0.24);
+    display: grid;
+    max-height: 360px;
+    max-width: 210px;
+    padding: 1rem;
+    place-items: center;
+    width: 46%;
+  }
+
+  .emotion-entry-face {
+    aspect-ratio: 1;
+    background:
+      radial-gradient(circle at 50% 38%, #f5c6a3 0 34%, transparent 35%),
+      linear-gradient(180deg, #d7f0ec, #fff8e4);
+    border-radius: 50%;
+    display: grid;
+    max-width: 150px;
+    position: relative;
+    width: 100%;
+  }
+
+  .emotion-entry-face::before,
+  .emotion-entry-face::after {
+    background: #163f35;
+    border-radius: 999px;
+    content: "";
+    height: 7px;
+    position: absolute;
+    top: 43%;
+    width: 7px;
+  }
+
+  .emotion-entry-face::before {
+    left: 34%;
+  }
+
+  .emotion-entry-face::after {
+    right: 34%;
+  }
+
+  .emotion-entry-smile {
+    border-bottom: 3px solid #163f35;
+    border-radius: 0 0 999px 999px;
+    bottom: 30%;
+    height: 18px;
+    left: 36%;
+    position: absolute;
+    width: 28%;
+  }
+
+  .emotion-entry-signal {
+    background: rgba(255,255,255,0.16);
+    border: 1px solid rgba(255,255,255,0.24);
+    color: rgba(255,255,255,0.92);
+    font-size: 0.76rem;
+    font-weight: 700;
+    padding: 0.6rem 0.75rem;
+    position: absolute;
+  }
+
+  .emotion-entry-signal.one {
+    left: 1rem;
+    top: 1rem;
+  }
+
+  .emotion-entry-signal.two {
+    bottom: 1rem;
+    right: 1rem;
+  }
+
   .home-gateway-grid {
     display: grid;
     gap: 1rem;
@@ -1994,6 +2166,43 @@
     .about-accent { display: none; }
     .screening-hero { display: grid; gap: 1rem; margin-bottom: 1.2rem; }
     .screening-tools { grid-template-columns: 1fr; }
+    .emotion-entry {
+      gap: 0;
+      grid-template-columns: 1fr;
+      margin-bottom: 1rem;
+      padding: 0.85rem;
+    }
+    .emotion-entry-copy {
+      padding: 1.1rem;
+    }
+    .emotion-entry-title {
+      font-size: clamp(2.35rem, 12vw, 3.4rem);
+    }
+    .emotion-entry-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      max-width: 360px;
+      width: 100%;
+    }
+    .emotion-entry-pill {
+      justify-content: center;
+      width: 100%;
+    }
+    .emotion-entry-privacy {
+      max-width: 360px;
+    }
+    .emotion-entry-visual {
+      min-height: 230px;
+    }
+    .emotion-entry-phone {
+      max-height: 240px;
+      width: min(48%, 150px);
+    }
+    .emotion-entry-signal {
+      font-size: 0.68rem;
+      max-width: 42%;
+      text-align: center;
+    }
     .home-gateway-grid,
     .home-gateway-card.is-wide {
       grid-template-columns: 1fr;
@@ -2143,6 +2352,25 @@
 <section id="take-test">
   <div class="section-eyebrow">Take Test</div>
   <div class="home-gateway reveal" aria-label="Sucha Wellness quick paths">
+    <a class="emotion-entry" href="/emo-diversity-training.html" aria-label="Detect your emotion now with private camera or upload analysis">
+      <span class="emotion-entry-copy">
+        <span class="emotion-entry-kicker">Private on-device check</span>
+        <span class="emotion-entry-title">Detect your emotion now</span>
+        <span class="emotion-entry-text">Use your camera, photo, or short video for a gentle facial-cue reflection before choosing your next step.</span>
+        <span class="emotion-entry-actions">
+          <span class="emotion-entry-pill">Open camera</span>
+          <span class="emotion-entry-pill secondary">Upload photo/video</span>
+        </span>
+        <span class="emotion-entry-privacy"><b>Photo/video is not uploaded.</b> Everything runs privately in your browser.</span>
+      </span>
+      <span class="emotion-entry-visual" aria-hidden="true">
+        <span class="emotion-entry-signal one">Happy 78%</span>
+        <span class="emotion-entry-phone">
+          <span class="emotion-entry-face"><span class="emotion-entry-smile"></span></span>
+        </span>
+        <span class="emotion-entry-signal two">Mixed cues 18%</span>
+      </span>
+    </a>
     <div class="home-gateway-grid">
       <a class="home-gateway-card" href="/tests">
         <span class="home-gateway-media">
