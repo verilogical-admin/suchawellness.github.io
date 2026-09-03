@@ -84,6 +84,10 @@ function scrollToResultOnMobile() {
   resultPanel?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+function isMobileLayout() {
+  return window.matchMedia("(max-width: 900px)").matches;
+}
+
 function loadFile(file) {
   if (!file) return;
   stopCamera();
@@ -158,10 +162,27 @@ async function startCamera() {
     video.srcObject = activeStream;
     setPreviewMedia(video);
     video.addEventListener("loadedmetadata", scrollToPreview, { once: true });
+    video.addEventListener("loadedmetadata", () => {
+      if (isMobileLayout()) analyzeCameraFrameWhenReady(video);
+    }, { once: true });
     setStatus("Camera is running locally in this browser. Nothing is uploaded.");
   } catch (error) {
     setStatus(error?.name === "NotAllowedError" ? "Camera permission was not allowed." : "Camera could not start on this device.");
   }
+}
+
+function analyzeCameraFrameWhenReady(video, attempt = 0) {
+  if (activeMedia !== video || !isMobileLayout()) return;
+  if (frameSourceReady(video)) {
+    setStatus("Camera is running locally. Analyzing the visible frame now.");
+    analyzeVisibleFrame();
+    return;
+  }
+  if (attempt >= 6) {
+    setStatus("Camera is running locally. Tap Analyze Visible Frame if the result has not appeared.");
+    return;
+  }
+  window.setTimeout(() => analyzeCameraFrameWhenReady(video, attempt + 1), 350);
 }
 
 function frameSourceReady(media) {
