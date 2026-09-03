@@ -374,8 +374,9 @@ function blendshapeScores(categories, landmarks = []) {
   const angerCore = intenseEyes * 0.72 + browDownStrong * 0.16 + squintStrong * 0.08 + pressStrong * 0.04;
   const sadnessMouth = Math.max(signalAbove(frown, 0.03, 0.22), signalAbove(mouthShrug, 0.04, 0.24), signalAbove(mouthLowerDown, 0.04, 0.26));
   const sadnessBrow = signalAbove(browInner, 0.05, 0.26);
+  const sadnessPattern = Math.min(sadnessMouth, sadnessBrow + 0.1);
   const lowAngleSadBias = Math.min(signalAbove(eyeDown, 0.08, 0.3), signalBelow(sadnessMouth, 0.14, 0.14), signalBelow(sadnessBrow, 0.14, 0.14));
-  const sadnessCore = clamp01(sadnessMouth * 0.62 + sadnessBrow * 0.38 - lowAngleSadBias * 0.42);
+  const sadnessCore = clamp01(sadnessPattern * 0.74 + sadnessBrow * 0.16 + sadnessMouth * 0.08 - lowAngleSadBias * 0.52);
   const clearSmile = signalAbove(smile, 0.22, 0.34);
   const neutralGuard = Math.max(signalAbove(neutral, 0.34, 0.36), signalBelow(expressive, 0.2, 0.24));
   const shameWithdrawal = Math.min(signalAbove(eyeDown, 0.22, 0.24) + eyeGeometry.narrow * 0.08, Math.max(pressStrong, sadnessBrow, sadnessMouth));
@@ -391,7 +392,7 @@ function blendshapeScores(categories, landmarks = []) {
     { name: "Eye expression cue", value: eyeExpression, text: "overall eye intensity from eye openness, brow closeness, brow slant, and asymmetry" },
     { name: "Anger eye cue", value: Math.max(angerEyePattern, geometryAnger, eyeGeometry.browClose * eyeGeometry.narrow), text: "lowered brow with narrowed eyes, tense wide eyes, or mouth press" },
     { name: "Surprise cue", value: surpriseCore, text: "wide eyes with jaw opening or stretched mouth" },
-    { name: "Sadness cue", value: sadnessCore, text: "inner brow lift with downturned or heavy mouth signals" },
+    { name: "Sadness cue", value: sadnessCore, text: "inner brow lift paired with downturned or heavy mouth signals" },
     { name: "Self-conscious cue", value: Math.min(shamePattern, 1 - neutralGuard * 0.82), text: "downward gaze combined with pressed mouth, sadness brow, or withdrawal tension" },
     { name: "Disgust cue", value: disgustCore, text: "nose sneer with upper-lip raise and low smile signal" },
     { name: "Contempt cue", value: contemptCore, text: "one-sided mouth movement with distancing tension" },
@@ -408,21 +409,22 @@ function blendshapeScores(categories, landmarks = []) {
   const selfConsciousRaw = clamp01(shamePattern * 0.68 + shameWithdrawal * 0.12 + sadnessCore * 0.04 - neutralGuard * 0.7 - browDownStrong * 0.16 - smile * 0.34 - clearSmile * 0.18);
   const selfConsciousNeutralCap = neutralGuard > 0.28 && shameTension < 0.34 ? 0.04 + shamePattern * 0.12 : 1;
   const selfConsciousScore = Math.min(selfConsciousRaw, selfConsciousNeutralCap);
-  const sadRaw = clamp01(sadnessCore * 0.7 + sadnessMouth * 0.16 + Math.max(eyeDown, sadnessBrow, eyeGeometry.browClose * 0.32) * 0.18 - lowAngleSadBias * 0.34 - neutralGuard * 0.34 - browDownStrong * 0.12 - clearSmile * 0.34 - smile * 0.2);
-  const sadSmileCap = clearSmile > 0.18 && sadnessBrow < 0.22 ? 0.1 + sadnessBrow * 0.28 + sadnessMouth * 0.08 : 1;
-  const sadNeutralCap = neutralGuard > 0.34 && sadnessBrow < 0.24 && sadnessMouth < 0.28 ? 0.06 + Math.max(sadnessBrow, sadnessMouth) * 0.14 : 1;
+  const sadRaw = clamp01(sadnessCore * 0.68 + sadnessPattern * 0.18 + Math.min(eyeDown, sadnessBrow + 0.1) * 0.08 - lowAngleSadBias * 0.46 - neutralGuard * 0.54 - browDownStrong * 0.18 - clearSmile * 0.42 - smile * 0.26);
+  const sadSmileCap = clearSmile > 0.14 && sadnessBrow < 0.34 ? 0.05 + sadnessBrow * 0.2 + sadnessPattern * 0.08 : 1;
+  const sadNeutralCap = neutralGuard > 0.22 && sadnessBrow < 0.34 && sadnessMouth < 0.42 ? 0.03 + sadnessPattern * 0.1 : 1;
   const sadScore = Math.min(sadRaw, sadSmileCap, sadNeutralCap);
+  const finalSadScore = sadScore < 0.16 ? 0 : sadScore;
 
   return [
     { name: "Happy", value: clamp01(clearSmile * 0.72 + mouthDimple * 0.14 + signalBelow(eyeExpression, 0.16, 0.2) * 0.08 - sadnessCore * 0.42 - sadnessMouth * 0.18 - frown * 0.32 - mouthPress * 0.16) },
-    { name: "Sad", value: sadScore },
+    { name: "Sad", value: finalSadScore },
     { name: "Self-conscious", value: selfConsciousScore < 0.12 ? 0 : selfConsciousScore },
     { name: "Angry", value: angryScore },
     { name: "Disgusted", value: disgustScore },
     { name: "Contempt", value: clamp01(contemptCore * 0.62 + signalAbove(smileAsymmetry, 0.12, 0.3) * 0.16 + signalAbove(mouthDimple, 0.08, 0.28) * 0.08 - clearSmile * 0.22 - sadnessCore * 0.14 - disgustCore * 0.1) },
     { name: "Surprised", value: clamp01(surpriseCore * 0.78 + eyeWideStrong * 0.12 + signalAbove(jawOpen, 0.12, 0.34) * 0.1 - roundWideEyeIntensity * 0.14 - wideAnger * 0.3 - intenseEyes * 0.16 - sadnessBrow * 0.18 - browDownStrong * 0.24 - pressStrong * 0.12 - smile * 0.14) },
     { name: "Fearful", value: clamp01(fearCore * 0.52 + Math.max(eyeWideStrong, eyeGeometry.wide) * 0.18 + sadnessBrow * 0.2 + pressStrong * 0.06 + mouthStretch * 0.04 - surpriseCore * 0.12 - browDownStrong * 0.16 - smile * 0.24) },
-    { name: "Calm", value: clamp01(neutral * 0.22 + (1 - expressive) * 0.12 + (1 - mouthPress) * 0.03 - Math.max(sadScore, clearSmile, angerCore, intenseEyes, eyeExpression, fearCore, surpriseCore, disgustCore, contemptCore, pressStrong) * 0.62 - smile * 0.12) }
+    { name: "Calm", value: clamp01(neutral * 0.22 + (1 - expressive) * 0.12 + (1 - mouthPress) * 0.03 - Math.max(finalSadScore, clearSmile, angerCore, intenseEyes, eyeExpression, fearCore, surpriseCore, disgustCore, contemptCore, pressStrong) * 0.62 - smile * 0.12) }
   ].sort((a, b) => b.value - a.value);
 }
 
@@ -472,7 +474,7 @@ function classifyScores(scores) {
       prompt: "Journal prompt: Is this more joy, sadness, relief, exhaustion, politeness, or a mix?"
     };
   }
-  if (primary.name === "Sad" && calm && (sad.value < 0.28 || sad.value < calm.value + 0.08)) {
+  if (primary.name === "Sad" && calm && (sad.value < 0.36 || sad.value < calm.value + 0.12)) {
     primary = calm;
   }
   if (primary.name === "Angry") {

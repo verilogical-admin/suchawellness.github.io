@@ -34,7 +34,7 @@
   .range-map,.emotion-vocab{display:grid;gap:10px;grid-template-columns:repeat(4,1fr);margin-top:24px}.range-map span,.emotion-vocab span{background:white;border:1px solid var(--line);color:#3f4d48;font-weight:900;padding:14px;text-align:center}.emotion-vocab{grid-template-columns:repeat(6,1fr)}.emotion-vocab span{font-size:.92rem;padding:11px 10px}
   .tool-shell{background:white;border:1px solid var(--line);box-shadow:var(--shadow);display:grid;gap:18px;grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr);margin-top:26px;padding:clamp(18px,4vw,30px)}
   .camera-box{background:#173f36;display:grid;min-height:360px;overflow:hidden;place-items:center;position:relative}.camera-box img,.camera-box video{height:100%;max-height:520px;object-fit:contain;width:100%}.placeholder{color:rgba(255,255,255,.78);font-weight:850;padding:2rem;text-align:center}
-  .actions{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1rem}.btn{background:var(--green);border:0;color:white;cursor:pointer;font-weight:950;min-height:44px;padding:.8rem 1rem;text-transform:uppercase}.btn.secondary{background:#fff;border:1px solid var(--line);color:var(--green)}.btn.warn{background:#b86d55}
+  .actions{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1rem}.btn{background:var(--green);border:0;color:white;cursor:pointer;font-weight:950;min-height:44px;padding:.8rem 1rem;text-transform:uppercase}.btn.secondary{background:#fff;border:1px solid var(--line);color:var(--green)}.btn.warn{background:#b86d55}#emo-camera-start,#upload-media{scroll-margin-top:96px}
   .field{display:grid;gap:.5rem;margin-top:1rem}.field span{color:var(--muted);font-size:.8rem;font-weight:950;letter-spacing:.1em;text-transform:uppercase}.field input{background:#fffdf6;border:1px solid var(--line);padding:.8rem;width:100%}
   .privacy-callout{background:#e7f6f1;border:2px solid rgba(45,122,107,.32);color:#173f36;font-weight:950;line-height:1.45;margin:1rem 0 0;padding:1rem;text-transform:none}.emotion-list{display:grid;gap:.55rem;margin-top:1rem}.emotion-row{align-items:center;display:grid;gap:.6rem;grid-template-columns:120px 1fr 42px}.emotion-row b{color:#173f36}.cue-insights{color:var(--muted);display:grid;gap:.45rem;margin:.65rem 0 0;padding-left:1.1rem}.cue-insights b{color:#173f36}.score{display:grid;gap:.75rem;margin-top:1rem}.meter{background:#e8ede9;height:10px;overflow:hidden}.meter i{background:linear-gradient(90deg,#2d7a6b,#efc84a,#b86d55);display:block;height:100%;width:0}.status{color:var(--muted);font-weight:850;min-height:1.6rem}.small{font-size:.9rem}
   .footer{border-top:1px solid var(--line);color:var(--muted);display:flex;flex-wrap:wrap;gap:1rem;padding:34px 0 46px}.footer a{color:var(--green);font-weight:850}
@@ -58,7 +58,7 @@
       <div class="orbit"><span><b>Name</b>Give the state a precise word.</span><span><b>Allow</b>Stop treating emotion as failure.</span><span><b>Regulate</b>Let the body settle before action.</span><span><b>Choose</b>Act from values, not panic.</span></div>
     </aside>
   </section>
-  <section class="section">
+  <section class="section" id="emotion-tool">
     <p class="eyebrow">Core lesson</p>
     <h2>Emotional range is resilience.</h2>
     <p class="section-intro">People often get stuck trying to be calm all the time. A healthier goal is range: recognizing different emotions early, respecting their signal, and responding without being ruled by them.</p>
@@ -79,7 +79,7 @@
     <div class="tool-shell">
       <div class="tool">
         <div class="camera-box" id="emo-preview"><span class="placeholder">Choose a photo/video or start the camera for a private check-in.</span></div>
-        <label class="field"><span>Photo or video from this device</span><input id="emo-file" type="file" accept="image/*,video/*"></label>
+        <label class="field" id="upload-media"><span>Photo or video from this device</span><input id="emo-file" type="file" accept="image/*,video/*"></label>
         <div class="actions">
           <button class="btn" id="emo-camera-start" type="button">Use Camera</button>
           <button class="btn secondary" id="emo-analyze" type="button">Analyze Visible Frame</button>
@@ -111,6 +111,6 @@
   </section>
 </main>
 <footer class="footer"><span>Emo Diversity Lab</span><a href="/skill-lab">Back to Skill Lab</a><a href="/legal-disclaimer">Legal Disclaimer</a></footer>
-<script type="module" src="/emo-diversity-training.js?v=2026-09-03-calm-over-sad"></script>
+<script type="module" src="/emo-diversity-training.js?v=2026-09-03-calm-first-sad"></script>
 </body>
 </html>
