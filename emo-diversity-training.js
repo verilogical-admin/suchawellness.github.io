@@ -62,6 +62,7 @@ function resetPreview() {
   activeFile = null;
   if (fileInput) fileInput.value = "";
   preview.innerHTML = '<button class="camera-refresh" id="emo-refresh" type="button" aria-label="Refresh emotion check">&#8635;</button><span class="placeholder">Choose a photo/video or start the camera for a private check-in.</span>';
+  wireRefreshButton();
   label.textContent = "No media analyzed yet.";
   summary.textContent = "Your browser-only reflection will appear here after analysis.";
   if (emotionList) emotionList.innerHTML = "";
@@ -80,7 +81,12 @@ function setPreviewMedia(element) {
 }
 
 function ensureRefreshButton() {
-  if (!preview || preview.querySelector("#emo-refresh")) return;
+  if (!preview) return;
+  const existingButton = preview.querySelector("#emo-refresh");
+  if (existingButton) {
+    wireRefreshButton(existingButton);
+    return;
+  }
   const button = document.createElement("button");
   button.className = "camera-refresh";
   button.id = "emo-refresh";
@@ -88,6 +94,21 @@ function ensureRefreshButton() {
   button.setAttribute("aria-label", "Refresh emotion check");
   button.innerHTML = "&#8635;";
   preview.append(button);
+  wireRefreshButton(button);
+}
+
+function refreshEmotionPage(event) {
+  event?.preventDefault();
+  event?.stopPropagation();
+  stopCamera();
+  window.location.reload();
+}
+
+function wireRefreshButton(button = preview?.querySelector("#emo-refresh")) {
+  if (!button || button.dataset.refreshWired === "true") return;
+  button.dataset.refreshWired = "true";
+  button.addEventListener("click", refreshEmotionPage);
+  button.addEventListener("pointerup", refreshEmotionPage);
 }
 
 function liveScoreOverlay() {
@@ -190,7 +211,15 @@ async function startCamera() {
   previousFrame = null;
   scrollToPreview();
   try {
-    activeStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+    activeStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: "user",
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        aspectRatio: { ideal: 4 / 3 }
+      },
+      audio: false
+    });
     const video = document.createElement("video");
     video.autoplay = true;
     video.muted = true;
@@ -220,7 +249,7 @@ function startLiveCameraScore(video) {
   stopLiveCameraScore();
   if (!isMobileLayout()) return;
   liveScoreActive = true;
-  setLiveScoreOverlay("Looking for face...", "Live private score");
+  setLiveScoreOverlay("Looking for face...", "Same private analyzer");
   analyzeLiveCameraFrame(video);
 }
 
@@ -235,7 +264,7 @@ async function analyzeLiveCameraFrame(video) {
     if (!liveScoreActive || activeMedia !== video) return;
     if (analysis?.scores?.length) {
       const classified = updateResult(analysis, { scrollMobile: false, setStatusMessage: false });
-      setLiveScoreOverlay(`${classified.emotion}: ${classified.confidence}%`, "Live private score");
+      setLiveScoreOverlay(`${classified.emotion}: ${classified.confidence}%`, "Same private analyzer");
       setStatus("Camera is running locally. Live score updates on this device.");
     } else {
       setLiveScoreOverlay("No clear face", "Bring eyes and mouth into the frame");
@@ -766,9 +795,10 @@ startCameraButton?.addEventListener("click", startCamera);
 analyzeButton?.addEventListener("click", () => analyzeVisibleFrame());
 clearButton?.addEventListener("click", resetPreview);
 preview?.addEventListener("click", (event) => {
-  if (event.target.closest("#emo-refresh")) window.location.reload();
+  if (event.target.closest("#emo-refresh")) refreshEmotionPage(event);
 });
 window.addEventListener("pagehide", stopCamera);
+wireRefreshButton();
 
 function handleLandingAction() {
   const params = new URLSearchParams(window.location.search);
