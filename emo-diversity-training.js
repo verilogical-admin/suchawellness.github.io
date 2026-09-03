@@ -309,11 +309,14 @@ function stableLiveCameraAnalysis(analysis) {
   const topScore = averagedScores[0]?.value || 0;
   const secondScore = averagedScores[1]?.value || 0;
   const hasClearMargin = topScore >= secondScore + 0.1;
-  const isStrongNonCalm = averagedClassification.emotion !== "Calm" && averagedClassification.confidence >= 46 && repeatedEmotionCount >= 2 && hasClearMargin;
+  const isStrongNonCalm = averagedClassification.emotion !== "Calm" && averagedClassification.confidence >= 62 && repeatedEmotionCount >= 3 && hasClearMargin;
 
   if (averagedClassification.emotion !== "Calm" && !isStrongNonCalm) {
     return {
-      scores: averagedScores.map((score) => score.name === "Calm" ? { ...score, value: Math.max(score.value, 0.46) } : score).sort((a, b) => b.value - a.value)
+      scores: averagedScores.map((score) => {
+        if (score.name === "Calm") return { ...score, value: Math.max(score.value, 0.58) };
+        return { ...score, value: Math.min(score.value, 0.34) };
+      }).sort((a, b) => b.value - a.value)
     };
   }
 
