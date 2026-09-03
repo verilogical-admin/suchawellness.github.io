@@ -515,7 +515,8 @@ function blendshapeScores(categories, landmarks = []) {
   const sadRaw = clamp01(sadnessCore * 0.76 + sadnessPattern * 0.18 + Math.min(eyeDown, sadnessBrowStrong) * 0.04 - lowAngleSadBias * 0.52 - neutralGuard * 0.64 - browDownStrong * 0.18 - surpriseSignal * 0.46 - clearSmile * 0.46 - smile * 0.3);
   const sadSmileCap = clearSmile > 0.12 && sadnessBrowStrong < 0.48 ? 0.03 + sadnessPattern * 0.08 : 1;
   const sadNeutralCap = neutralGuard > 0.18 && sadnessBrowStrong < 0.48 && sadnessMouthStrong < 0.52 ? 0.02 + sadnessPattern * 0.08 : 1;
-  const sadScore = Math.min(sadRaw, sadSmileCap, sadNeutralCap);
+  const sadSurpriseCap = surpriseSignal >= 0.28 && sadnessPattern < surpriseSignal + 0.18 ? 0.04 + sadnessPattern * 0.08 : 1;
+  const sadScore = Math.min(sadRaw, sadSmileCap, sadNeutralCap, sadSurpriseCap);
   const finalSadScore = sadScore < 0.22 ? 0 : sadScore;
   const calmBase = Math.max(signalBelow(expressive, 0.26, 0.34), neutral);
 
@@ -582,7 +583,7 @@ function classifyScores(scores) {
       prompt: "Journal prompt: Is this more joy, sadness, relief, exhaustion, politeness, or a mix?"
     };
   }
-  if (primary.name === "Sad" && surprised && surprised.value >= 0.34 && sad.value <= surprised.value + 0.12) {
+  if (primary.name === "Sad" && surprised && surprised.value >= 0.28 && sad.value <= surprised.value + 0.24) {
     primary = surprised;
   }
   if (primary.name === "Sad" && calm && (sad.value < 0.42 || sad.value < calm.value + 0.18)) {
