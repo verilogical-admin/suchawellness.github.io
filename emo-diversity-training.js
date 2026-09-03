@@ -503,6 +503,7 @@ function blendshapeScores(categories, landmarks = []) {
   const shameTension = Math.max(pressStrong, sadnessBrow * 0.84, sadnessMouth * 0.72);
   const shamePattern = Math.min(shameWithdrawal, shameTension);
   const surpriseCore = Math.min(signalAbove(eyeWide, 0.14, 0.34), Math.max(signalAbove(jawOpen, 0.12, 0.34), signalAbove(mouthStretch, 0.12, 0.32)));
+  const surpriseSignal = clamp01(surpriseCore * 0.88 + eyeWideStrong * 0.2 + signalAbove(jawOpen, 0.1, 0.34) * 0.14 + signalAbove(mouthStretch, 0.12, 0.32) * 0.08 - wideAnger * 0.14 - intenseEyes * 0.08 - sadnessBrow * 0.12 - browDownStrong * 0.16 - pressStrong * 0.08 - smile * 0.12);
   const noseSneerSignal = signalAbove(noseSneer, 0.1, 0.28);
   const mouthUpperSignal = signalAbove(mouthUpperUp, 0.12, 0.3);
   const disgustCore = Math.max(noseSneerSignal, Math.min(mouthUpperSignal, signalBelow(smile, 0.2, 0.18) + noseSneerSignal * 0.45));
@@ -531,7 +532,7 @@ function blendshapeScores(categories, landmarks = []) {
   const selfConsciousRaw = clamp01(shamePattern * 0.68 + shameWithdrawal * 0.12 + sadnessCore * 0.04 - neutralGuard * 0.7 - browDownStrong * 0.16 - smile * 0.34 - clearSmile * 0.18);
   const selfConsciousNeutralCap = neutralGuard > 0.28 && shameTension < 0.34 ? 0.04 + shamePattern * 0.12 : 1;
   const selfConsciousScore = Math.min(selfConsciousRaw, selfConsciousNeutralCap);
-  const sadRaw = clamp01(sadnessCore * 0.76 + sadnessPattern * 0.18 + Math.min(eyeDown, sadnessBrowStrong) * 0.04 - lowAngleSadBias * 0.52 - neutralGuard * 0.64 - browDownStrong * 0.18 - clearSmile * 0.46 - smile * 0.3);
+  const sadRaw = clamp01(sadnessCore * 0.76 + sadnessPattern * 0.18 + Math.min(eyeDown, sadnessBrowStrong) * 0.04 - lowAngleSadBias * 0.52 - neutralGuard * 0.64 - browDownStrong * 0.18 - surpriseSignal * 0.46 - clearSmile * 0.46 - smile * 0.3);
   const sadSmileCap = clearSmile > 0.12 && sadnessBrowStrong < 0.48 ? 0.03 + sadnessPattern * 0.08 : 1;
   const sadNeutralCap = neutralGuard > 0.18 && sadnessBrowStrong < 0.48 && sadnessMouthStrong < 0.52 ? 0.02 + sadnessPattern * 0.08 : 1;
   const sadScore = Math.min(sadRaw, sadSmileCap, sadNeutralCap);
@@ -545,7 +546,7 @@ function blendshapeScores(categories, landmarks = []) {
     { name: "Angry", value: angryScore },
     { name: "Disgusted", value: disgustScore },
     { name: "Contempt", value: clamp01(contemptCore * 0.62 + signalAbove(smileAsymmetry, 0.12, 0.3) * 0.16 + signalAbove(mouthDimple, 0.08, 0.28) * 0.08 - clearSmile * 0.22 - sadnessCore * 0.14 - disgustCore * 0.1) },
-    { name: "Surprised", value: clamp01(surpriseCore * 0.88 + eyeWideStrong * 0.2 + signalAbove(jawOpen, 0.1, 0.34) * 0.14 + signalAbove(mouthStretch, 0.12, 0.32) * 0.08 - wideAnger * 0.14 - intenseEyes * 0.08 - sadnessBrow * 0.12 - browDownStrong * 0.16 - pressStrong * 0.08 - smile * 0.12) },
+    { name: "Surprised", value: surpriseSignal },
     { name: "Fearful", value: clamp01(fearCore * 0.52 + Math.max(eyeWideStrong, eyeGeometry.wide) * 0.18 + sadnessBrow * 0.2 + pressStrong * 0.06 + mouthStretch * 0.04 - surpriseCore * 0.12 - browDownStrong * 0.16 - smile * 0.24) },
     { name: "Calm", value: clamp01(calmBase * 0.34 + (1 - expressive) * 0.1 + (1 - mouthPress) * 0.04 - Math.max(finalSadScore * 0.72, clearSmile, angerCore, intenseEyes * 0.82, fearCore, surpriseCore, disgustCore, contemptCore, pressStrong) * 0.48 - smile * 0.1) }
   ].sort((a, b) => b.value - a.value);
@@ -601,6 +602,9 @@ function classifyScores(scores) {
       prompt: "Journal prompt: Is this more joy, sadness, relief, exhaustion, politeness, or a mix?"
     };
   }
+  if (primary.name === "Sad" && surprised && surprised.value >= 0.34 && sad.value <= surprised.value + 0.12) {
+    primary = surprised;
+  }
   if (primary.name === "Sad" && calm && (sad.value < 0.42 || sad.value < calm.value + 0.18)) {
     primary = calm;
   }
@@ -612,7 +616,7 @@ function classifyScores(scores) {
   } else if (angry && angry.value >= 0.5 && primary.value <= angry.value) {
     primary = angry;
   }
-  if (surprised && surprised.value >= 0.42 && primary.value <= surprised.value + 0.04) {
+  if (surprised && surprised.value >= 0.34 && primary.value <= surprised.value + 0.08) {
     primary = surprised;
   }
   const confidence = Math.round(primary.value * 100);
