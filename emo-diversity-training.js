@@ -100,7 +100,7 @@ function clearLiveScoreOverlay() {
 }
 
 function scrollToPreview() {
-  preview?.scrollIntoView({ behavior: "smooth", block: "center" });
+  preview?.scrollIntoView({ behavior: "smooth", block: isMobileLayout() ? "start" : "center" });
 }
 
 function scrollToResultOnMobile() {
@@ -186,7 +186,7 @@ async function startCamera() {
     video.srcObject = activeStream;
     setPreviewMedia(video);
     setLiveScoreOverlay("Starting camera...", "Private on-device analysis");
-    video.addEventListener("loadedmetadata", scrollToPreview, { once: true });
+    if (!isMobileLayout()) video.addEventListener("loadedmetadata", scrollToPreview, { once: true });
     video.addEventListener("loadedmetadata", () => {
       if (isMobileLayout()) startLiveCameraScore(video);
     }, { once: true });
@@ -195,20 +195,6 @@ async function startCamera() {
   } catch (error) {
     setStatus(error?.name === "NotAllowedError" ? "Camera permission was not allowed." : "Camera could not start on this device.");
   }
-}
-
-function analyzeCameraFrameWhenReady(video, attempt = 0) {
-  if (activeMedia !== video || !isMobileLayout()) return;
-  if (frameSourceReady(video)) {
-    setStatus("Camera is running locally. Analyzing the visible frame now.");
-    analyzeVisibleFrame();
-    return;
-  }
-  if (attempt >= 6) {
-    setStatus("Camera is running locally. Tap Analyze Visible Frame if the result has not appeared.");
-    return;
-  }
-  window.setTimeout(() => analyzeCameraFrameWhenReady(video, attempt + 1), 350);
 }
 
 function stopLiveCameraScore() {
