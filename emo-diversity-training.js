@@ -482,8 +482,9 @@ function blendshapeScores(categories, landmarks = []) {
   const shameWithdrawal = Math.min(signalAbove(eyeDown, 0.22, 0.24) + eyeGeometry.narrow * 0.08, Math.max(pressStrong, sadnessBrow, sadnessMouth));
   const shameTension = Math.max(pressStrong, sadnessBrow * 0.84, sadnessMouth * 0.72);
   const shamePattern = Math.min(shameWithdrawal, shameTension);
-  const surpriseCore = Math.min(signalAbove(eyeWide, 0.14, 0.34), Math.max(signalAbove(jawOpen, 0.12, 0.34), signalAbove(mouthStretch, 0.12, 0.32)));
-  const surpriseSignal = clamp01(surpriseCore * 0.92 + eyeWideStrong * 0.24 + signalAbove(jawOpen, 0.1, 0.34) * 0.16 + signalAbove(mouthStretch, 0.12, 0.32) * 0.08 - wideAnger * 0.08 - intenseEyes * 0.04 - sadnessBrow * 0.1 - browDownStrong * 0.1 - pressStrong * 0.06 - smile * 0.1);
+  const surpriseMouth = Math.max(signalAbove(jawOpen, 0.09, 0.3), signalAbove(mouthStretch, 0.09, 0.28));
+  const surpriseCore = Math.min(Math.max(signalAbove(eyeWide, 0.1, 0.3), eyeGeometry.wide), surpriseMouth);
+  const surpriseSignal = clamp01(surpriseCore * 1.04 + eyeWideStrong * 0.28 + signalAbove(jawOpen, 0.08, 0.3) * 0.2 + signalAbove(mouthStretch, 0.09, 0.28) * 0.12 - wideAnger * 0.08 - intenseEyes * 0.04 - sadnessBrow * 0.06 - browDownStrong * 0.08 - pressStrong * 0.05 - smile * 0.1);
   const noseSneerSignal = signalAbove(noseSneer, 0.1, 0.28);
   const mouthUpperSignal = signalAbove(mouthUpperUp, 0.12, 0.3);
   const disgustCore = Math.max(noseSneerSignal, Math.min(mouthUpperSignal, signalBelow(smile, 0.2, 0.18) + noseSneerSignal * 0.45));
@@ -547,7 +548,7 @@ function blendshapeScores(categories, landmarks = []) {
   const sadRaw = clamp01(sadnessCore * 0.76 + sadnessPattern * 0.18 + Math.min(eyeDown, sadnessBrowStrong) * 0.04 - lowAngleSadBias * 0.52 - neutralGuard * 0.64 - browDownStrong * 0.18 - surpriseSignal * 0.46 - clearSmile * 0.46 - smile * 0.3);
   const sadSmileCap = clearSmile > 0.12 && sadnessBrowStrong < 0.48 ? 0.03 + sadnessPattern * 0.08 : 1;
   const sadNeutralCap = neutralGuard > 0.18 && sadnessBrowStrong < 0.48 && sadnessMouthStrong < 0.52 ? 0.02 + sadnessPattern * 0.08 : 1;
-  const sadSurpriseCap = surpriseSignal >= 0.28 && sadnessPattern < surpriseSignal + 0.18 ? 0.04 + sadnessPattern * 0.08 : 1;
+  const sadSurpriseCap = surpriseSignal >= 0.22 && (eyeWideStrong >= 0.16 || surpriseMouth >= 0.2) && sadnessPattern < surpriseSignal + 0.32 ? 0.02 + sadnessPattern * 0.05 : 1;
   const sadScore = Math.min(sadRaw, sadSmileCap, sadNeutralCap, sadSurpriseCap);
   const finalSadScore = sadScore < 0.22 ? 0 : sadScore;
   const calmBase = Math.max(signalBelow(expressive, 0.26, 0.34), neutral);
@@ -621,7 +622,7 @@ function classifyScores(scores) {
       prompt: "Journal prompt: Is this more joy, sadness, relief, exhaustion, politeness, or a mix?"
     };
   }
-  if (primary.name === "Sad" && surprised && surprised.value >= 0.28 && sad.value <= surprised.value + 0.24) {
+  if (primary.name === "Sad" && surprised && surprised.value >= 0.24 && sad.value <= surprised.value + 0.34) {
     primary = surprised;
   }
   if (primary.name === "Sad" && calm && (sad.value < 0.42 || sad.value < calm.value + 0.18)) {
