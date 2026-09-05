@@ -255,15 +255,17 @@ function normalizeMobileCameraScores(analysis) {
   const calm = analysis.scores.find((score) => score.name === "Calm") || { value: 0 };
   const surprised = analysis.scores.find((score) => score.name === "Surprised") || { value: 0 };
   const happy = analysis.scores.find((score) => score.name === "Happy") || { value: 0 };
+  const disgusted = analysis.scores.find((score) => score.name === "Disgusted") || { value: 0 };
   const nonAngryMax = Math.max(calm.value, surprised.value, happy.value);
-  const looksLikePhoneAngerArtifact = angry.value >= nonAngryMax && angry.value < 0.68 && surprised.value < 0.42 && happy.value < 0.38;
+  const hasCorroboratingExpression = surprised.value >= 0.46 || happy.value >= 0.42 || disgusted.value >= 0.46;
+  const looksLikePhoneAngerArtifact = angry.value >= nonAngryMax && !hasCorroboratingExpression;
 
   if (!looksLikePhoneAngerArtifact) return analysis;
 
   return {
     scores: analysis.scores.map((score) => {
-      if (score.name === "Angry") return { ...score, value: Math.min(score.value, 0.26) };
-      if (score.name === "Calm") return { ...score, value: Math.max(score.value, 0.56) };
+      if (score.name === "Angry") return { ...score, value: Math.min(score.value, 0.18) };
+      if (score.name === "Calm") return { ...score, value: Math.max(score.value, 0.62) };
       return score;
     }).sort((a, b) => b.value - a.value)
   };
