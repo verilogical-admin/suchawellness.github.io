@@ -253,21 +253,19 @@ function normalizeMobileCameraScores(analysis) {
   if (!analysis?.scores?.length) return analysis;
   const angry = analysis.scores.find((score) => score.name === "Angry") || { value: 0 };
   const calm = analysis.scores.find((score) => score.name === "Calm") || { value: 0 };
-  const surprised = analysis.scores.find((score) => score.name === "Surprised") || { value: 0 };
-  const happy = analysis.scores.find((score) => score.name === "Happy") || { value: 0 };
-  const nonAngryMax = Math.max(calm.value, surprised.value, happy.value);
+  const nonAngryScores = analysis.scores.filter((score) => score.name !== "Angry" && score.name !== "Calm");
+  const strongestEmotionCue = nonAngryScores.reduce((best, score) => score.value > best.value ? score : best, { name: "", value: 0 });
+  const nonAngryMax = Math.max(calm.value, strongestEmotionCue.value);
   const looksLikePhoneAngerArtifact = angry.value >= nonAngryMax;
 
   if (!looksLikePhoneAngerArtifact) return analysis;
-  const hasHappyCue = happy.value >= 0.22;
-  const hasSurpriseCue = surprised.value >= 0.22;
+  const hasMeaningfulEmotionCue = strongestEmotionCue.value >= 0.22;
 
   return {
     scores: analysis.scores.map((score) => {
       if (score.name === "Angry") return { ...score, value: 0.04 };
-      if (score.name === "Happy" && hasHappyCue) return { ...score, value: Math.max(score.value, 0.66) };
-      if (score.name === "Surprised" && hasSurpriseCue) return { ...score, value: Math.max(score.value, 0.66) };
-      if (score.name === "Calm") return { ...score, value: hasHappyCue || hasSurpriseCue ? Math.min(score.value, 0.34) : Math.max(score.value, 0.72) };
+      if (hasMeaningfulEmotionCue && score.name === strongestEmotionCue.name) return { ...score, value: Math.max(score.value, 0.66) };
+      if (score.name === "Calm") return { ...score, value: hasMeaningfulEmotionCue ? Math.min(score.value, 0.34) : Math.max(score.value, 0.72) };
       return score;
     }).sort((a, b) => b.value - a.value)
   };
