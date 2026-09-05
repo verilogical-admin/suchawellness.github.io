@@ -259,11 +259,13 @@ function normalizeMobileCameraScores(analysis) {
   const looksLikePhoneAngerArtifact = angry.value >= nonAngryMax;
 
   if (!looksLikePhoneAngerArtifact) return analysis;
+  const hasHappyCue = happy.value >= 0.22;
 
   return {
     scores: analysis.scores.map((score) => {
       if (score.name === "Angry") return { ...score, value: 0.04 };
-      if (score.name === "Calm") return { ...score, value: Math.max(score.value, 0.72) };
+      if (score.name === "Happy" && hasHappyCue) return { ...score, value: Math.max(score.value, 0.66) };
+      if (score.name === "Calm") return { ...score, value: hasHappyCue ? Math.min(score.value, 0.34) : Math.max(score.value, 0.72) };
       return score;
     }).sort((a, b) => b.value - a.value)
   };
