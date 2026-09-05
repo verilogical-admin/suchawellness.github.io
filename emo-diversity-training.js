@@ -245,6 +245,30 @@ async function analyzeMediaFrame(media) {
   return { scores: blendshapeScores(categories, result.faceLandmarks?.[0] || []) };
 }
 
+function isMobileCameraMedia(media) {
+  return isMobileLayout() && media instanceof HTMLVideoElement && media.srcObject === activeStream;
+}
+
+function normalizeMobileCameraScores(analysis) {
+  if (!analysis?.scores?.length) return analysis;
+  const angry = analysis.scores.find((score) => score.name === "Angry") || { value: 0 };
+  const calm = analysis.scores.find((score) => score.name === "Calm") || { value: 0 };
+  const surprised = analysis.scores.find((score) => score.name === "Surprised") || { value: 0 };
+  const happy = analysis.scores.find((score) => score.name === "Happy") || { value: 0 };
+  const nonAngryMax = Math.max(calm.value, surprised.value, happy.value);
+  const looksLikePhoneAngerArtifact = angry.value >= nonAngryMax && angry.value < 0.68 && surprised.value < 0.42 && happy.value < 0.38;
+
+  if (!looksLikePhoneAngerArtifact) return analysis;
+
+  return {
+    scores: analysis.scores.map((score) => {
+      if (score.name === "Angry") return { ...score, value: Math.min(score.value, 0.26) };
+      if (score.name === "Calm") return { ...score, value: Math.max(score.value, 0.56) };
+      return score;
+    }).sort((a, b) => b.value - a.value)
+  };
+}
+
 function frameSourceReady(media) {
   if (!media) return false;
   if (media instanceof HTMLImageElement) return Boolean(media.naturalWidth && media.naturalHeight);
@@ -775,7 +799,7 @@ async function analyzeVisibleFrame() {
     return;
   }
   try {
-    const analysis = await analyzeMediaFrame(media);
+    let analysis = await analyzeMediaFrame(media);
     if (!analysis?.scores?.length) {
       label.textContent = "No face expression detected.";
       summary.textContent = "I could not find a clear face expression in this photo or video frame. Try a front-facing, uncropped face with visible eyes and mouth.";
@@ -783,6 +807,9 @@ async function analyzeVisibleFrame() {
       if (cueInsightList) cueInsightList.innerHTML = "";
       setStatus("No face expression found. Nothing was uploaded.");
       return;
+    }
+    if (isMobileCameraMedia(media)) {
+      analysis = normalizeMobileCameraScores(analysis);
     }
     const result = updateResult(analysis);
     if (isMobileLayout() && activeMedia instanceof HTMLVideoElement) {
