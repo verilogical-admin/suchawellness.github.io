@@ -249,39 +249,24 @@ function isMobileCameraMedia(media) {
   return isMobileLayout() && media instanceof HTMLVideoElement && media.srcObject === activeStream;
 }
 
-function normalizeMobileCameraScores(analysis) {
-  if (!analysis?.scores?.length) return analysis;
-  const angry = analysis.scores.find((score) => score.name === "Angry") || { value: 0 };
-  const calm = analysis.scores.find((score) => score.name === "Calm") || { value: 0 };
-  const fearful = analysis.scores.find((score) => score.name === "Fearful") || { value: 0 };
-  const disgusted = analysis.scores.find((score) => score.name === "Disgusted") || { value: 0 };
-  const contempt = analysis.scores.find((score) => score.name === "Contempt") || { value: 0 };
-  const selfConscious = analysis.scores.find((score) => score.name === "Self-conscious") || { value: 0 };
-  const nonAngryScores = analysis.scores.filter((score) => score.name !== "Angry" && score.name !== "Calm");
-  const strongestEmotionCue = nonAngryScores.reduce((best, score) => score.value > best.value ? score : best, { name: "", value: 0 });
-  const nonAngryMax = Math.max(calm.value, strongestEmotionCue.value);
-  const hasAngerSupport = Math.max(fearful.value, disgusted.value, contempt.value, selfConscious.value) >= 0.28 || calm.value < 0.18 && angry.value >= 0.76;
-  const looksLikePhoneAngerArtifact = angry.value >= nonAngryMax && !hasAngerSupport;
-
-  if (!looksLikePhoneAngerArtifact) return analysis;
-  const hasMeaningfulEmotionCue = strongestEmotionCue.value >= 0.22;
-
-  return {
-    scores: analysis.scores.map((score) => {
-      if (score.name === "Angry") return { ...score, value: 0.04 };
-      if (hasMeaningfulEmotionCue && score.name === strongestEmotionCue.name) return { ...score, value: Math.max(score.value, 0.66) };
-      if (score.name === "Calm") return { ...score, value: hasMeaningfulEmotionCue ? Math.min(score.value, 0.34) : Math.max(score.value, 0.72) };
-      return score;
-    }).sort((a, b) => b.value - a.value)
-  };
-}
-
 function frameSourceReady(media) {
   if (!media) return false;
   if (media instanceof HTMLImageElement) return Boolean(media.naturalWidth && media.naturalHeight);
   if (media instanceof HTMLVideoElement) return Boolean(media.videoWidth && media.videoHeight);
+  if (media instanceof HTMLCanvasElement) return Boolean(media.width && media.height);
   if (typeof ImageBitmap !== "undefined" && media instanceof ImageBitmap) return Boolean(media.width && media.height);
   return false;
+}
+
+function captureVideoFrame(video) {
+  if (!frameSourceReady(video)) return video;
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const context = canvas.getContext("2d");
+  if (!context) return video;
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  return canvas;
 }
 
 function drawFrame(media) {
@@ -806,6 +791,9 @@ async function analyzeVisibleFrame() {
     return;
   }
   try {
+    if (isMobileCameraMedia(media)) {
+      media = captureVideoFrame(media);
+    }
     let analysis = await analyzeMediaFrame(media);
     if (!analysis?.scores?.length) {
       label.textContent = "No face expression detected.";
@@ -814,9 +802,6 @@ async function analyzeVisibleFrame() {
       if (cueInsightList) cueInsightList.innerHTML = "";
       setStatus("No face expression found. Nothing was uploaded.");
       return;
-    }
-    if (isMobileCameraMedia(media)) {
-      analysis = normalizeMobileCameraScores(analysis);
     }
     const result = updateResult(analysis);
     if (isMobileLayout() && activeMedia instanceof HTMLVideoElement) {
