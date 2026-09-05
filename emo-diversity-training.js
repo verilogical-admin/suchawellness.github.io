@@ -253,10 +253,15 @@ function normalizeMobileCameraScores(analysis) {
   if (!analysis?.scores?.length) return analysis;
   const angry = analysis.scores.find((score) => score.name === "Angry") || { value: 0 };
   const calm = analysis.scores.find((score) => score.name === "Calm") || { value: 0 };
+  const fearful = analysis.scores.find((score) => score.name === "Fearful") || { value: 0 };
+  const disgusted = analysis.scores.find((score) => score.name === "Disgusted") || { value: 0 };
+  const contempt = analysis.scores.find((score) => score.name === "Contempt") || { value: 0 };
+  const selfConscious = analysis.scores.find((score) => score.name === "Self-conscious") || { value: 0 };
   const nonAngryScores = analysis.scores.filter((score) => score.name !== "Angry" && score.name !== "Calm");
   const strongestEmotionCue = nonAngryScores.reduce((best, score) => score.value > best.value ? score : best, { name: "", value: 0 });
   const nonAngryMax = Math.max(calm.value, strongestEmotionCue.value);
-  const looksLikePhoneAngerArtifact = angry.value >= nonAngryMax;
+  const hasAngerSupport = Math.max(fearful.value, disgusted.value, contempt.value, selfConscious.value) >= 0.28 || calm.value < 0.18 && angry.value >= 0.76;
+  const looksLikePhoneAngerArtifact = angry.value >= nonAngryMax && !hasAngerSupport;
 
   if (!looksLikePhoneAngerArtifact) return analysis;
   const hasMeaningfulEmotionCue = strongestEmotionCue.value >= 0.22;
