@@ -32,7 +32,7 @@
   .section{padding:clamp(2.4rem,6vw,4.6rem) 0}.video-card{background:white;border:1px solid var(--line);box-shadow:var(--shadow);display:grid;gap:0;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);overflow:hidden}
   .video-frame{background:#102b26;position:relative}.video-frame::before{content:"";display:block;padding-top:56.25%}.video-frame iframe{border:0;height:100%;inset:0;position:absolute;width:100%}
   .video-copy{display:grid;gap:1rem;padding:clamp(20px,4vw,32px)}.tag-row{display:flex;flex-wrap:wrap;gap:.5rem}.tag-row span{background:#e7f6f1;color:var(--green);font-size:.78rem;font-weight:900;padding:.42rem .56rem;text-transform:uppercase}.video-copy p,.card p,.callout p{color:var(--muted);margin:0}
-  .prompt-grid,.resource-grid{display:grid;gap:14px;margin-top:22px}.prompt-grid{grid-template-columns:repeat(3,1fr)}.resource-grid{grid-template-columns:repeat(4,1fr)}.card,.callout{background:rgba(255,255,255,.82);border:1px solid var(--line);box-shadow:0 16px 42px rgba(22,63,53,.06);padding:20px}.card b{background:#fff3c6;color:#745a00;display:grid;height:40px;margin-bottom:14px;place-items:center;width:40px}.callout{border-left:4px solid var(--rose)}
+  .prompt-grid,.resource-grid{display:grid;gap:14px;margin-top:22px}.prompt-grid{grid-template-columns:repeat(3,1fr)}.resource-grid{grid-template-columns:repeat(4,1fr)}.card,.callout{background:rgba(255,255,255,.82);border:1px solid var(--line);box-shadow:0 16px 42px rgba(22,63,53,.06);display:block;padding:20px}.card b{background:#fff3c6;color:#745a00;display:grid;height:40px;margin-bottom:14px;min-width:40px;padding:0 .7rem;place-items:center;width:max-content}.callout{border-left:4px solid var(--rose)}
   .footer{border-top:1px solid var(--line);color:var(--muted);display:flex;flex-wrap:wrap;gap:1rem;padding:34px 0 46px}.footer a{color:var(--green);font-weight:850}
   @media(max-width:860px){.hero,.video-card,.prompt-grid,.resource-grid{grid-template-columns:1fr}.nav{align-items:flex-start;flex-direction:column;padding:1rem 0}.nav-links{width:100%}.nav-links a{background:white;border:1px solid var(--line);padding:.55rem .7rem}.actions{display:grid}.btn{width:100%;text-align:center}.note-panel{order:-1}}
   @media(max-width:560px){:root{--content:min(100vw - 28px,820px)}h1{font-size:clamp(2.55rem,14vw,4rem)}.video-copy,.card,.callout{padding:18px}.footer{display:grid}}
@@ -102,18 +102,55 @@
     </div>
   </section>
 
-  <section class="section">
-    <p class="eyebrow">Future Library</p>
-    <h2>Useful categories to build next.</h2>
+  <section class="section" id="video-categories">
+    <p class="eyebrow">Browse by Need</p>
+    <h2>Choose a useful direction.</h2>
+    <p class="section-intro">Each lane is designed for careful viewing, reflection, and better questions. The videos remain informational material, not clinical advice.</p>
     <div class="resource-grid">
-      <article class="card"><h3>Self-understanding</h3><p>Videos that help people name patterns without shaming themselves.</p></article>
-      <article class="card"><h3>Relationships</h3><p>Communication, boundaries, repair, and conflict literacy.</p></article>
-      <article class="card"><h3>Emotional skills</h3><p>Reflection, regulation, patience, triggers, and emotional range.</p></article>
-      <article class="card"><h3>Care navigation</h3><p>How to think about seeking qualified support and preparing for appointments.</p></article>
+      <a class="card" href="#self-understanding"><b>01</b><h3>Self-understanding</h3><p>Name patterns without shaming yourself.</p></a>
+      <a class="card" href="#relationships"><b>02</b><h3>Relationships</h3><p>Communication, boundaries, repair, and conflict literacy.</p></a>
+      <a class="card" href="#emotional-skills"><b>03</b><h3>Emotional skills</h3><p>Reflection, regulation, patience, triggers, and emotional range.</p></a>
+      <a class="card" href="#care-navigation"><b>04</b><h3>Care navigation</h3><p>Preparing for qualified support and better appointments.</p></a>
     </div>
-    <div class="callout" style="margin-top:18px">
-      <h3>Editorial standard</h3>
-      <p>Videos added here should be framed with context, limitations, and reflection prompts. The page should stay calm, useful, and careful rather than sensational.</p>
+  </section>
+
+  <section class="section" id="self-understanding">
+    <p class="eyebrow">Self-understanding</p>
+    <h2>Name the pattern without shame.</h2>
+    <div class="prompt-grid">
+      <article class="card"><b>Watch</b><h3>Pattern language</h3><p>Look for words that describe behavior, emotion, and context without turning a person into a label.</p></article>
+      <article class="card"><b>Reflect</b><h3>Personal fit</h3><p>Ask what applies to your life, what does not, and what needs more evidence before you accept it.</p></article>
+      <article class="card"><b>Use</b><h3>Journal gently</h3><p>Write one observation you can explore with curiosity instead of blame.</p></article>
+    </div>
+  </section>
+
+  <section class="section" id="relationships">
+    <p class="eyebrow">Relationships</p>
+    <h2>Practice clearer connection.</h2>
+    <div class="prompt-grid">
+      <article class="card"><b>Watch</b><h3>Communication</h3><p>Notice language that lowers defensiveness and makes the real issue easier to name.</p></article>
+      <article class="card"><b>Reflect</b><h3>Boundaries</h3><p>Separate kindness from overextending, and respect from avoiding hard conversations.</p></article>
+      <article class="card"><b>Use</b><h3>Repair</h3><p>Choose one respectful sentence you could use in a tense conversation.</p></article>
+    </div>
+  </section>
+
+  <section class="section" id="emotional-skills">
+    <p class="eyebrow">Emotional Skills</p>
+    <h2>Build steadiness without shutting down.</h2>
+    <div class="prompt-grid">
+      <article class="card"><b>Watch</b><h3>Regulation</h3><p>Look for practical ideas about triggers, patience, emotional range, and returning to center.</p></article>
+      <article class="card"><b>Reflect</b><h3>Range</h3><p>Ask which emotions you allow, which ones you rush past, and which ones feel harder to name.</p></article>
+      <article class="card"><b>Use</b><h3>One pause</h3><p>Pick a small pause, breath, note, or reframe to try before reacting.</p></article>
+    </div>
+  </section>
+
+  <section class="section" id="care-navigation">
+    <p class="eyebrow">Care Navigation</p>
+    <h2>Prepare for qualified support.</h2>
+    <div class="prompt-grid">
+      <article class="card"><b>Watch</b><h3>Context</h3><p>Use videos to gather language and questions, not to self-diagnose or replace professional care.</p></article>
+      <article class="card"><b>Reflect</b><h3>Appointment notes</h3><p>Write symptoms, patterns, timelines, concerns, and questions before speaking with a clinician.</p></article>
+      <article class="card"><b>Use</b><h3>Escalate wisely</h3><p>Bring urgent, risky, medical, medication, or safety questions to qualified professionals promptly.</p></article>
     </div>
   </section>
 </main>
