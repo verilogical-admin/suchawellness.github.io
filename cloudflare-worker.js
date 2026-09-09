@@ -11,7 +11,7 @@ const SECURITY_HEADERS = {
   'Permissions-Policy': 'accelerometer=(), autoplay=(), camera=(self), clipboard-read=(), clipboard-write=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(self), usb=()',
 };
 
-const STATIC_ASSET_VERSION = '2026-08-27-skill-access-v2';
+const STATIC_ASSET_VERSION = '2026-09-09-emo-cache-fix-v1';
 
 const ROBOTS_TXT = `# Sucha™ Wellness allows responsible search and AI discovery so people can find
 # mental wellness screening, private journaling, and care-navigation resources.
@@ -434,6 +434,12 @@ function staticContentType(pathname) {
   if (pathname.endsWith('.txt')) return 'text/plain; charset=utf-8';
   if (pathname.endsWith('.xml')) return 'application/xml; charset=utf-8';
   return 'application/octet-stream';
+}
+
+function staticCacheControl(pathname) {
+  if (pathname.endsWith('.html')) return 'no-cache, max-age=0, must-revalidate';
+  if (pathname.endsWith('.js')) return 'public, max-age=60, must-revalidate';
+  return 'public, max-age=300';
 }
 
 async function serveAdminPage() {
@@ -1990,6 +1996,7 @@ export default {
       '/empathy-test': '/empathy-test.html',
       '/empathy-lab': '/empathy-lab.html',
       '/eq-lab': '/eq-lab.html',
+      '/emo-diversity-training': '/emo-diversity-training.html',
       '/adhd-planner': '/adhd-planner.html',
       '/journal': '/journal.html',
       '/transactional-analysis': '/transactional-analysis.html',
@@ -2007,6 +2014,7 @@ export default {
       headers.set(name, value);
     });
     headers.set('Content-Type', staticContentType(staticPath));
+    headers.set('Cache-Control', staticCacheControl(staticPath));
 
     return new Response(request.method === 'HEAD' ? null : response.body, {
       status: response.status,
