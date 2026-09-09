@@ -21,10 +21,11 @@ let activeObjectUrl = null;
 let activeStream = null;
 let activeFile = null;
 let activeBitmap = null;
-let previousFrame = null;
 let faceLandmarker = null;
 let faceMode = "IMAGE";
 let lastCueInsights = [];
+let liveCameraTimer = null;
+let liveCameraBusy = false;
 
 const faceModelUrl = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task";
 const wasmRootUrl = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
@@ -55,7 +56,6 @@ function resetPreview() {
   stopCamera();
   clearObjectUrl();
   clearBitmap();
-  previousFrame = null;
   activeMedia = null;
   activeFile = null;
   if (fileInput) fileInput.value = "";
@@ -149,7 +149,6 @@ function loadFile(file) {
   clearObjectUrl();
   clearBitmap();
   activeFile = file;
-  previousFrame = null;
 
   if (file.type.startsWith("video/")) {
     activeObjectUrl = URL.createObjectURL(file);
@@ -206,7 +205,6 @@ async function startCamera() {
   }
   stopCamera();
   clearObjectUrl();
-  previousFrame = null;
   scrollToPreview();
   try {
     activeStream = await navigator.mediaDevices.getUserMedia({
@@ -222,18 +220,58 @@ async function startCamera() {
     video.autoplay = true;
     video.muted = true;
     video.playsInline = true;
+    video.addEventListener("loadedmetadata", () => startMobileLiveCameraScore(video), { once: true });
     video.srcObject = activeStream;
     setPreviewMedia(video);
     clearLiveScoreOverlay();
     if (!isMobileLayout()) video.addEventListener("loadedmetadata", scrollToPreview, { once: true });
-    setStatus("Camera is running locally. Frame your face, then tap Analyze Visible Frame. Nothing is uploaded.");
+    if (frameSourceReady(video)) startMobileLiveCameraScore(video);
+    setStatus(isMobileLayout() ? "Camera is running locally with live private scoring. Nothing is uploaded." : "Camera is running locally. Frame your face, then tap Analyze Visible Frame. Nothing is uploaded.");
   } catch (error) {
     setStatus(error?.name === "NotAllowedError" ? "Camera permission was not allowed." : "Camera could not start on this device.");
   }
 }
 
 function stopLiveCameraScore() {
+  if (liveCameraTimer) {
+    window.clearTimeout(liveCameraTimer);
+    liveCameraTimer = null;
+  }
+  liveCameraBusy = false;
   clearLiveScoreOverlay();
+}
+
+function startMobileLiveCameraScore(video) {
+  stopLiveCameraScore();
+  if (!isMobileLayout()) return;
+  setLiveScoreOverlay("Reading face...", "Live private score");
+
+  const tick = async () => {
+    if (activeMedia !== video || video.srcObject !== activeStream || !isMobileLayout()) {
+      stopLiveCameraScore();
+      return;
+    }
+    if (!liveCameraBusy && frameSourceReady(video)) {
+      liveCameraBusy = true;
+      try {
+        const analysis = await analyzeMediaFrame(video);
+        if (analysis?.scores?.length) {
+          const result = updateResult(analysis, { scrollMobile: false, setStatusMessage: false });
+          setLiveScoreOverlay(`${result.emotion}: ${result.confidence}%`, "Live private score");
+          setStatus("Live camera analysis is running locally. Nothing is uploaded.");
+        } else {
+          setLiveScoreOverlay("No clear face", "Live private score");
+        }
+      } catch {
+        setLiveScoreOverlay("Model loading...", "Live private score");
+      } finally {
+        liveCameraBusy = false;
+      }
+    }
+    liveCameraTimer = window.setTimeout(tick, 850);
+  };
+
+  liveCameraTimer = window.setTimeout(tick, 250);
 }
 
 async function analyzeMediaFrame(media) {
@@ -245,10 +283,6 @@ async function analyzeMediaFrame(media) {
   return { scores: blendshapeScores(categories, result.faceLandmarks?.[0] || []) };
 }
 
-function isMobileCameraMedia(media) {
-  return isMobileLayout() && media instanceof HTMLVideoElement && media.srcObject === activeStream;
-}
-
 function frameSourceReady(media) {
   if (!media) return false;
   if (media instanceof HTMLImageElement) return Boolean(media.naturalWidth && media.naturalHeight);
@@ -256,30 +290,6 @@ function frameSourceReady(media) {
   if (media instanceof HTMLCanvasElement) return Boolean(media.width && media.height);
   if (typeof ImageBitmap !== "undefined" && media instanceof ImageBitmap) return Boolean(media.width && media.height);
   return false;
-}
-
-function captureVideoFrame(video) {
-  if (!frameSourceReady(video)) return video;
-  const canvas = document.createElement("canvas");
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  const context = canvas.getContext("2d");
-  if (!context) return video;
-  context.drawImage(video, 0, 0, canvas.width, canvas.height);
-  return canvas;
-}
-
-function drawFrame(media) {
-  if (!frameSourceReady(media)) return null;
-  const width = media instanceof HTMLImageElement ? media.naturalWidth : media.width || media.videoWidth;
-  const height = media instanceof HTMLImageElement ? media.naturalHeight : media.height || media.videoHeight;
-  const scale = Math.min(1, 180 / Math.max(width, height));
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round(width * scale));
-  canvas.height = Math.max(1, Math.round(height * scale));
-  const context = canvas.getContext("2d", { willReadFrequently: true });
-  context.drawImage(media, 0, 0, canvas.width, canvas.height);
-  return context.getImageData(0, 0, canvas.width, canvas.height);
 }
 
 async function decodeImageFile(file) {
@@ -299,48 +309,6 @@ async function decodeImageFile(file) {
     img.onerror = () => reject(new Error("Could not decode image."));
     img.src = dataUrl;
   });
-}
-
-function analyzePixels(frame) {
-  const data = frame.data;
-  const luminance = [];
-  let totalLight = 0;
-  let totalSaturation = 0;
-  let totalWarmth = 0;
-  let totalBlue = 0;
-  let motion = 0;
-
-  for (let i = 0; i < data.length; i += 4) {
-    const r = data[i] / 255;
-    const g = data[i + 1] / 255;
-    const b = data[i + 2] / 255;
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    const light = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    luminance.push(light);
-    totalLight += light;
-    totalSaturation += max === 0 ? 0 : (max - min) / max;
-    totalWarmth += r + g * 0.28;
-    totalBlue += b;
-
-    if (previousFrame?.data?.length === data.length) {
-      motion += Math.abs(data[i] - previousFrame.data[i]) + Math.abs(data[i + 1] - previousFrame.data[i + 1]) + Math.abs(data[i + 2] - previousFrame.data[i + 2]);
-    }
-  }
-
-  const count = luminance.length || 1;
-  const lightAverage = totalLight / count;
-  const saturationAverage = totalSaturation / count;
-  const contrast = Math.sqrt(luminance.reduce((sum, value) => sum + (value - lightAverage) ** 2, 0) / count);
-  const warmth = totalWarmth / Math.max(totalBlue, 1);
-  const motionScore = Math.min(1, motion / (count * 255 * 3 * 0.12));
-  previousFrame = frame;
-
-  const energy = Math.min(1, lightAverage * 0.45 + saturationAverage * 0.38 + motionScore * 0.3);
-  const tension = Math.min(1, contrast * 1.9 + motionScore * 0.42 + (warmth < 1.05 ? 0.16 : 0));
-  const mixed = Math.min(1, Math.abs(energy - tension) < 0.18 ? 0.36 + saturationAverage * 0.12 : (energy + tension) * 0.26);
-
-  return { lightAverage, saturationAverage, contrast, warmth, motionScore, energy, tension, mixed };
 }
 
 function clamp01(value) {
@@ -791,9 +759,6 @@ async function analyzeVisibleFrame() {
     return;
   }
   try {
-    if (isMobileCameraMedia(media)) {
-      media = captureVideoFrame(media);
-    }
     let analysis = await analyzeMediaFrame(media);
     if (!analysis?.scores?.length) {
       label.textContent = "No face expression detected.";
@@ -803,9 +768,9 @@ async function analyzeVisibleFrame() {
       setStatus("No face expression found. Nothing was uploaded.");
       return;
     }
-    const result = updateResult(analysis);
+    const result = updateResult(analysis, { scrollMobile: !(isMobileLayout() && activeMedia instanceof HTMLVideoElement) });
     if (isMobileLayout() && activeMedia instanceof HTMLVideoElement) {
-      setLiveScoreOverlay(`${result.emotion}: ${result.confidence}%`, "Frame analysis. Not live.");
+      setLiveScoreOverlay(`${result.emotion}: ${result.confidence}%`, "Camera analysis. Nothing uploaded.");
     }
   } catch (error) {
     label.textContent = "Face model could not run.";
