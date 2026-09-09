@@ -1,4 +1,4 @@
-import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/vision_bundle.mjs";
+import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/vision_bundle.mjs";
 
 const fileInput = document.querySelector("#emo-file");
 const preview = document.querySelector("#emo-preview");
@@ -28,7 +28,8 @@ let liveCameraTimer = null;
 let liveCameraBusy = false;
 
 const faceModelUrl = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task";
-const wasmRootUrl = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
+const analyzerVersion = "2026-09-09-anger-calibrated-v2";
+const wasmRootUrl = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm";
 
 function setStatus(message) {
   if (statusText) statusText.textContent = message;
@@ -258,7 +259,7 @@ function startMobileLiveCameraScore(video) {
         if (analysis?.scores?.length) {
           const result = updateResult(analysis, { scrollMobile: false, setStatusMessage: false });
           setLiveScoreOverlay(`${result.emotion}: ${result.confidence}%`, "Live private score");
-          setStatus("Live camera analysis is running locally. Nothing is uploaded.");
+          setStatus(`Live camera analysis is running locally. Nothing is uploaded. Analyzer ${analyzerVersion}.`);
         } else {
           setLiveScoreOverlay("No clear face", "Live private score");
         }
@@ -475,9 +476,29 @@ function blendshapeScores(categories, landmarks = []) {
   const disgustPattern = Math.max(disgustCore, Math.min(noseSneerSignal + 0.12, mouthUpperSignal + 0.08));
   const contemptCore = Math.min(signalAbove(smileAsymmetry, 0.12, 0.3), Math.max(signalAbove(mouthPress, 0.14, 0.3), signalAbove(mouthDimple, 0.08, 0.28)));
   const fearCore = Math.min(signalAbove(eyeWide, 0.12, 0.34) + sadnessBrow * 0.24, signalAbove(jawOpen, 0.1, 0.34) + pressStrong * 0.2);
+  const modelBrowDown = signalAbove(browDown, 0.1, 0.3);
+  const modelEyeSquint = signalAbove(eyeSquint, 0.1, 0.3);
+  const modelMouthTension = Math.max(
+    pressStrong,
+    signalAbove(mouthPress, 0.12, 0.3),
+    signalAbove(frown, 0.05, 0.25),
+    signalAbove(mouthStretch, 0.18, 0.28) * 0.25
+  );
+  const geometryAngerEvidence = Math.min(
+    Math.max(eyeGeometry.narrow, eyeGeometry.browClose * 0.72, eyeGeometry.browPinch * 0.62),
+    Math.max(eyeGeometry.browSlant, modelBrowDown, modelMouthTension)
+  );
+  const angerEvidence = Math.max(
+    Math.min(modelBrowDown, Math.max(modelEyeSquint, modelMouthTension, eyeGeometry.narrow * 0.45)),
+    Math.min(modelEyeSquint, modelMouthTension),
+    geometryAngerEvidence * 0.45
+  );
+  const directAngerCue = angerEvidence;
+  const clearAngerPattern = angerEvidence;
+  const angerActivation = angerEvidence;
   lastCueInsights = [
     { name: "Eye expression cue", value: eyeExpression, text: "overall eye intensity from eye openness, brow closeness, brow slant, and asymmetry" },
-    { name: "Anger eye cue", value: Math.max(angerEyePattern, geometryAnger, eyeGeometry.browClose * eyeGeometry.narrow), text: "lowered brow with narrowed eyes, tense wide eyes, or mouth press" },
+    { name: "Anger cue", value: angerEvidence, text: "lowered brow or eye narrowing paired with mouth tension" },
     { name: "Surprise cue", value: surpriseCore, text: "wide eyes with jaw opening or stretched mouth" },
     { name: "Sadness cue", value: sadnessCore, text: "inner brow lift paired with downturned or heavy mouth signals" },
     { name: "Self-conscious cue", value: Math.min(shamePattern, 1 - neutralGuard * 0.82), text: "downward gaze combined with pressed mouth, sadness brow, or withdrawal tension" },
@@ -486,42 +507,23 @@ function blendshapeScores(categories, landmarks = []) {
     { name: "Happy cue", value: clearSmile, text: "clear smile signal, especially when sadness cues are low" },
     { name: "Fear cue", value: fearCore, text: "wide eyes with alert brow or mouth tension" }
   ].sort((a, b) => b.value - a.value);
-  const eyeOnlyAnger = Math.max(angerEyePattern, geometryAnger);
-  const angerNeutralGuard = neutralGuard * signalBelow(angerEyePattern, 0.3, 0.24);
-  const angryRaw = clamp01(angerCore * 0.6 + angerEyePattern * 0.28 + intenseEyes * 0.1 + eyeGeometry.browSlant * 0.06 + browDownStrong * 0.06 + eyeOnlyAnger * 0.05 - disgustPattern * 0.34 - surpriseSignal * 0.28 - sadnessBrow * 0.1 - sadnessMouth * 0.08 - clearSmile * 0.34 - smile * 0.2 - angerNeutralGuard * 0.14);
-  const angrySmileCap = clearSmile > 0.2 && angerEyePattern < 0.62 ? 0.18 + angerEyePattern * 0.18 : 1;
-  const angryNeutralCap = neutralGuard > 0.36 && angerEyePattern < 0.28 ? 0.18 + angerEyePattern * 0.44 : 1;
-  const angryEyeBoost = Math.max(
-    Math.min(eyeGeometry.narrow, Math.max(eyeGeometry.browClose, eyeGeometry.browSlant, eyeGeometry.browPinch)),
-    Math.min(eyeGeometry.browSlant, Math.max(pressStrong, browLowerSignal))
+  let angryScore = clamp01(
+    angerEvidence * 0.84 +
+    modelBrowDown * 0.08 +
+    modelMouthTension * 0.08 -
+    clearSmile * 0.45 -
+    surpriseSignal * 0.35 -
+    disgustPattern * 0.28 -
+    neutralGuard * 0.28
   );
-  const angerActivation = Math.max(
-    browLowerSignal,
-    Math.min(eyeGeometry.narrow, Math.max(eyeGeometry.browClose, eyeGeometry.browSlant, eyeGeometry.browPinch)),
-    Math.min(pressStrong, eyeGeometry.browSlant)
-  );
-  const clearAngerPattern = Math.max(
-    Math.min(browLowerSignal, Math.max(squintStrong, eyeGeometry.narrow, eyeGeometry.browPinch)),
-    Math.min(eyeGeometry.narrow, eyeGeometry.browClose, eyeGeometry.browSlant + 0.12),
-    Math.min(pressStrong, Math.max(browLowerSignal, eyeGeometry.browSlant))
-  );
-  const directAngerCue = Math.max(
-    Math.min(signalAbove(browDown, 0.06, 0.24), signalAbove(eyeSquint, 0.06, 0.24) + eyeGeometry.narrow * 0.44),
-    Math.min(signalAbove(browDown, 0.06, 0.24), pressStrong + frown * 0.28),
-    Math.min(eyeGeometry.narrow, Math.max(eyeGeometry.browClose, eyeGeometry.browSlant, eyeGeometry.browPinch) + signalAbove(browDown, 0.08, 0.24) * 0.32)
-  );
-  const angryDefaultCap = neutralGuard > 0.18 && clearSmile < 0.12 && angerActivation < 0.48 ? 0.08 + angerActivation * 0.34 : 1;
-  const angryFloor = Math.max(
-    angryEyeBoost > 0.5 && angerActivation > 0.42 && disgustPattern < 0.34 && surpriseSignal < 0.36 ? angryEyeBoost * 0.72 : 0,
-    clearAngerPattern > 0.34 && clearSmile < 0.22 && surpriseSignal < 0.42 ? 0.32 + clearAngerPattern * 0.46 : 0,
-    directAngerCue > 0.16 && clearSmile < 0.28 && surpriseSignal < 0.46 ? 0.26 + directAngerCue * 0.58 : 0
-  );
-  let angryScore = angerActivation < 0.26 ? Math.min(angryRaw, 0.1) : Math.max(Math.min(angryRaw, angrySmileCap, angryNeutralCap, angryDefaultCap), angryFloor);
-  if (directAngerCue > 0.16) {
-    angryScore = Math.max(angryScore, angryFloor);
+  if (neutralGuard > 0.18 && angerEvidence < 0.3 && clearSmile < 0.2 && surpriseSignal < 0.28 && disgustPattern < 0.28) {
+    angryScore = Math.min(angryScore, 0.08);
   }
-  if (neutralGuard > 0.16 && directAngerCue < 0.14 && angerActivation < 0.34 && surpriseSignal < 0.3 && disgustPattern < 0.28 && clearSmile < 0.18) {
-    angryScore = Math.min(angryScore, 0.06 + angerActivation * 0.18);
+  if (clearSmile > 0.22 && angerEvidence < 0.52) {
+    angryScore = Math.min(angryScore, 0.14);
+  }
+  if (surpriseSignal > 0.3 && angerEvidence < surpriseSignal + 0.18) {
+    angryScore = Math.min(angryScore, 0.16 + angerEvidence * 0.2);
   }
   const disgustRaw = clamp01(disgustPattern * 0.72 + noseSneerSignal * 0.18 + mouthUpperSignal * 0.1 - clearSmile * 0.34 - smile * 0.22 - sadnessCore * 0.14 - angerCore * 0.08);
   const disgustSmileCap = clearSmile > 0.2 && noseSneerSignal < 0.42 ? 0.12 + noseSneerSignal * 0.24 : 1;
