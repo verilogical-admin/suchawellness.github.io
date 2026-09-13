@@ -15,6 +15,7 @@
 <link rel="icon" href="/assets/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Jost:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/yoga-room-sucha.css">
+<link rel="stylesheet" href="/assets/forest-ambience.css">
 </head>
 <body>
 <nav class="sucha-nav" aria-label="Main navigation">
@@ -48,6 +49,12 @@
 <div class="eyebrow">Sucha Yoga Room · Pause. Soften. Begin again.</div>
 <h1>A little room to <em>breathe.</em></h1>
 <p class="intro">Let your shoulders settle. Follow the light around the rectangle, one gentle breath at a time.</p>
+<section class="forest" id="forest-sounds" aria-labelledby="forest-title">
+<div class="forest-top"><div><h2 id="forest-title">A little forest, for your practice.</h2><p class="forest-description">Natural birdsong and gentle forest ambience for both breathing practices.</p></div><button type="button" id="forest-toggle" aria-pressed="false" aria-controls="forest-player-panel">Turn on forest sounds</button></div>
+<p class="forest-status" id="forest-status" aria-live="polite">Sound is off. Enjoy a quiet practice.</p>
+<div class="forest-player-panel" id="forest-player-panel" hidden><div class="forest-player-mount" id="forest-player-mount"></div><p>Use the video controls to adjust volume. <a href="https://www.youtube.com/watch?v=ehZrLthYP_k" target="_blank" rel="noopener noreferrer">Watch on YouTube ↗</a> if playback is unavailable. YouTube loads only when you turn this on and may show ads.</p></div>
+</section>
+
 <section class="posture" aria-labelledby="posture-title">
 <svg viewBox="80 30 200 260" role="img" aria-labelledby="posture-image-title" fill="none" stroke="#61705b" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
 <title id="posture-image-title">The same peaceful Buddha-inspired figure seated cross-legged, with an upright spine, relaxed shoulders, and a gentle smile</title>
@@ -251,5 +258,7 @@
 <script src="/assets/yoga-room-seated.js"></script>
 <script src="/assets/yoga-room-standing.js"></script>
 <script src="/assets/yoga-room-nav.js"></script>
+<div class="forest-dock" id="forest-dock" hidden><a href="#forest-sounds">Forest player ↑</a><button type="button" id="forest-stop">Sound off</button></div>
+<script src="/assets/forest-ambience.js"></script>
 </body>
 </html>
