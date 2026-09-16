@@ -24,7 +24,7 @@
     if (!el('voice').checked) return;
     const generation = speechGeneration;
     const file = cue === 'preview' ? 'preview' : `cue-${cue === 'complete' ? 6 : cue}`;
-    narration.src = `/assets/anapana-voice-gentle/${file}.mp3`;
+    narration.src = `/assets/anapana-voice-warm/${file}.mp3`;
     narration.playbackRate = 1;
     narration.preservesPitch = true;
     narration.volume = Number(el('volume').value);
