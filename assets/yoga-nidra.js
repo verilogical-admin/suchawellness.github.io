@@ -31,7 +31,7 @@
     const generation = speechGeneration;
     const file = cue === 'preview' ? 'preview' : cue === 0 ? 'welcome' : `cue-${cue === 'complete' ? 12 : cue}`;
     narration.src = `/assets/yoga-nidra-voice/${file}.mp3`;
-    narration.playbackRate = 1;
+    narration.playbackRate = 0.85;
     narration.preservesPitch = true;
     narration.volume = Number(el('volume').value);
     const failed = () => {
