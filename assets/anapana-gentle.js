@@ -87,6 +87,7 @@
     if (complete) resetMeditation();
     window.pause?.();
     window.stopStandingForSeated?.();
+    window.pauseYogaNidra?.();
     active = true; section.dataset.active = 'true';
     started = performance.now(); el('length').disabled = true;
     el('toggle').textContent = 'Pause Anapana';
@@ -102,9 +103,10 @@
   });
   el('volume').addEventListener('input', () => { narration.volume = Number(el('volume').value); });
   el('preview').addEventListener('click', () => {
-    if (document.getElementById('standing-toggle').textContent === 'Pause standing' || document.getElementById('toggle').textContent === 'Pause breathing') {
+    if (document.getElementById('standing-toggle').textContent === 'Pause standing' || document.getElementById('toggle').textContent === 'Pause breathing' || document.getElementById('nidra')?.dataset.active === 'true') {
       el('voice-note').textContent = 'Pause your breathing practice first to preview the voice.'; return;
     }
+    window.pauseYogaNidra?.();
     speak('preview');
   });
   el('stop-voice').addEventListener('click', () => {
@@ -115,5 +117,6 @@
   for (const id of ['toggle', 'standing-toggle']) document.getElementById(id).addEventListener('click', pauseMeditation, true);
   document.addEventListener('visibilitychange', () => { if (document.hidden) pauseMeditation(); });
   window.addEventListener('pagehide', pauseMeditation);
+  window.pauseAnapana = pauseMeditation;
   resetMeditation();
 })();
