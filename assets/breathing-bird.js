@@ -1,6 +1,7 @@
 (() => {
   const standing = document.getElementById('standing-toggle');
   const seated = document.getElementById('toggle');
+  const anapana = document.getElementById('anapana-toggle');
   if (!standing || !seated) return;
   const bird = document.createElement('span');
   bird.className = 'breathing-bird';
@@ -29,7 +30,7 @@
     hide(); target = button;
     bird.classList.toggle('bird-still', document.getElementById('still').checked || document.getElementById('standing-still').checked);
     if (!inView(button)) {
-      cueLabel.textContent = button === standing ? 'Next: standing practice ↓' : button === seated ? 'Next: seated breathing ↓' : 'Forest sounds ↑';
+      cueLabel.textContent = button === standing ? 'Next: standing practice ↓' : button === seated ? 'Next: seated breathing ↓' : button === anapana ? 'Next: Anapana meditation ↓' : 'Forest sounds ↑';
       cue.replaceChildren(bird, cueLabel);
       document.body.append(cue);
       return;
@@ -52,6 +53,10 @@
   }
   standing.addEventListener('click', hide);
   seated.addEventListener('click', hide);
+  anapana?.addEventListener('click', hide);
+  if (anapana) new MutationObserver(() => {
+    if (document.getElementById('phase').textContent === 'Carry this calm.') show(anapana);
+  }).observe(document.getElementById('phase'), {childList: true, characterData: true, subtree: true});
   document.getElementById('standing-reset').addEventListener('click', hide);
   new MutationObserver(() => {
     if (document.getElementById('standing-step').textContent === 'Practice complete') show(seated);
@@ -64,7 +69,7 @@
     show(forest);
     nextCue = setTimeout(() => show(standing), 5000);
     forest.addEventListener('click', () => {
-      if (document.getElementById('standing-toggle').textContent === 'Pause standing' || seated.textContent === 'Pause breathing') return;
+      if (document.getElementById('standing-toggle').textContent === 'Pause standing' || seated.textContent === 'Pause breathing' || document.getElementById('anapana')?.dataset.active === 'true') return;
       show(standing);
     });
   } else show(standing);
