@@ -8,7 +8,7 @@
   const duration = () => Number(el('length').value);
   const formatTime = s => `${Math.floor(s / 60)}:${String(Math.ceil(s) % 60).padStart(2, '0')}`;
   const cues = () => [
-    {at: duration() * 0, title: "Make yourself at home.", text: "Choose a position you can rest in comfortably. Let the surface beneath you carry your weight. Your eyes may close, or stay softly open. For these few minutes, you have permission to do less."},
+    {at: duration() * 0, title: "Make yourself at home.", text: "Welcome to Sucha Wellness Yoga Nidra. Make yourself comfortable. Let the ground hold you. For a little while, there is nothing you need to do. Choose a position you can rest in comfortably. Let the surface beneath you carry your weight. Your eyes may close, or stay softly open. For these few minutes, you have permission to do less."},
     {at: duration() * 0.07, title: "An easy beginning.", text: "If it feels pleasant, breathe in gently, add a small second sip of air, then release one slow, easy sigh. There is no need to fill the lungs. You can simply keep your ordinary breath instead."},
     {at: duration() * 0.14, title: "Arrive in this room.", text: "Let breathing return to its own rhythm. Notice a sound nearby, and perhaps a sound farther away. Feel where your body meets the mat or bed. You are here, supported, with room to settle."},
     {at: duration() * 0.21, title: "Soften around the face.", text: "Bring a little attention to your forehead. Let the space around your eyes be easy. Notice your cheeks, your jaw, and your tongue resting in the mouth. Nothing needs to be held tightly."},
@@ -29,7 +29,7 @@
     silence();
     if (!el('voice').checked) return;
     const generation = speechGeneration;
-    const file = cue === 'preview' ? 'preview' : `cue-${cue === 'complete' ? 12 : cue}`;
+    const file = cue === 'preview' ? 'preview' : cue === 0 ? 'welcome' : `cue-${cue === 'complete' ? 12 : cue}`;
     narration.src = `/assets/yoga-nidra-voice/${file}.mp3`;
     narration.playbackRate = 1;
     narration.preservesPitch = true;
