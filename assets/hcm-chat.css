@@ -1,0 +1,22 @@
+.hcm-entry { position:relative; padding-right:clamp(170px,24vw,280px); min-height:310px; overflow:hidden; }
+.hcm-mascot { position:absolute; width:clamp(155px,23vw,260px); height:280px; right:10px; bottom:0; object-fit:contain; object-position:bottom; }
+.hcm-chat-head { display:flex; align-items:center; gap:1rem; }
+.hcm-chat-avatar { width:64px; height:72px; object-fit:cover; object-position:top; border-radius:50%; background:#edf5f1; flex-shrink:0; }
+.hcm-choice { text-align:left; border:1px solid #b6cfc6; padding:.85rem 1rem; border-radius:10px; background:#fff; color:#223e35; font:inherit; font-size:1rem; cursor:pointer; min-height:48px; }
+.hcm-choice:hover { background:#edf5f1; }
+#hcm-chat-form { margin:1.2rem 0; }
+#hcm-chat-form[hidden] { display:none; }
+.hcm-messages { max-height:380px; overflow-y:auto; overflow-wrap:anywhere; }
+.hcm-bubble { padding:1rem; background:#edf5f1; border-radius:12px; white-space:pre-wrap; }
+.hcm-bubble.user { background:#f0f2f6; margin-left:1rem; }
+.hcm-bubble strong { display:block; font-size:.875rem; margin-bottom:.3rem; }
+.hcm-consent { display:flex; gap:.7rem; align-items:flex-start; font-size:.9rem; line-height:1.6; margin:1rem 0; }
+.hcm-consent input { width:20px; height:20px; flex-shrink:0; margin-top:4px; accent-color:#15493f; }
+#hcm-message { display:block; width:100%; box-sizing:border-box; border:1px solid #809e92; border-radius:8px; padding:.8rem; min-height:100px; font:inherit; font-size:1rem; resize:vertical; }
+.hcm-controls { display:flex; flex-wrap:wrap; align-items:center; gap:.7rem; margin-top:.7rem; }
+.hcm-controls button { padding:.8rem 1rem; border:1px solid #15493f; border-radius:6px; background:#15493f; color:#fff; font:inherit; cursor:pointer; }
+.hcm-controls #hcm-clear { background:#fff; color:#15493f; }
+.hcm-controls button:disabled { opacity:.65; cursor:wait; }
+#hcm-chat-status { min-height:1.6em; color:#40594e; }
+.hcm-help-active { outline:3px solid #15493f; outline-offset:4px; }
+@media(max-width:520px) { .hcm-entry { padding-right:1.5rem; padding-bottom:165px; } .hcm-mascot { height:160px; width:155px; right:calc(50% - 78px); } }

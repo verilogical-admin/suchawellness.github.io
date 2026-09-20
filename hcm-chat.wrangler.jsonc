@@ -1,0 +1,33 @@
+{
+  "name": "sucha-hcm-chat",
+  "account_id": "6367f6ce82085b3a5b20fa5477081ad9",
+  "main": "hcm-chat-worker.js",
+  "compatibility_date": "2026-09-20",
+  "workers_dev": false,
+  "ai": {
+    "binding": "AI"
+  },
+  "ratelimits": [
+    {
+      "name": "HCM_RATE_LIMITER",
+      "namespace_id": "2026092001",
+      "simple": {
+        "limit": 12,
+        "period": 60
+      }
+    }
+  ],
+  "routes": [
+    {
+      "pattern": "www.suchawellness.com/api/hcm/chat",
+      "zone_name": "suchawellness.com"
+    },
+    {
+      "pattern": "suchawellness.com/api/hcm/chat",
+      "zone_name": "suchawellness.com"
+    }
+  ],
+  "observability": {
+    "enabled": false
+  }
+}

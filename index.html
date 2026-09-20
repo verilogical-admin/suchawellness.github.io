@@ -2362,6 +2362,38 @@
   }
 </style>
 <link rel="stylesheet" href="/responsive.css?v=2026-08-20-nav-mobile-v1">
+
+<style>
+  .hcm-home { max-width: 1120px; margin: 0 auto; padding: 2rem 1.5rem 4rem; scroll-margin-top: 100px; }
+  .hcm-entry { background: #15493f; color: #fff; padding: clamp(1.5rem, 4vw, 3rem); border-radius: 20px; }
+  .hcm-entry h2 { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 4vw, 3rem); line-height: 1.15; margin: .5rem 0 1rem; color: #fff; }
+  .hcm-entry p { font-size: 1.05rem; line-height: 1.6; margin: .7rem 0; }
+  .hcm-entry .hcm-kicker { font-size: .875rem; letter-spacing: .1em; text-transform: uppercase; color: #c4e8dd; }
+  .hcm-start { display: inline-block; background: #fff; color: #15493f; padding: .9rem 1.3rem; border-radius: 8px; font-weight: 500; margin-top: .75rem; }
+  .hcm-welcome { margin-top: 1.5rem; padding: clamp(1.25rem, 3vw, 2rem); border: 1px solid #b6cfc6; border-radius: 16px; background: #fff; color: #223e35; scroll-margin-top: 100px; }
+  .hcm-welcome h3 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; margin: 0 0 .75rem; }
+  .hcm-home p, .hcm-home li, .hcm-home summary { font-size: 1rem; line-height: 1.65; }
+  .hcm-home a { text-underline-offset: 4px; }
+  .hcm-note { color: #4b6158; margin-bottom: 1rem; }
+  .hcm-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; }
+  .hcm-choices details { border: 1px solid #b6cfc6; border-radius: 10px; padding: .85rem 1rem; align-self: start; }
+  .hcm-choices summary { cursor: pointer; font-weight: 500; }
+  .hcm-choices p { margin: .8rem 0 0; }
+  .hcm-safety-link { display: block; padding: 1rem; margin: 1rem 0; border: 2px solid #15493f; border-radius: 10px; color: #15493f; font-weight: 500; }
+  .hcm-human { background: #edf5f1; padding: 1.25rem; border-radius: 12px; scroll-margin-top: 100px; }
+  .hcm-human h4 { font-size: 1.25rem; margin: 0 0 .75rem; }
+  .hcm-human p { margin: .7rem 0; }
+  .hcm-human ul { padding-left: 1.3rem; }
+  .hcm-call { display: inline-block; padding: .8rem 1rem; background: #15493f; color: #fff; border-radius: 6px; margin: .3rem .4rem .3rem 0; }
+  .hcm-family { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+  .hcm-family div { border-top: 2px solid #b6cfc6; padding-top: .75rem; }
+  .hcm-family dt { font-weight: 500; font-size: 1rem; }
+  .hcm-family dd { margin: .4rem 0; font-size: .95rem; line-height: 1.6; }
+  .hcm-home :focus-visible { outline: 3px solid #aa6c16; outline-offset: 4px; }
+  @media(max-width: 680px) { .hcm-choices, .hcm-family { grid-template-columns: 1fr; } }
+</style>
+<link rel="stylesheet" href="/assets/hcm-chat.css?v=20260920-1">
+<script src="/assets/hcm-chat.js?v=20260920-1" defer></script>
 </head>
 <body>
 
@@ -2404,9 +2436,63 @@
     <div class="welcome-actions">
       <a class="btn-primary" href="/tests">Understand yourself</a>
       <a class="btn-outline" href="/skill-lab">Build skills</a>
-      <a class="btn-outline" href="#care">Find support</a>
+      <a class="btn-outline" href="#heychandmama">I need someone right now</a>
     </div>
   </div>
+</section>
+
+<!-- FREE BELONGING AND HUMAN CONNECTION -->
+<section class="hcm-home" id="heychandmama" aria-labelledby="hcm-title">
+  <div class="hcm-entry">
+    <img class="hcm-mascot" src="/assets/hcm-companion.png" alt="HeyChandMama mascot wearing a blue moon-and-stars hoodie" width="1122" height="1402">
+    <p class="hcm-kicker">HeyChandMama · A place to turn</p>
+    <h2 id="hcm-title">Feeling alone or having a difficult day?</h2>
+    <p><strong>Meet your online friend, HeyChandMama.</strong><br>No judgment. No payment. Start talking.</p>
+    <a class="hcm-start" href="#hcm-welcome">Start here</a>
+    <p>A free AI companion to help you find words and connect with real people.</p>
+  </div>
+  <div class="hcm-welcome" id="hcm-welcome">
+    <div class="hcm-chat-head"><img class="hcm-chat-avatar" src="/assets/hcm-companion.png" alt="" width="64" height="72"><h3>Hey. I’m here. What’s going on?</h3></div>
+    <p class="hcm-note" id="hcm-guided-note">Choose what feels closest. These are guided prompts, not a live chat, therapist or emergency service. No sign-in or payment is needed.</p>
+    <div class="hcm-choices">
+      <details><summary>I just need to talk</summary><p>You don’t need to find perfect words. You could start with someone you trust: “I’m having a difficult day. Could you listen for a few minutes?”</p><p><a href="#hcm-human">Find human support</a></p></details>
+      <details><summary>I feel alone</summary><p>Feeling alone can hurt. Is there one person you could contact today—a friend, relative, teacher or colleague? You can start small: “Could we talk or spend a little time together?”</p><p><a href="#hcm-human">Find human support</a></p></details>
+      <details><summary>I failed at something</summary><p>A painful result doesn’t define all of you. You don’t have to solve everything right now. Consider asking someone you trust to help you work out one manageable next step.</p><p><a href="#hcm-human">Find human support</a></p></details>
+      <details><summary>My heart is broken</summary><p>Losing a relationship can be deeply painful. You deserve company and care while you go through it. Could you ask someone you trust to check in with you today?</p><p><a href="#hcm-human">Find human support</a></p></details>
+      <details><summary>I’m scared about my future</summary><p>You don’t have to work out your whole future today. Choose one concern to share with someone who can listen or help with a practical next step.</p><p><a href="#hcm-human">Find human support</a></p></details>
+      <details><summary>Something else</summary><p>Your experience doesn’t need to fit a category. You could tell someone you trust: “Something is weighing on me, and I could use some company.”</p><p><a href="#hcm-human">Find human support</a></p></details>
+    </div>
+    <form id="hcm-chat-form" hidden>
+      <div class="hcm-messages" id="hcm-messages" role="log" aria-live="polite" aria-label="Your conversation with HeyChandMama" aria-relevant="additions"></div>
+      <label class="hcm-consent"><input type="checkbox" id="hcm-consent"><span>I understand this is AI and can make mistakes. Sending shares my message and recent conversation with SuchaWellness and Cloudflare Workers AI to generate and safety-check a reply. Sucha does not save chat transcripts; this page keeps recent messages until cleared or reloaded. Please avoid names, contact details or identifying information. <a href="https://developers.cloudflare.com/workers-ai/platform/data-usage/" target="_blank" rel="noopener noreferrer">AI provider data policy</a>.</span></label>
+      <label for="hcm-message">What’s on your mind?</label>
+      <textarea id="hcm-message" maxlength="1600" rows="3" placeholder="Start wherever feels right…" aria-describedby="hcm-chat-status"></textarea>
+      <div class="hcm-controls"><button type="submit" id="hcm-send">Send message</button><button type="button" id="hcm-clear">Clear conversation</button><a href="#hcm-human">Get human help now</a></div>
+      <p id="hcm-chat-status" role="status"></p>
+    </form>
+    <a class="hcm-safety-link" href="#hcm-human">I don’t feel safe with myself → Get human help now</a>
+    <div class="hcm-human" id="hcm-human" tabindex="-1" aria-labelledby="hcm-human-title">
+      <h4 id="hcm-human-title">You don’t have to face this moment alone.</h4>
+      <p>If you might act on thoughts of harming yourself, have already hurt yourself, or are in immediate danger, call emergency services or go to the nearest emergency department now.</p>
+      <a class="hcm-call" href="tel:112">India: call 112 · Emergency</a>
+      <a class="hcm-call" href="tel:+9114416?oai_link_source=model_response_hotline">India: call 14416 · Tele-MANAS</a>
+      <p>Tele-MANAS provides free, 24/7 mental health support in India. Outside India, contact your local emergency service or local crisis service.</p>
+      <ul>
+        <li>Reach someone you trust and ask them to stay with you, in person if possible.</li>
+        <li>Move away from anything you could use to hurt yourself, and ask someone to help make your surroundings safer.</li>
+      </ul>
+      <p>Words you can use: <strong>“I don’t feel safe on my own. Please stay with me and help me get support.”</strong></p>
+      <p>No one is monitoring this page. A click here does not contact or alert anyone; use the call buttons or contact someone directly.</p>
+      <p><a href="https://telemanas.mohfw.gov.in/home?oai_link_source=model_response_hotline">Tele-MANAS</a> · <a href="https://112.gov.in/">India emergency services</a> · <a href="https://www.nimh.nih.gov/health/publications/5-action-steps-to-help-someone-having-thoughts-of-suicide">Supporting someone in distress</a></p>
+    </div>
+    <p style="margin-top:1.25rem"><strong>The belonging layer is always free.</strong> Chat and routes to human support have no subscription or upgrade requirement. Brief traffic limits may apply; human-help information stays available. Premium skill labs are separate.</p>
+  </div>
+  <dl class="hcm-family" aria-label="The SuchaWellness family">
+    <div><dt>SuchaWellness</dt><dd>Mental health tools for understanding yourself, building skills and finding support.</dd></div>
+    <div><dt>HeyChandMama</dt><dd>A warm doorway to belonging and human connection.</dd></div>
+    <div><dt>This Is Not the End</dt><dd>A planned student book about finding hope and reaching support.</dd></div>
+    <div><dt>Sucha Research</dt><dd>Our research and evaluation layer. <a href="#research">Explore research-stage work.</a></dd></div>
+  </dl>
 </section>
 
 <!-- EMOTION CHECK -->
