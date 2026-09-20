@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; img-src 'self' data: https://*.razorpay.com; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' https://checkout.razorpay.com; script-src-attr 'none'; connect-src 'self' https://payment-worker.verilogical.com https://praivasipdf-api.verilogical.com https://api.razorpay.com https://checkout.razorpay.com; frame-src https://api.razorpay.com https://checkout.razorpay.com; form-action 'self'; worker-src 'self'; manifest-src 'self'; media-src 'self'; frame-ancestors 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<title>Sucha™ Wellness — Mental Health, Reimagined</title>
-<meta name="description" content="Sucha™ Wellness is a privacy-focused mental wellness platform for informational screening tests, private journaling, care navigation, and provider pages.">
+<title>SuchaWellness — Understand yourself, build skills, find support</title>
+<meta name="description" content="Mental health tools for understanding yourself, building skills and finding support. SuchaWellness: Onestop online place for everybody on the planet.">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.suchawellness.com/">
 <link rel="sitemap" type="application/xml" href="/sitemap.xml">
@@ -14,12 +14,12 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Sucha™ Wellness">
 <meta property="og:title" content="Sucha™ Wellness — Mental Wellness Screening, Journaling, and Care Navigation">
-<meta property="og:description" content="Private mental wellness tools for screening, journaling, and taking a next step toward qualified care.">
+<meta property="og:description" content="Mental health tools for understanding yourself, building skills and finding support. SuchaWellness: Onestop online place for everybody on the planet.">
 <meta property="og:url" content="https://www.suchawellness.com/">
 <meta property="og:image" content="https://www.suchawellness.com/assets/sucha-phone-journal-human.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Sucha™ Wellness — Mental Wellness Tools">
-<meta name="twitter:description" content="Informational screening tests, private journaling, care navigation, and provider pages from Sucha™ Wellness.">
+<meta name="twitter:description" content="Mental health tools for understanding yourself, building skills and finding support. SuchaWellness: Onestop online place for everybody on the planet.">
 <meta name="twitter:image" content="https://www.suchawellness.com/assets/sucha-phone-journal-human.jpg">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/sucha-web-icon-180.png">
@@ -279,7 +279,7 @@
     background: var(--teal);
   }
 
-  .hero h1 {
+  .hero h1, .hero .research-heading {
     font-family: 'Cormorant Garamond', serif;
     font-size: clamp(2.8rem, 5vw, 4.2rem);
     font-weight: 400;
@@ -288,7 +288,7 @@
     margin-bottom: 1.5rem;
   }
 
-  .hero h1 em {
+  .hero h1 em, .hero .research-heading em {
     font-style: italic;
     color: var(--teal);
   }
@@ -800,6 +800,31 @@
     margin-top: 0.75rem;
   }
 
+  /* A welcoming first step, using the site's cream and teal palette. */
+  .welcome-hero {
+    padding: 9rem 1.5rem 3.5rem;
+    text-align: center;
+    background: radial-gradient(ellipse at 15% 20%, #e8f7f3 0, transparent 55%), linear-gradient(135deg, #fff8e9, #fffdf6 65%, #edf7f2);
+  }
+  .welcome-inner { max-width: 960px; margin: 0 auto; }
+  .welcome-hero .section-eyebrow { margin-bottom: 1.2rem; justify-content: center; }
+  .welcome-hero h1 {
+    color: var(--teal-dark);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.5rem, 5.5vw, 4.6rem);
+    font-weight: 400;
+    line-height: 1.12;
+    text-wrap: balance;
+    margin: 0 auto 1.5rem;
+  }
+  .welcome-brand { display: block; font-size: 0.62em; margin-bottom: 0.65rem; }
+  .welcome-subtitle { max-width: 720px; margin: 0 auto; color: var(--teal-dark); font-size: clamp(1.15rem, 2.2vw, 1.5rem); line-height: 1.6; text-wrap: balance; }
+  .welcome-note { color: var(--muted); line-height: 1.7; margin: 1rem auto 1.6rem; max-width: 580px; }
+  .welcome-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.75rem; }
+  .welcome-actions a { border-radius: 999px; min-height: 48px; padding: 0.85rem 1.35rem; }
+  .welcome-actions a:focus-visible { outline: 3px solid var(--teal); outline-offset: 5px; }
+  @media (max-width: 600px) { .welcome-hero { padding-top: 7.5rem; padding-bottom: 2.5rem; } }
+
   /* ── TAKE TEST ── */
   .emotion-landing-section,
   #take-test {
@@ -809,7 +834,7 @@
 
   .emotion-landing-section {
     padding-bottom: 1.5rem;
-    padding-top: 7rem;
+    padding-top: 2rem;
     scroll-margin-top: 6rem;
   }
 
@@ -2369,6 +2394,21 @@
   </ul>
 </nav>
 
+<!-- WELCOME -->
+<section class="welcome-hero" aria-labelledby="welcome-title">
+  <div class="welcome-inner">
+    <div class="section-eyebrow">A little space for you</div>
+    <h1 id="welcome-title"><span class="welcome-brand">SuchaWellness:</span> Onestop online place for everybody on the planet</h1>
+    <p class="welcome-subtitle">Mental health tools for understanding yourself, building skills and finding support.</p>
+    <p class="welcome-note">You don’t need to have it all figured out. Start wherever feels right, and explore at your own pace.</p>
+    <div class="welcome-actions">
+      <a class="btn-primary" href="/tests">Understand yourself</a>
+      <a class="btn-outline" href="/skill-lab">Build skills</a>
+      <a class="btn-outline" href="#care">Find support</a>
+    </div>
+  </div>
+</section>
+
 <!-- EMOTION CHECK -->
 <section id="emotion-check" class="emotion-landing-section">
   <div class="section-eyebrow">Private Emotion Check</div>
@@ -3061,11 +3101,11 @@
 <section class="hero">
   <div class="hero-text">
     <div class="hero-eyebrow">Mental Health, Reimagined</div>
-    <h1>
+    <h2 class="research-heading">
       Early detection.<br>
       <em>Profound</em> impact.<br>
       Built for everyday care.
-    </h1>
+    </h2>
     <p class="hero-sub">
       Sucha™ Wellness includes research-phase selfie and visual-signal reflection concepts alongside screening, journaling, and care-navigation tools, with privacy-first browser/on-device analysis wherever offered.
     </p>
