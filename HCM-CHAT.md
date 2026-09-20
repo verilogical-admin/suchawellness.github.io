@@ -6,7 +6,7 @@ it does not replace the main site/payment/license Worker.
 
 Deploy backend: `wrangler deploy --config hcm-chat.wrangler.jsonc`.
 Static homepage/assets follow this repository's existing GitHub origin deployment.
-Test: `node --test hcm-chat.test.mjs`.
+Test: `node --test hcm-chat.test.mjs hcm-chat-ui.test.mjs`.
 
 ## Data and operation
 
