@@ -37,3 +37,5 @@ http://www.suchawellness.com/* https://www.suchawellness.com/:splat 301!
 /therapist-matching /therapist-matching.html 200
 /premium-reports /premium-reports.html 200
 /video-resources /video-resources.html 200
+
+/financial-help /financial-help.html 200

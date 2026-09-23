@@ -1,3 +1,4 @@
+import { handleFinancialHelpPayments } from './financial-help-payments.js';
 const SECURITY_HEADERS = {
   'Content-Security-Policy': "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: blob: https://*.razorpay.com; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'wasm-unsafe-eval' https://checkout.razorpay.com https://cdn.jsdelivr.net; script-src-attr 'none'; connect-src 'self' https://www.suchawellness.com https://payment-worker.verilogical.com https://praivasipdf-api.verilogical.com https://api.razorpay.com https://checkout.razorpay.com https://cdn.jsdelivr.net https://storage.googleapis.com; frame-src https://api.razorpay.com https://checkout.razorpay.com; form-action 'self'; worker-src 'self' blob:; manifest-src 'self'; media-src 'self' blob:; upgrade-insecure-requests",
   'Referrer-Policy': 'strict-origin-when-cross-origin',
@@ -11,7 +12,7 @@ const SECURITY_HEADERS = {
   'Permissions-Policy': 'accelerometer=(), autoplay=(), camera=(self), clipboard-read=(), clipboard-write=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(self), usb=()',
 };
 
-const STATIC_ASSET_VERSION = '2026-09-09-anger-calibrated-v2';
+const STATIC_ASSET_VERSION = '2026-09-23-financial-help-v1';
 
 const ROBOTS_TXT = `# Sucha™ Wellness allows responsible search and AI discovery so people can find
 # mental wellness screening, private journaling, and care-navigation resources.
@@ -1854,6 +1855,8 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    if (url.pathname.startsWith('/api/financial-help/')) return handleFinancialHelpPayments(request, env);
+
     if (request.method === 'OPTIONS' && url.pathname.startsWith('/api/')) {
       return corsPreflight();
     }
@@ -1965,6 +1968,7 @@ export default {
     }
 
     const cleanPageMap = {
+      '/financial-help': '/financial-help.html',
       '/admin': '/admin.html',
       '/account': '/account.html',
       '/legal-disclaimer': '/legal-disclaimer.html',
